@@ -9,14 +9,17 @@ use Inertia\Inertia;
 
 class AuthenticationController extends Controller
 {
-    public function loginPage(Request $request){
+    public function loginPage(Request $request)
+    {
         return Inertia::render('LoginView');
     }
-    public function login(LoginRequest $request){
+    public function login(LoginRequest $request)
+    {
         $request->authenticate();
         return redirect()->route('dashboard')->with('flash', ['message' => 'Login successful']);
     }
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
