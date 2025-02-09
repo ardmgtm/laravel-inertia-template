@@ -44,7 +44,7 @@ const props = defineProps({
 
 const home = ref({
     icon: 'pi pi-home',
-    href: '/',
+    url: '/',
 });
 const showBreadcrumbs = computed(() => props.breadcrumbs != null && props.breadcrumbs.length > 0);
 </script>
