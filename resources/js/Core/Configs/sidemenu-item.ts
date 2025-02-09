@@ -18,6 +18,7 @@ export const sideMenuItemData: MenuItem[] = [
         items: [
             { 
                 label: 'Users',
+                url: basicRoute('user.browse'),
             }, 
             { 
                 label: 'Roles & Permissions',

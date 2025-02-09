@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -11,5 +12,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', fn () => redirect()->route('dashboard'));
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard/DashboardView'))->name('dashboard');
+
+    Route::controller(UserController::class)->group(function(){
+        Route::get('/users','index')->name('user.browse');
+    });
 });
 
