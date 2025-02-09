@@ -21,6 +21,7 @@
                 <slot />
             </div>
         </div>
+        <Toast/>
     </div>
 </template>
 

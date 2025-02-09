@@ -29,10 +29,12 @@
     </Menu>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { Ref, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { MenuItem } from 'primevue/menuitem';
 
 const menu = ref();
-const accountMenuItems = ref([
+const accountMenuItems : Ref<MenuItem[]> = ref([
     {
         items: [
             {
@@ -41,13 +43,18 @@ const accountMenuItems = ref([
             },
             {
                 label: 'Sign Out',
-                icon: 'pi pi-sign-out'
+                icon: 'pi pi-sign-out',
+                command: () => logoutAction(),
             }
         ]
     }
 ]);
 
-const toggle = (event: Event) => {
+function toggle(event: Event){
     menu.value.toggle(event);
 };
+
+function logoutAction(){
+    router.post(route('logout'));
+}
 </script>
