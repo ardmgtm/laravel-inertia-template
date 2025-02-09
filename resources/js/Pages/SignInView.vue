@@ -47,10 +47,6 @@
 </template>
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
-import { FloatLabel } from 'primevue';
-import Button from 'primevue/button';
-import Checkbox from 'primevue/checkbox';
-import InputText from 'primevue/inputtext';
 import { ref } from 'vue';
 
 const currentYear = new Date().getFullYear();
