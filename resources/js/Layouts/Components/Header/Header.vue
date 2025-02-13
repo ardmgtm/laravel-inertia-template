@@ -1,34 +1,59 @@
 <template>
-    <header class="flex-none flex gap-4 fixed w-full z-50 border border-surface-300">
-        <div class="flex-1 flex items-center justify-between py-2 px-4 bg-surface-50">
-            <div class="flex items-center gap-4">
-                <Button class="flex items-center lg:hidden" outlined severity="secondary" @click="toggleSidemenuDrawer">
-                    <i class="pi pi-bars text-2xl"></i>
-                </Button>
-                <Link :href="route('dashboard')">
-                    <img src="/vite.svg" alt="app-logo" class="h-10" />
-                </Link>
-            </div>
-            <div class="flex flex-row gap-4 mr-2">
-                <Button class="flex items-center" outlined severity="secondary">
-                    <OverlayBadge :value="2" class="flex" size="small">
-                        <i class="pi pi-bell text-2xl" />
-                    </OverlayBadge>
-                </Button>
-                <HeaderAccount />
-            </div>
+  <header
+    class="sticky top-0 before:absolute before:inset-0 before:backdrop-blur-md max-lg:before:bg-white/90 dark:max-lg:before:bg-gray-800/90 before:-z-10 z-30"
+    :class="[
+      'before:bg-white after:absolute after:h-px after:inset-x-0 after:top-full after:bg-gray-200',
+    ]">
+    <div class="px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex">
+          <Button class="flex items-center lg:hidden" outlined severity="secondary"
+            @click.stop="$emit('toggle-sidebar')">
+            <i class="pi pi-bars text-2xl"></i>
+          </Button>
         </div>
-        <SidemenuDrawer v-model:visible="sideMenuDrawerVisible"/>
-    </header>
-</template>
-<script setup lang="ts">
-import { ref } from 'vue';
-import HeaderAccount from './HeaderAccount.vue';
-import SidemenuDrawer from '@/Layouts/Components/Sidemenu/SidemenuDrawer.vue';
-import { Link } from '@inertiajs/vue3';
 
-const sideMenuDrawerVisible = ref(false);
-function toggleSidemenuDrawer(){
-    sideMenuDrawerVisible.value = !sideMenuDrawerVisible.value;
-}
+        <div class="flex items-center space-x-3">
+          <div>
+            <button
+              class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 lg:hover:bg-gray-200 dark:hover:bg-gray-700/50 dark:lg:hover:bg-gray-800 rounded-full ml-3"
+              :class="{ 'bg-gray-200 dark:bg-gray-800': searchModalOpen }" @click.stop="searchModalOpen = true"
+              aria-controls="search-modal">
+              <span class="sr-only">Search</span>
+              <svg class="fill-current text-gray-500/80 dark:text-gray-400/80" width="16" height="16"
+                viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7ZM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5Z" />
+                <path
+                  d="m13.314 11.9 2.393 2.393a.999.999 0 1 1-1.414 1.414L11.9 13.314a8.019 8.019 0 0 0 1.414-1.414Z" />
+              </svg>
+            </button>
+            <SearchModal id="search-modal" searchId="search" :modalOpen="searchModalOpen"
+              @open-modal="searchModalOpen = true" @close-modal="searchModalOpen = false" />
+          </div>
+          <Notifications align="right" />
+          <!-- Divider -->
+          <hr class="w-px h-6 bg-gray-200 dark:bg-gray-700/60 border-none" />
+          <HeaderAccount />
+        </div>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+import SearchModal from './ModalSearch.vue'
+import Notifications from './DropdownNotifications.vue'
+import HeaderAccount from './HeaderAccount.vue';
+
+const props = defineProps({
+  sidebarOpen: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const searchModalOpen = ref(false)
 </script>
