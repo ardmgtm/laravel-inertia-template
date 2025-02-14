@@ -7,7 +7,7 @@
     <!-- Sidebar -->
     <div id="sidebar" ref="sidebar"
       class="flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:sidebar-expanded:!w-64 2xl:w-64! shrink-0 bg-surface-50 p-4 transition-all duration-200 ease-in-out"
-      :class="['rounded-r-2xl shadow-xs border border-gray-300', sidebarOpen ? 'translate-x-0' : '-translate-x-64']">
+      :class="['rounded-tr-2xl shadow-xs border border-gray-200', sidebarOpen ? 'translate-x-0' : '-translate-x-64']">
 
       <!-- Sidebar header -->
       <div class="flex justify-between mb-10 pr-3 sm:px-2">
