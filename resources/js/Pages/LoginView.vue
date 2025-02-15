@@ -59,7 +59,6 @@ const formSignIn = useForm({
     password : null,
     remember : false,
 })
-const formErrors = ref({});
 const resolver = yupResolver(
     yup.object().shape({
         username: yup.string().required('Username is required'),
@@ -89,7 +88,6 @@ function loginAction(valid) {
                 });
             },
             onError: (errors) => {
-                formErrors.value = errors;
                 if(errors.message){
                     toast.add({ 
                         severity: 'error', 

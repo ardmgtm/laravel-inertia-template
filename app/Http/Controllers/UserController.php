@@ -22,7 +22,7 @@ class UserController extends Controller
         $data = $request->validated();
         DB::beginTransaction();
         try {
-            User::create($data);
+            // User::create($data);
             DB::commit();
             return redirect()->back()->with('message', 'Success to create user');
         } catch (Throwable $e) {
