@@ -32,6 +32,19 @@
       display: none; /* Safari and Chrome */
     }
   }
+  .p-datatable-table {
+    @apply border border-gray-200
+  }
+  .p-datatable-header-cell {
+    @apply !bg-primary-500 !text-white;
+  }
+  .p-datatable-sort-icon, .p-datatable-column-filter-clear-button, .p-datatable-column-filter-button {
+    @apply !text-gray-300;
+
+    &:hover {
+      @apply !text-primary;
+    }
+  }
 }
 
 /* Utility layer */
