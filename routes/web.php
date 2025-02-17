@@ -18,6 +18,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/users','store')->name('user.create');
         Route::put('/users/{user}','update')->name('user.update');
         Route::delete('/users/{user}','destroy')->name('user.delete');
+
+        Route::get('/users/data-table','dataTable')->name('user.data_table');
     });
 });
 

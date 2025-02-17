@@ -1,5 +1,6 @@
 <template>
     <Toast />
+    <ConfirmDialog/>
     <div class="flex h-screen overflow-hidden">
         <Sidemenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
         <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">

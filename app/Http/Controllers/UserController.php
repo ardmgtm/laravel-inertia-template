@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
+use App\Services\DataTableAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -22,7 +23,7 @@ class UserController extends Controller
         $data = $request->validated();
         DB::beginTransaction();
         try {
-            // User::create($data);
+            User::create($data);
             DB::commit();
             return redirect()->back()->with('message', 'Success to create user');
         } catch (Throwable $e) {
@@ -62,5 +63,12 @@ class UserController extends Controller
                 'message' => 'Failed to delete user'
             ]);
         }
+    }
+
+    public function dataTable(Request $request)
+    {
+        $query = User::query();
+        $dataLoad = DataTableAdapter::load($query, $request);
+        return response()->json($dataLoad);
     }
 }

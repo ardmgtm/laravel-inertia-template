@@ -15,7 +15,8 @@
             <div v-else>
                 <div class="h-8 w-8 flex items-center justify-center">
                     <div class="rounded-full h-2 w-2 group-hover:bg-primary"
-                        :class="{ 'bg-primary': isActive || submenuExpand, 'bg-surface-500': !isActive && !submenuExpand }"></div>
+                        :class="{ 'bg-primary': isActive || submenuExpand, 'bg-surface-500': !isActive && !submenuExpand }">
+                    </div>
                 </div>
             </div>
             <span class="flex-1">{{ props.label }}</span>
@@ -26,13 +27,15 @@
         </div>
         <ul class="ml-4 transition-height duration-300 ease-in-out overflow-hidden"
             :style="{ height: submenuExpand ? submenuHeight : '0' }">
-            <SidemenuItem v-for="subMenu in props.items" :label="subMenu.label" :url="subMenu.url" @item-active="updateActiveState"
-                :items="subMenu.items" @click="onclickHandle" />
+            <li v-for="subMenu in props.items">
+                <SidemenuItem :label="subMenu.label" :url="subMenu.url" @item-active="updateActiveState"
+                    :items="subMenu.items" @click="onclickHandle" />
+            </li>
         </ul>
     </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { MenuItem } from "primevue/menuitem";
 import { router, usePage } from "@inertiajs/vue3";
 
@@ -71,9 +74,9 @@ function updateActiveState() {
     }
 };
 
-onMounted(()=>{
+onMounted(() => {
     isActive.value = props.url ? usePage().url.startsWith(props.url) : false;
-    if(isActive.value){
+    if (isActive.value) {
         emit('item-active');
     }
 });

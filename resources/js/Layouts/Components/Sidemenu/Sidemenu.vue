@@ -36,7 +36,6 @@
                   :url="menuItem.url" :items="menuItem.items" />
               </li>
             </ul>
-
           </nav>
         </div>
       </div>

@@ -1,7 +1,7 @@
 <template>
     <Dialog :header="(!editMode ? 'Add' : 'Edit') + ' User'" v-model:visible="dialogVisible" class="w-full max-w-xl"
         modal>
-        <Form class="flex flex-col gap-2" :resolver
+        <Form class="flex flex-col gap-2" :resolver :initialValues="formData"
             @submit="(e) => !editMode ? addSubmitAction(e) : editSubmitAction(e)">
             <FormField name="name" v-slot="$field" class="flex">
                 <label class="flex-none font-bold w-48" for="name">Name</label>
@@ -33,7 +33,7 @@
                     </Message>
                 </div>
             </FormField>
-            <FormField name="password" v-slot="$field" class="flex">
+            <FormField name="password" v-slot="$field" class="flex" v-if="!editMode">
                 <label class="flex-none font-bold w-48" for="password">Password</label>
                 <div class="flex-1">
                     <Password id="password" placeholder="Password" v-model="formData.password" :feedback="false"
@@ -51,14 +51,17 @@
     </Dialog>
 </template>
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
 import { FormSubmitEvent } from '@primevue/forms';
-import { useToast } from 'primevue';
+import { useConfirm, useToast } from 'primevue';
 
 const toast = useToast();
+const confirm = useConfirm();
+
+const emit = defineEmits(['data-change'])
 
 const dialogVisible = ref(false);
 const editMode = ref(false);
@@ -108,6 +111,7 @@ function addSubmitAction(event: FormSubmitEvent) {
                     life: 1000,
                 });
                 closeDialog();
+                emit('data-change');
             },
             onError: (errors) => {
                 formErrors.value = errors;
@@ -124,22 +128,29 @@ function addSubmitAction(event: FormSubmitEvent) {
         })
     }
 }
-function editAction() {
+function editAction(data: any) {
     dialogVisible.value = true;
-    editMode.value = false;
+    editMode.value = true;
+
+    formData.id = data.id;
+    formData.name = data.name;
+    formData.email = data.email;
+    formData.username = data.username;
 }
 function editSubmitAction(event: FormSubmitEvent) {
+    console.log(event);
     if (event.valid) {
         loading.value = true;
-        formData.post(route('user.update', { id: formData.id }), {
-            onSuccess: (response) => {
+        formData.put(route('user.update', { id: formData.id }), {
+            onSuccess: (response: any) => {
                 toast.add({
                     severity: 'success',
                     summary: 'Success',
-                    detail: response.props.message,
+                    detail: response.props.flash.message,
                     life: 1000,
                 });
                 closeDialog();
+                emit('data-change');
             },
             onError: (errors) => {
                 if (errors.message) {
@@ -157,8 +168,53 @@ function editSubmitAction(event: FormSubmitEvent) {
         })
     }
 }
-function deleteAction() {
-
+function deleteAction(data: any) {
+    confirm.require({
+        message: 'Do you want to delete this user ?',
+        header: 'Warning',
+        icon: 'pi pi-info-circle',
+        rejectLabel: 'Cancel',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true
+        },
+        acceptProps: {
+            label: 'Delete',
+            severity: 'danger'
+        },
+        accept: () => {
+            router.delete(route('user.delete', { id: data.id }), {
+                onSuccess: (response: any) => {
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: response.props.flash.message,
+                        life: 3000,
+                    });
+                    emit('data-change');
+                },
+                onError: (errors) => {
+                    if (errors.message) {
+                        toast.add({
+                            severity: 'error',
+                            summary: 'Failed',
+                            detail: errors.message,
+                            life: 3000,
+                        });
+                    }
+                }
+            })
+        },
+        reject: () => {
+            toast.add({
+                severity: 'info',
+                summary: 'Info',
+                detail: 'Action Canceled',
+                life: 3000
+            });
+        }
+    });
 }
 
 defineExpose({

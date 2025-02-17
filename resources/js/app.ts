@@ -10,6 +10,7 @@ import { createApp, DefineComponent, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import customPreset from './Core/Configs/custom-themes';
 import ToastService from 'primevue/toastservice';
+import ConfirmationService from 'primevue/confirmationservice';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -38,6 +39,7 @@ createInertiaApp({
             })
             .use(ZiggyVue)
             .use(ToastService)
+            .use(ConfirmationService)
             .mount(el);
     },
     progress: {
