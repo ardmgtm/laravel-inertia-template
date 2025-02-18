@@ -1,6 +1,6 @@
 import { MenuItem } from "primevue/menuitem";
 
-const basicRoute = (routeName : string) => route(routeName,{},false);
+const basicRoute = (routeName : string, params = {}) => route(routeName,params,false);
 
 export const sideMenuItemData: MenuItem[] = [
     {
@@ -22,6 +22,7 @@ export const sideMenuItemData: MenuItem[] = [
             }, 
             { 
                 label: 'Roles & Permissions',
+                url: basicRoute('role.browse'),
             }, 
             { 
                 label: 'User Activity',

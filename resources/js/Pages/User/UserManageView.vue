@@ -1,22 +1,31 @@
 <template>
-
     <Head title="User Manage" />
     <AdminLayout title="User Manage" :breadcrumbs>
         <template #action>
             <Button label="Add User" icon="pi pi-plus" @click="addUserAction" />
         </template>
-        <DataTable :value="dtHandler?.loadedData?.data" v-model:selection="selectedData" v-model:filters="filters"
-            scrollable paginator dataKey="id" filterDisplay="row" :rows="dtHandler.size" :loading="dtHandler?.loading"
-            :totalRecords="dtHandler?.loadedData?.totalRecords" :first="(dtHandler.page - 1) * dtHandler.size"
-            @filter="dtHandler?.onFilter" @sort="dtHandler?.onSort" @page="dtHandler?.onPage" :lazy="true" class="mt-6">
-            <template #empty>
-                <div class="py-4 flex justify-center">
-                    No Users Data.
-                </div>
-            </template>
-            <template #header>
-                <div class="flex justify-end">
-                    <Button severity="contrast" variant="text" icon="pi pi-sync" @click="dtHandler.loadData" />
+        <AppDataTableServer
+            :handler="dtHandler"
+            v-model:selection="selectedData"
+            :filters="filters"
+            dataKey="id"
+            emptyMessage="No Users Data."
+        >
+            <template #header-start>
+                <div v-if="selectedData?.length > 0">
+                    <div class="border border-gray-300 rounded-lg px-2 flex items-center">
+                        <div class="font-bold">
+                            <Button icon="pi pi-times" variant="text" severity="secondary" @click="selectedData=[]" rounded/>
+                            <span>{{ selectedData.length }} selected</span>
+                        </div>
+                        <Divider layout="vertical" />
+                        <div>
+                            <Button rounded icon="pi pi-user-plus" variant="text" severity="secondary" v-tooltip.bottom="'Assign Role'"/>
+                            <Button rounded icon="pi pi-download" variant="text" severity="secondary" v-tooltip.bottom="'Download Data'"/>
+                            <Button rounded icon="pi pi-trash" variant="text" severity="secondary" v-tooltip.bottom="'Delete User'"/>
+                            <Button rounded icon="pi pi-ellipsis-v" variant="text" severity="secondary" v-tooltip.bottom="'More Action'"/>
+                        </div>
+                    </div>
                 </div>
             </template>
             <Column selectionMode="multiple" headerStyle="width: 3rem" />
@@ -59,21 +68,21 @@
                     <div class="flex gap-2">
                         <Button icon="pi pi-ellipsis-v" severity="secondary" variant="text" rounded
                             @click="(e) => { $refs.op?.toggle(e); selectedRowData = slotProps.data; }" />
-                        <Popover ref="op" :key="slotProps.data.id">
-                            <div class="flex flex-col gap-1 w-48">
-                                <span class="font-bold">Options</span>
-                                <Button icon="pi pi-pen-to-square" severity="secondary" variant="text"
-                                    class="w-full flex justify-start" label="Edit Users" size="small"
-                                    @click="editUserAction" />
-                                <Button icon="pi pi-trash" severity="danger" variant="text"
-                                    class="w-full flex justify-start" label="Delete Users" size="small"
-                                    @click="deleteUserAction" />
-                            </div>
-                        </Popover>
-                    </div>
-                </template>
-            </Column>
-        </DataTable>
+                        </div>
+                    </template>
+                </Column>
+            </AppDataTableServer>
+            <Popover ref="op">
+                <div class="flex flex-col gap-1 w-48">
+                    <span class="font-bold">Options</span>
+                    <Button icon="pi pi-pen-to-square" severity="secondary" variant="text"
+                        class="w-full flex justify-start" label="Edit Users" size="small"
+                        @click="editUserAction" />
+                    <Button icon="pi pi-trash" severity="danger" variant="text"
+                        class="w-full flex justify-start" label="Delete Users" size="small"
+                        @click="deleteUserAction" />
+                </div>
+            </Popover>
     </AdminLayout>
     <UserFormModal ref="userFormModalRef" @data-change="dtHandler.loadData" />
 </template>
@@ -81,11 +90,12 @@
 import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { FilterMatchMode } from '@primevue/core/api';
-import { onMounted, ref, Ref } from 'vue';
+import { ref, Ref } from 'vue';
 import { MenuItem } from 'primevue/menuitem';
-import UserFormModal from './UserFormModal.vue';
+import UserFormModal from './Components/UserFormModal.vue';
 import { DataTableFilterMetaData } from 'primevue';
-import { DataTableHandler } from '@/Core/Handlers/data-table-handler';
+import { createDataTableHandler } from '@/Core/Handlers/data-table-handler';
+import AppDataTableServer from '@/Components/AppDataTableServer.vue';
 
 const breadcrumbs: Ref<MenuItem[]> = ref([
     {
@@ -100,7 +110,7 @@ const deleteUserAction = () => userFormModalRef.value.deleteAction(selectedRowDa
 
 // Datatable
 const selectedData = ref();
-const dtHandler = ref(new DataTableHandler(route('user.data_table')));
+const dtHandler = createDataTableHandler(route('user.data_table'));
 
 const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },

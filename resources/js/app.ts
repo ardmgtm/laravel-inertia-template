@@ -11,6 +11,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import customPreset from './Core/Configs/custom-themes';
 import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
+import Tooltip from 'primevue/tooltip';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -37,6 +38,7 @@ createInertiaApp({
                     },
                 },
             })
+            .directive('tooltip', Tooltip)
             .use(ZiggyVue)
             .use(ToastService)
             .use(ConfirmationService)

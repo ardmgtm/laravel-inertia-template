@@ -5,93 +5,95 @@ import { ref, Ref } from "vue";
 interface DataTableRequest {
     page: number;
     size: number;
-    sorts?: Array<any>;
-    filters?: Array<any>;
+    sorts?: any[];
+    filters?: any[];
 }
 
 interface DataTableResponse {
-    data: Array<any>;
+    data: any[];
     totalRecords: number;
 }
 
-class DataTableHandler {
-    private readonly url: string;
+interface DataTableHandler {
     loading: Ref<boolean>;
     page: number;
     size: number;
     filters: { [key: string]: DataTableFilterMetaData };
     loadedData: Ref<DataTableResponse>;
-    private readonly request: DataTableRequest;
+    loadData: () => void;
+    onSort: (event: DataTableSortEvent) => void;
+    onFilter: (event: DataTableFilterEvent) => void;
+    onPage: (event: DataTablePageEvent) => void;
+    url: string;        // Missing property
+    request: DataTableRequest;   // Missing property
+}
+function createDataTableHandler(url: string, request: unknown = {}): DataTableHandler {
+    const handler = {
+        loading: ref(false),
+        page: 1,
+        size: 10,
+        filters: {},
+        loadedData: ref({ data: [], totalRecords: 0 }),
+        url,
+        request: { page: 1, size: 10, filters:[], sorts:[] } as DataTableRequest,
+        
+        loadData: () => {
+            handler.loading.value = true;
+            axios.get(handler.url, {
+                params: handler.request
+            }).then((response) => {
+                handler.loadedData.value = {
+                    data: response.data.data,
+                    totalRecords: response.data.totalRecords
+                };
+            }).catch(error => {
+                console.error('Error loading data', error);
+                throw error;
+            }).finally(() => {
+                handler.loading.value = false;
+            });
+        },
 
-    constructor(url: string) {
-        this.url = url;
-        this.page = 1;
-        this.size = 10;
-        this.loading = ref(false);
-        this.loadedData = ref({ data: [], totalRecords: 0 });
-        this.filters = {};
-        this.request = {
-            page: 1,
-            size: 10,
-            sorts: [],
-            filters: []
-        };
-        this.loadData();
-    }
+        onSort: (event: DataTableSortEvent) => {
+            handler.loading.value = true;
+            const field = event.sortField;
+            let sortOrder = null;
 
-    loadData = (): void => {
-        this.loading.value = true;
-        axios.get(this.url, {
-            params: this.request
-        }).then((response) => {
-            this.loadedData.value = {
-                data: response.data.data,
-                totalRecords: response.data.totalRecords
-            };
-        }).catch(error => {
-            console.error('Error loading data', error);
-            throw error;
-        }).finally(() => {
-            this.loading.value = false;
-        });
-    }
+            if (event.sortOrder === 1) {
+                sortOrder = 'asc';
+            } else if (event.sortOrder === -1) {
+                sortOrder = 'desc';
+            }
 
-    onSort = (event: DataTableSortEvent): void => {
-        this.loading.value = true;
-        const field = event.sortField;
-        let sortOrder = null;
+            handler.request.sorts = [field, sortOrder];
+            handler.loadData();
+        },
 
-        if (event.sortOrder === 1) {
-            sortOrder = 'asc';
-        } else if (event.sortOrder === -1) {
-            sortOrder = 'desc';
+        onFilter: (event: DataTableFilterEvent) => {
+            let filters = event.filters as { [key: string]: DataTableFilterMetaData };
+            handler.request.filters = Object.entries(filters)
+                .filter(([_, filterMeta]) => filterMeta.value !== null && filterMeta.value !== undefined)
+                .map(([field, filterMeta]) => [
+                    field,
+                    filterMeta.matchMode,
+                    filterMeta.value
+                ]);
+
+            handler.request.page = 1;
+            handler.loadData();
+        },
+
+        onPage: (event: DataTablePageEvent) => {
+            handler.page = event.page + 1;
+            handler.size = event.rows;
+            handler.request.page = event.page + 1;
+            handler.request.size = event.rows;
+            handler.loadData();
         }
+    };
 
-        this.request.sorts = [field, sortOrder];
-        this.loadData();
-    }
-
-    onFilter = (event: DataTableFilterEvent): void => {
-        let filters = event.filters as { [key: string]: DataTableFilterMetaData };
-        this.request.filters = Object.entries(filters)
-            .filter(([_, filterMeta]) => filterMeta.value !== null && filterMeta.value !== undefined)
-            .map(([field, filterMeta]) => [
-                field,
-                filterMeta.matchMode,
-                filterMeta.value
-            ]);
-
-        this.request.page = 1;
-        this.loadData();
-    }
-
-    onPage = (event: DataTablePageEvent): void => {
-        this.page = event.page + 1;
-        this.size = event.rows;
-        this.request.page = event.page + 1;
-        this.request.size = event.rows;
-        this.loadData();
-    }
+    return handler;
 }
 
-export { DataTableHandler };
+export type { DataTableHandler };
+export { createDataTableHandler };

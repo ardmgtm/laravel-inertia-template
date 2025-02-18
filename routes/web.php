@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\RoleAndPermissionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,6 +21,9 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/users/{user}','destroy')->name('user.delete');
 
         Route::get('/users/data-table','dataTable')->name('user.data_table');
+    });
+    Route::controller(RoleAndPermissionController::class)->group(function(){
+        Route::get('/user-roles','index')->name('role.browse');
     });
 });
 
