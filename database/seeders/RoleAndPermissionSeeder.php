@@ -3,12 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class RolesAndPermissionsSeeder extends Seeder
+class RoleAndPermissionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -39,6 +38,12 @@ class RolesAndPermissionsSeeder extends Seeder
         $superadminRole->givePermissionTo(Permission::all());
         $superadminUser = User::where('username','admin')->first();
         $superadminUser->assignRole('superadmin');
+
+        Role::updateOrCreate([
+            'name' => 'Viewer'
+        ], [
+            'guard_name' => 'web'
+        ]);
     }
 
     private function getPermissionList()

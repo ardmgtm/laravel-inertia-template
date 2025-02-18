@@ -24,6 +24,12 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::controller(RoleAndPermissionController::class)->group(function(){
         Route::get('/user-roles','index')->name('role.browse');
+        Route::post('/role', 'create')->name('role.create')->can('role.create');
+        Route::put('/role/{role}', 'update')->name('role.update')->can('role.update');
+        Route::delete('/role/{role}', 'delete')->name('role.delete')->can('role.delete');
+        Route::get('/role/{role}/permissions', 'getRolePermission')->name('role.permission_list')->can('role.browse');
+        Route::get('/role/{role}/users', 'getRoleUser')->name('role.user_list')->can('role.browse');
+        Route::put('/role/{role}/switch-permission', 'switchPermission')->name('role.switch_permission')->can('role.assign_permission');
     });
 });
 

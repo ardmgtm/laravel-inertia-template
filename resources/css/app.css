@@ -45,6 +45,16 @@
       @apply !text-primary;
     }
   }
+
+  .fadetransition-enter-active,
+  .fadetransition-leave-active {
+    transition: opacity 0.2s ease;
+  }
+
+  .fadetransition-enter-from,
+  .fadetransition-leave-to {
+    opacity: 0;
+  }
 }
 
 /* Utility layer */

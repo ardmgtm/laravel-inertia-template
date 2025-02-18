@@ -1,18 +1,409 @@
 <template>
-<Head title="Role Manage" />
-<AdminLayout title="Role Manage" :breadcrumbs>
-</AdminLayout>
+
+    <Head title="Role Manage" />
+    <AdminLayout title="Role Manage" :breadcrumbs>
+        <div class="flex">
+            <div class="w-80 mr-4 flex-flex-col flex-grow-0 flex-shrink-0">
+                <div class="flex justify-end mb-4 gap-4">
+                    <div class="flex-1">
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText placeholder="Search" v-model="search" fluid />
+                        </IconField>
+                    </div>
+                    <div class="flex-none">
+                        <Button icon="pi pi-plus" @click="addUserRoleAction" v-if="can('role.create')"
+                            v-tooltip.bottom="'Add User Role'" />
+                    </div>
+                </div>
+                <div class="h-[500px] overflow-y-scroll scroll pr-2">
+                    <div v-if="isRolesEmpty" class="h-full w-full flex items-center justify-center">
+                        <span class="text-gray-700 italic">
+                            No Data
+                        </span>
+                    </div>
+                    <div v-else>
+                        <div v-ripple class="p-4 rounded-xl border border-gray-200  w-full mb-2 cursor-pointer" :class="[
+                            { 'bg-primary': role.id == idSelectedRole },
+                            { 'bg-white hover:bg-primary-surface': role.id != idSelectedRole },
+                        ]" v-for="role in filteredRoles" :key="role.id" @click="selectingRole(role)">
+                            <div class="flex flex-row justify-between items-center">
+                                <div class="flex flex-row items-center">
+                                    <div class="flex flex-col items-start">
+                                        <span class="font-bold text-left" :class="[
+                                            { 'text-white': role.id == idSelectedRole },
+                                            { 'text-black': role.id != idSelectedRole },
+                                        ]">
+                                            {{ role.name }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grow">
+                <div class="col-span-12 lg:col-span-4 p-4 flex-1 border border-gray-200 rounded-2xl h-full">
+                    <div class="h-[500px] w-full flex items-center justify-center flex-col" v-if="!isAnyRoleSelected">
+                        <i class="pi pi-exclamation-triangle text-[50px] text-primary"></i>
+                        <h4 class="text-xl font-bold mb-2">Tidak ada User Role yang dipilih</h4>
+                        <span class="w-56 text-center text-gray-700">
+                            Pilih role di kiri untuk melihat atau mengedit role pengguna.
+                        </span>
+                    </div>
+                    <div v-else>
+                        <Transition name="fadetransition" mode="out-in" appear>
+                            <div class="h-[500px] w-full flex items-center justify-center flex-col"
+                                v-if="permissionLoading">
+                                <ProgressSpinner stroke-width="4" />
+                            </div>
+                            <div v-else class="flex flex-col">
+                                <div class="flex flex-row justify-between items-center mb-4">
+                                    <div class="flex flex-col">
+                                        <h3 class="text-xl font-bold">{{ selectedRole.name }}</h3>
+                                        <span class="text-sm text-gray-800">
+                                            {{ totalPermissionGranted }} Permission Granted | {{ totalUser }} Users
+                                        </span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded
+                                            v-tooltip.bottom="'Action'" />
+                                    </div>
+                                </div>
+                                <Tabs :value="activeTab">
+                                    <TabList>
+                                        <Tab value="permission">Permission</Tab>
+                                        <Tab value="user">User</Tab>
+                                    </TabList>
+                                    <TabPanels>
+                                        <TabPanel value="permission">
+                                            <div class="grid grid-cols-1 xl:grid-cols-2">
+                                                <div class="bg-white rounded-lg p-4 mx-2 mb-2 border border-gray-200"
+                                                    v-for="permissionList, permissionGroupName in rolePermissions">
+                                                    <div class="flex items-center justify-between">
+                                                        <h5 class="text-xl font-bold">
+                                                            {{ parsePermissionName(permissionGroupName) }}
+                                                        </h5>
+                                                        <ToggleSwitch
+                                                            :disabled="!can('role.assign_permission') || selectedRole.id == 1"
+                                                            :model-value="permissionList.every(permission => permission.role_has_permission == 1) ? 1 : 0"
+                                                            :true-value="1" :false-value="0"
+                                                            @value-change="(newValue) => permissionList.forEach(function (permission) { permission.role_has_permission = newValue; onSwitchChange(selectedRole.id, permission, newValue) })" />
+                                                    </div>
+                                                    <Divider />
+                                                    <div class="grid grid-cols-1 2xl:grid-cols-2">
+                                                        <div class="flex flex-row justify-between items-center px-4 py-2"
+                                                            v-for="permissionObj in permissionList">
+                                                            <span class="text-gray-800">{{
+                                                                parsePermissionName(permissionObj.name) }}</span>
+                                                            <ToggleSwitch
+                                                                :disabled="!can('role.assign_permission') || selectedRole.id == 1"
+                                                                :true-value="1" :false-value="0"
+                                                                v-model="permissionObj.role_has_permission"
+                                                                @value-change="(newValue) => { onSwitchChange(selectedRole.id, permissionObj, newValue); console.log(newValue); }" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </TabPanel>
+                                        <TabPanel value="user">
+                                            <div class="flex justify-between">
+                                                <div>
+                                                </div>
+                                                <IconField>
+                                                    <InputIcon>
+                                                        <i class="pi pi-search" />
+                                                    </InputIcon>
+                                                    <InputText placeholder="Search" v-model="searchUser" fluid />
+                                                </IconField>
+                                            </div>
+                                            <div v-if="userPaginated.length > 0" class="h-full">
+                                                <div class="mb-4">
+                                                    <div v-for="user in userPaginated" :key="user.id">
+                                                        <div
+                                                            class="shrink-0 rounded-lg py-2 px-5 border gap-4 border-gray-200 flex align-middle items-center bg-white group-hover:bg-primary-200 cursor-pointer mt-2">
+                                                            <AppLetterAvatar :name="user.name" />
+                                                            <div class="flex items-center">
+                                                                <div class=" flex flex-col text-gray-900">
+                                                                    <div class="truncate text-md font-bold">
+                                                                        {{ user.name }}
+                                                                    </div>
+                                                                    <div class="truncate text-xs font-thin">
+                                                                        {{ user.username }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex justify-center">
+                                                    <Paginator :rows="10" :totalRecords="filteredUserCount"
+                                                        @page="(e) => userPage = e.page"
+                                                        template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink" />
+                                                </div>
+                                            </div>
+                                            <div v-else>
+                                                <div class="flex h-20 items-center justify-center italic text-gray-800">
+                                                    No User
+                                                </div>
+                                            </div>
+                                        </TabPanel>
+                                    </TabPanels>
+                                </Tabs>
+                            </div>
+                        </Transition>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AdminLayout>
 </template>
 <script setup lang="ts">
+import AppLetterAvatar from '@/Components/AppLetterAvatar.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { useToast } from 'primevue';
 import { MenuItem } from 'primevue/menuitem';
-import { ref, Ref } from 'vue';
+import { computed, ComputedRef, ref, Ref } from 'vue';
+
+const toast = useToast();
+
+//TODO : Implement can
+const can = (params: any) => true;
 
 const breadcrumbs: Ref<MenuItem[]> = ref([
     {
         label: 'Role Management',
-        url: route('user.browse'),
+        url: route('role.browse'),
     }
 ])
+// CRUD user role
+const dialogFormRoleVisible = ref(false);
+const editMode = ref(false);
+const formUserRoleRef = ref();
+const search = ref('');
+const formUserRole = useForm({
+    id: null,
+    name: null,
+});
+const roles: ComputedRef<any[]> = computed(() => usePage().props.roles as any[] ?? []);
+const filteredRoles = computed(() => {
+    return roles.value.filter(role => role.name.toLowerCase().includes(search.value.toLowerCase()));
+});
+const isRolesEmpty = computed(() => filteredRoles.value.length < 1);
+
+function closeDialog() {
+    dialogFormRoleVisible.value = false;
+}
+
+function addUserRoleAction() {
+    dialogFormRoleVisible.value = true;
+    editMode.value = false;
+
+    formUserRole.id = null;
+    formUserRole.name = null;
+}
+async function addUserRoleSubmitAction() {
+    // await formUserRoleRef.value.validate((valid, _) => {
+    //     if (valid) {
+    //         dialogFormRoleVisible.value = false;
+    //         formUserRole.post(route('role.create'), {
+    //             onSuccess: (response) => {
+    //                 ElMessage({
+    //                     message: response.props.flash.message,
+    //                     type: 'success',
+    //                 });
+    //                 router.reload({ only: ['roles'] });
+    //             },
+    //             onError: (errors) => {
+    //                 ElMessage({
+    //                     message: 'Something wrong !!!',
+    //                     type: 'error',
+    //                 });
+    //             }
+    //         });
+    //     }
+    // });
+}
+function editUserRoleAction(dataRole: any) {
+    dialogFormRoleVisible.value = true;
+    editMode.value = true;
+
+    formUserRole.id = dataRole.id;
+    formUserRole.name = dataRole.name;
+}
+async function editUserRoleSubmitAction() {
+    // await formUserRoleRef.value.validate(async (valid, _) => {
+    //     if (valid) {
+    //         dialogFormRoleVisible.value = false;
+    //         formUserRole.put(route('role.update', formUserRole.id), {
+    //             onSuccess: (response) => {
+    //                 ElMessage({
+    //                     message: response.props.flash.message,
+    //                     type: 'success',
+    //                 });
+    //                 router.reload({ only: ['roles'] });
+    //             },
+    //             onError: (errors) => {
+    //                 console.log(errors);
+    //                 ElMessage({
+    //                     message: errors.message ?? "Failed to update role !",
+    //                     type: 'error',
+    //                 });
+    //             }
+    //         });
+    //     }
+    // });
+}
+function deleteUserRoleAction(dataRole: any) {
+    // ElMessageBox.confirm(
+    //     'Apakah anda yakin untuk mengahapus user ini ?',
+    //     'Warning',
+    //     {
+    //         confirmButtonText: 'OK',
+    //         cancelButtonText: 'Cancel',
+    //         type: 'warning',
+    //     }
+    // )
+    //     .then(() => {
+    //         roleUsers.value = null;
+    //         idSelectedRole.value = null;
+    //         router.delete(route('role.delete', dataRole.id), {
+    //             onSuccess: (response) => {
+    //                 ElMessage({
+    //                     message: response.props.flash.message,
+    //                     type: 'success',
+    //                 });
+    //                 // router.reload();
+    //             },
+    //             onError: (errors) => {
+    //                 ElMessage({
+    //                     message: errors.message,
+    //                     type: 'error',
+    //                 });
+    //             }
+    //         });
+    //     })
+    //     .catch(() => {
+    //         ElMessage({
+    //             type: 'info',
+    //             message: 'Tidakan dibatalkan',
+    //         })
+    //     });
+}
+
+// Role permission & User
+const activeTab = ref('permission');
+const idSelectedRole = ref(null);
+const rolePermissions: Ref<any[]> = ref([]);
+const roleUsers: Ref<any[]> = ref([] as any[]);
+const totalPermissionGranted = ref(0);
+const totalUser = ref(0);
+const selectedRole = computed(() => roles.value.filter(role => role.id == idSelectedRole.value)[0]);
+const isAnyRoleSelected = computed(() => idSelectedRole.value != null);
+const permissionLoading = ref(false);
+
+function selectingRole(dataRole: any) {
+    idSelectedRole.value = dataRole.id;
+    permissionLoading.value = true;
+    userPage.value = 1;
+    activeTab.value = 'permission';
+    axios.get(route('role.permission_list', dataRole.id))
+        .then((response) => {
+            let responseData = response.data;
+            rolePermissions.value = responseData.data.permissions;
+            totalPermissionGranted.value = responseData.data.total_assigned_permission;
+        })
+        .catch((error) => {
+            let errorResponseData = error.response.data;
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: errorResponseData.message,
+                life: 3000
+            });
+        })
+        .finally(() => {
+            setTimeout(() => {
+                permissionLoading.value = false;
+            }, 500)
+        });
+    axios.get(route('role.user_list', dataRole.id))
+        .then((response) => {
+            let responseData = response.data;
+            roleUsers.value = responseData.data.users;
+            totalUser.value = responseData.data.user_count;
+        })
+        .catch((error) => {
+            let errorResponseData = error.response.data;
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: errorResponseData.message,
+                life: 3000
+            });
+        })
+        .finally(() => {
+            setTimeout(() => {
+                permissionLoading.value = false;
+            }, 500)
+        });
+}
+function parsePermissionName(str: string) {
+    let text = str.split('.').slice(-1)[0];
+    let words = text.split('_');
+    let result = words.map(word => word.charAt(0).toLowerCase() + word.slice(1)).join(' ');
+    result = result.charAt(0).toUpperCase() + result.slice(1);
+    return result;
+}
+function onSwitchChange(idRole: number, permissionData: any, newValue: any) {
+    const formData = {
+        id_permission: permissionData.id,
+        permission_name: permissionData.name,
+        value: newValue === 1,
+    };
+    return new Promise((resolve, reject) => {
+        return axios.put(route('role.switch_permission', idRole), formData)
+            .then((response) => {
+                let responseData = response.data;
+                totalPermissionGranted.value = newValue == 0 ? totalPermissionGranted.value - 1 : totalPermissionGranted.value + 1;
+                toast.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: responseData.message,
+                    life: 1000
+                });
+                return resolve(true);
+            })
+            .catch((error) => {
+                let errorResponseData = error.response.data;
+                permissionData.role_has_permission = newValue == 0 ? 1 : 0;
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: errorResponseData.message,
+                    life: 3000
+                });
+                return reject(new Error('error'));
+            });
+    });
+}
+
+// USER PAGINATION
+const userPage = ref(1);
+const searchUser = ref('');
+const filteredUser = computed(() => {
+    return roleUsers.value?.filter(user => user.name.toLowerCase().includes(searchUser.value.toLowerCase())) ?? [];
+});
+const filteredUserCount = computed(() => filteredUser.value.length);
+const userPaginated = computed(() => {
+    const startIndex = (userPage.value - 1) * 10;
+    const endIndex = startIndex + 10;
+    const paginatedUsers = filteredUser.value?.slice(startIndex, endIndex) ?? [];
+    return paginatedUsers;
+});
 </script>
