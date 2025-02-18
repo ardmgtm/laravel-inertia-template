@@ -7,7 +7,7 @@
                 <label class="flex-none font-bold w-48" for="name">Name</label>
                 <div class="flex-1">
                     <InputText id="name" placeholder="Name" v-model="formData.name" type="text" class="w-full" fluid
-                        @change="clearError('name')" />
+                        @input="clearError('name')" />
                     <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
                         {{ $field.error?.message ?? formErrors?.name }}
                     </Message>
@@ -17,7 +17,7 @@
                 <label class="flex-none font-bold w-48" for="email">Email</label>
                 <div class="flex-1">
                     <InputText id="email" placeholder="Email" v-model="formData.email" type="text" class="w-full"
-                        autocomplete="off" fluid @change="clearError('email')" />
+                        autocomplete="off" fluid @input="clearError('email')" />
                     <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
                         {{ $field.error?.message ?? formErrors?.email }}
                     </Message>
@@ -27,7 +27,7 @@
                 <label class="flex-none font-bold w-48" for="username">Username</label>
                 <div class="flex-1">
                     <InputText id="username" placeholder="Username" v-model="formData.username" type="text"
-                        autocomplete="off" class="w-full" fluid @change="clearError('username')" />
+                        autocomplete="off" class="w-full" fluid @input="clearError('username')" />
                     <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
                         {{ $field.error?.message ?? formErrors?.username }}
                     </Message>
@@ -37,7 +37,7 @@
                 <label class="flex-none font-bold w-48" for="password">Password</label>
                 <div class="flex-1">
                     <Password id="password" placeholder="Password" v-model="formData.password" :feedback="false"
-                        autocomplete="off" class="w-full" toggleMask fluid @change="clearError('password')" />
+                        autocomplete="off" class="w-full" toggleMask fluid @input="clearError('password')" />
                     <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
                         {{ $field.error?.message ?? formErrors?.password }}
                     </Message>
@@ -138,7 +138,6 @@ function editAction(data: any) {
     formData.username = data.username;
 }
 function editSubmitAction(event: FormSubmitEvent) {
-    console.log(event);
     if (event.valid) {
         loading.value = true;
         formData.put(route('user.update', { id: formData.id }), {
@@ -153,6 +152,7 @@ function editSubmitAction(event: FormSubmitEvent) {
                 emit('data-change');
             },
             onError: (errors) => {
+                formErrors.value = errors;
                 if (errors.message) {
                     toast.add({
                         severity: 'error',

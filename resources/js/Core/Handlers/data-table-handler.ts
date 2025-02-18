@@ -47,7 +47,6 @@ function createDataTableHandler(url: string, request: unknown = {}): DataTableHa
                     totalRecords: response.data.totalRecords
                 };
             }).catch(error => {
-                console.error('Error loading data', error);
                 throw error;
             }).finally(() => {
                 handler.loading.value = false;

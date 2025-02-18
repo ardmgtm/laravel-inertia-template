@@ -22,9 +22,9 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username'  => ['required','string'],
-            'name'      => ['required','string'],
-            'email'     => ['nullable','email'],
+            'username'  => ['required', 'string', 'unique:users,username,' . $this->route('user')->id],
+            'name'      => ['required', 'string'],
+            'email'     => ['nullable', 'email', 'unique:users,email,' . $this->route('user')->id],
         ];
     }
 }
