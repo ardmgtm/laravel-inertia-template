@@ -1,5 +1,4 @@
 <template>
-
     <Head title="Role Manage" />
     <AdminLayout title="Role Manage" :breadcrumbs>
         <div class="flex">

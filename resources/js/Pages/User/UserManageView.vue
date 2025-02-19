@@ -1,5 +1,4 @@
 <template>
-
     <Head title="User Manage" />
     <AdminLayout title="User Manage" :breadcrumbs>
         <template #action>
