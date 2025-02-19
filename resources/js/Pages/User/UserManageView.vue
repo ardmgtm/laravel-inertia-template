@@ -31,35 +31,31 @@
             </template>
             <Column selectionMode="multiple" headerStyle="width: 3rem" />
             <Column field="name" header="Name" class="min-w-72" sortable>
-                <template #loading>
-                    <div class="flex items-center" :style="{ height: '17px', 'flex-grow': '1', overflow: 'hidden' }">
-                        <Skeleton width="60%" height="1rem" />
-                    </div>
-                </template>
                 <template #filter="{ filterModel, filterCallback }">
-                    <InputText v-model="filterModel.value" type="text" @change="filterCallback()" class="w-full" />
+                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
             <Column field="username" header="Username" class="min-w-72" sortable>
                 <template #filter="{ filterModel, filterCallback }">
-                    <InputText v-model="filterModel.value" type="text" @change="filterCallback()" class="w-full" />
+                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
             <Column field="email" header="Email" class="min-w-72" sortable>
                 <template #filter="{ filterModel, filterCallback }">
-                    <InputText v-model="filterModel.value" type="text" @change="filterCallback()" class="w-full" />
+                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false">
+            <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false" sortable>
                 <template #body="slotProps">
-                    <Tag :severity="slotProps.data.is_active ? 'success' : 'danger'"
+                    <Tag icon="pi pi-circle-fill" :severity="slotProps.data.is_active ? 'success' : 'danger'"
                         :value="slotProps.data.is_active ? 'Active' : 'Inactive'" />
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
-                    <Select v-model="filterModel.value" option-value="value" option-label="label"
-                        @change="filterCallback()" :options="statusOptions" class="min-w-32">
+                    <Select size="small" v-model="filterModel.value" option-value="value" option-label="label"
+                        @change="filterCallback()" :options="statusOptions" class="min-w-24">
                         <template #option="slotProps">
-                            <Tag :value="slotProps.option.label" :severity="slotProps.option.severity" />
+                            <Tag icon="pi pi-circle-fill" :value="slotProps.option.label"
+                                :severity="slotProps.option.severity" />
                         </template>
                     </Select>
                 </template>
@@ -83,11 +79,8 @@
             </div>
         </Popover>
     </AdminLayout>
-    <UserFormModal 
-        ref="userFormModalRef" 
-        @data-created="dtHandler.loadData" 
-        @data-updated="dtHandler.loadData"
-        @data-deleted="dtHandler.loadData"/>
+    <UserFormModal ref="userFormModalRef" @data-created="dtHandler.loadData" @data-updated="dtHandler.loadData"
+        @data-deleted="dtHandler.loadData" />
 </template>
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
