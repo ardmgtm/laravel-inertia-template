@@ -64,7 +64,13 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded
-                                            v-tooltip.bottom="'Action'" />
+                                            v-tooltip.bottom="'Action'" @click="(e)=>$refs.roleMenu?.toggle(e)"/>
+                                        <Popover ref="roleMenu">
+                                            <div class="flex flex-col">
+                                                <Button icon="pi pi-pen-to-square" variant="text" severity="secondary" label="Edit User Role" class="w-full flex justify-start" @click="editUserRoleAction"/>
+                                                <Button icon="pi pi-trash" variant="text" severity="danger" label="Delete User Role" class="w-full flex justify-start" @click="deleteUserRoleAction"/>
+                                            </div>
+                                        </Popover>
                                     </div>
                                 </div>
                                 <Tabs :value="activeTab">
@@ -214,6 +220,7 @@ const editUserRoleAction = () => {
 const deleteUserRoleAction = () => {
     if (selectedRole.value) {
         userRoleFormModalRef.value?.deleteAction(selectedRole.value);
+        idSelectedRole.value = null;
     }
 };
 
