@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Responses\DataTableResponse;
+use App\Http\Responses\InertiaFailedResponse;
+use App\Http\Responses\InertiaSuccessResponse;
 use App\Models\User;
-use App\Services\DataTableAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -25,12 +27,10 @@ class UserController extends Controller
         try {
             User::create($data);
             DB::commit();
-            return redirect()->back()->with('message', 'Success to create user');
+            return InertiaSuccessResponse::redirectBack('Success to create user');
         } catch (Throwable $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors([
-                'message' => 'Failed to create user'
-            ]);
+            return InertiaFailedResponse::redirectBack('Failed to create user');
         }
     }
 
@@ -41,12 +41,10 @@ class UserController extends Controller
         try {
             $user->update($data);
             DB::commit();
-            return redirect()->back()->with('message', 'Success to update user');
+            return InertiaSuccessResponse::redirectBack('Success to update user');
         } catch (Throwable $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors([
-                'message' => 'Failed to update user'
-            ]);
+            return InertiaFailedResponse::redirectBack('Failed to update user');
         }
     }
 
@@ -56,19 +54,16 @@ class UserController extends Controller
         try {
             $user->delete();
             DB::commit();
-            return redirect()->back()->with('message', 'Success to delete user');
+            return InertiaSuccessResponse::redirectBack('Success to delete user');
         } catch (Throwable $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors([
-                'message' => 'Failed to delete user'
-            ]);
+            return InertiaFailedResponse::redirectBack('Failed to delete user');
         }
     }
 
     public function dataTable(Request $request)
     {
         $query = User::query();
-        $dataLoad = DataTableAdapter::load($query, $request);
-        return response()->json($dataLoad);
+        return DataTableResponse::load($request, $query);
     }
 }

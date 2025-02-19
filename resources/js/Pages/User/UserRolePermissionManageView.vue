@@ -1,17 +1,11 @@
 <template>
-
     <Head title="Role Manage" />
     <AdminLayout title="Role Manage" :breadcrumbs>
         <div class="flex">
             <div class="w-80 mr-4 flex-flex-col flex-grow-0 flex-shrink-0">
                 <div class="flex justify-end mb-4 gap-4">
                     <div class="flex-1">
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText placeholder="Search" v-model="search" fluid />
-                        </IconField>
+                        <AppInputSearch v-model="search"/>
                     </div>
                     <div class="flex-none">
                         <Button icon="pi pi-plus" @click="addUserRoleAction" v-if="can('role.create')"
@@ -85,11 +79,11 @@
                                                     v-for="permissionList, permissionGroupName in rolePermissions">
                                                     <div class="flex items-center justify-between">
                                                         <h5 class="text-xl font-bold">
-                                                            {{ parsePermissionName(permissionGroupName) }}
+                                                            {{ parsePermissionName(permissionGroupName as string) }}
                                                         </h5>
                                                         <ToggleSwitch
                                                             :disabled="!can('role.assign_permission') || selectedRole.id == 1"
-                                                            :model-value="permissionList.every(permission => permission.role_has_permission == 1) ? 1 : 0"
+                                                            :model-value="permissionList.every(permission => permission.role_has_permission == 1)"
                                                             :true-value="1" :false-value="0"
                                                             @value-change="(newValue) => permissionList.forEach(function (permission) { permission.role_has_permission = newValue; onSwitchChange(selectedRole.id, permission, newValue) })" />
                                                     </div>
@@ -97,12 +91,13 @@
                                                     <div class="grid grid-cols-1 2xl:grid-cols-2">
                                                         <div class="flex flex-row justify-between items-center px-4 py-2"
                                                             v-for="permissionObj in permissionList">
-                                                            <span class="text-gray-800">{{
-                                                                parsePermissionName(permissionObj.name) }}</span>
+                                                            <span class="text-gray-800">
+                                                                {{ parsePermissionName(permissionObj.name) }}
+                                                            </span>
                                                             <ToggleSwitch
                                                                 :disabled="!can('role.assign_permission') || selectedRole.id == 1"
                                                                 :true-value="1" :false-value="0"
-                                                                v-model="permissionObj.role_has_permission"
+                                                                v-model="permissionObj.role_has_permission as string"
                                                                 @value-change="(newValue) => { onSwitchChange(selectedRole.id, permissionObj, newValue); console.log(newValue); }" />
                                                         </div>
                                                     </div>
@@ -160,15 +155,21 @@
             </div>
         </div>
     </AdminLayout>
+    <UserRoleFormModal ref="userRoleFormModalRef"/>
 </template>
 <script setup lang="ts">
-import AppLetterAvatar from '@/Components/AppLetterAvatar.vue';
+import AppLetterAvatar from '@/Components/AppAvatarLetter.vue';
+import { User } from '@/Core/Models/user';
+import { PermissionGroups, PermissionItem, UserRole } from '@/Core/Models/user-role';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { useToast } from 'primevue';
 import { MenuItem } from 'primevue/menuitem';
 import { computed, ComputedRef, ref, Ref } from 'vue';
+import UserRoleFormModal from './Components/UserRoleFormModal.vue';
+import { FormModalExpose } from '@/Core/Models/form-modal';
+import AppInputSearch from '@/Components/AppInputSearch.vue';
 
 const toast = useToast();
 
@@ -181,133 +182,42 @@ const breadcrumbs: Ref<MenuItem[]> = ref([
         url: route('role.browse'),
     }
 ])
-// CRUD user role
-const dialogFormRoleVisible = ref(false);
-const editMode = ref(false);
-const formUserRoleRef = ref();
-const search = ref('');
-const formUserRole = useForm({
-    id: null,
-    name: null,
-});
-const roles: ComputedRef<any[]> = computed(() => usePage().props.roles as any[] ?? []);
+const roles: ComputedRef<UserRole[]> = computed(() => usePage().props.roles as UserRole[]);
+const search: Ref<string> = ref('');
+
 const filteredRoles = computed(() => {
     return roles.value.filter(role => role.name.toLowerCase().includes(search.value.toLowerCase()));
 });
 const isRolesEmpty = computed(() => filteredRoles.value.length < 1);
 
-function closeDialog() {
-    dialogFormRoleVisible.value = false;
-}
-
-function addUserRoleAction() {
-    dialogFormRoleVisible.value = true;
-    editMode.value = false;
-
-    formUserRole.id = null;
-    formUserRole.name = null;
-}
-async function addUserRoleSubmitAction() {
-    // await formUserRoleRef.value.validate((valid, _) => {
-    //     if (valid) {
-    //         dialogFormRoleVisible.value = false;
-    //         formUserRole.post(route('role.create'), {
-    //             onSuccess: (response) => {
-    //                 ElMessage({
-    //                     message: response.props.flash.message,
-    //                     type: 'success',
-    //                 });
-    //                 router.reload({ only: ['roles'] });
-    //             },
-    //             onError: (errors) => {
-    //                 ElMessage({
-    //                     message: 'Something wrong !!!',
-    //                     type: 'error',
-    //                 });
-    //             }
-    //         });
-    //     }
-    // });
-}
-function editUserRoleAction(dataRole: any) {
-    dialogFormRoleVisible.value = true;
-    editMode.value = true;
-
-    formUserRole.id = dataRole.id;
-    formUserRole.name = dataRole.name;
-}
-async function editUserRoleSubmitAction() {
-    // await formUserRoleRef.value.validate(async (valid, _) => {
-    //     if (valid) {
-    //         dialogFormRoleVisible.value = false;
-    //         formUserRole.put(route('role.update', formUserRole.id), {
-    //             onSuccess: (response) => {
-    //                 ElMessage({
-    //                     message: response.props.flash.message,
-    //                     type: 'success',
-    //                 });
-    //                 router.reload({ only: ['roles'] });
-    //             },
-    //             onError: (errors) => {
-    //                 console.log(errors);
-    //                 ElMessage({
-    //                     message: errors.message ?? "Failed to update role !",
-    //                     type: 'error',
-    //                 });
-    //             }
-    //         });
-    //     }
-    // });
-}
-function deleteUserRoleAction(dataRole: any) {
-    // ElMessageBox.confirm(
-    //     'Apakah anda yakin untuk mengahapus user ini ?',
-    //     'Warning',
-    //     {
-    //         confirmButtonText: 'OK',
-    //         cancelButtonText: 'Cancel',
-    //         type: 'warning',
-    //     }
-    // )
-    //     .then(() => {
-    //         roleUsers.value = null;
-    //         idSelectedRole.value = null;
-    //         router.delete(route('role.delete', dataRole.id), {
-    //             onSuccess: (response) => {
-    //                 ElMessage({
-    //                     message: response.props.flash.message,
-    //                     type: 'success',
-    //                 });
-    //                 // router.reload();
-    //             },
-    //             onError: (errors) => {
-    //                 ElMessage({
-    //                     message: errors.message,
-    //                     type: 'error',
-    //                 });
-    //             }
-    //         });
-    //     })
-    //     .catch(() => {
-    //         ElMessage({
-    //             type: 'info',
-    //             message: 'Tidakan dibatalkan',
-    //         })
-    //     });
-}
-
 // Role permission & User
-const activeTab = ref('permission');
-const idSelectedRole = ref(null);
-const rolePermissions: Ref<any[]> = ref([]);
-const roleUsers: Ref<any[]> = ref([] as any[]);
-const totalPermissionGranted = ref(0);
-const totalUser = ref(0);
-const selectedRole = computed(() => roles.value.filter(role => role.id == idSelectedRole.value)[0]);
-const isAnyRoleSelected = computed(() => idSelectedRole.value != null);
-const permissionLoading = ref(false);
+const activeTab: Ref<string> = ref('permission');
+const idSelectedRole: Ref<number | null> = ref(null);
+const selectedRole: ComputedRef<UserRole> = computed(() => roles.value.find(role => role.id == idSelectedRole.value) as UserRole);
 
-function selectingRole(dataRole: any) {
+const rolePermissions: Ref<PermissionGroups> = ref({} as PermissionGroups);
+const totalPermissionGranted: Ref<number> = ref(0);
+
+const roleUsers: Ref<User[]> = ref([] as User[]);
+const totalUser: Ref<number> = ref(0);
+
+const isAnyRoleSelected: ComputedRef<boolean> = computed(() => idSelectedRole.value != null);
+const permissionLoading: Ref<boolean> = ref(false);
+    
+const userRoleFormModalRef = ref<FormModalExpose<UserRole>>();
+const addUserRoleAction = () => userRoleFormModalRef.value?.addAction();
+const editUserRoleAction = () => {
+    if (selectedRole.value) {
+        userRoleFormModalRef.value?.editAction(selectedRole.value);
+    }
+};
+const deleteUserRoleAction = () => {
+    if (selectedRole.value) {
+        userRoleFormModalRef.value?.deleteAction(selectedRole.value);
+    }
+};
+
+function selectingRole(dataRole: UserRole) {
     idSelectedRole.value = dataRole.id;
     permissionLoading.value = true;
     userPage.value = 1;
@@ -360,7 +270,7 @@ function parsePermissionName(str: string) {
     result = result.charAt(0).toUpperCase() + result.slice(1);
     return result;
 }
-function onSwitchChange(idRole: number, permissionData: any, newValue: any) {
+function onSwitchChange(idRole: number, permissionData: PermissionItem, newValue: any) {
     const formData = {
         id_permission: permissionData.id,
         permission_name: permissionData.name,
@@ -394,13 +304,13 @@ function onSwitchChange(idRole: number, permissionData: any, newValue: any) {
 }
 
 // USER PAGINATION
-const userPage = ref(1);
-const searchUser = ref('');
-const filteredUser = computed(() => {
+const userPage: Ref<number> = ref(1);
+const searchUser: Ref<string> = ref('');
+const filteredUser: Ref<User[]> = computed(() => {
     return roleUsers.value?.filter(user => user.name.toLowerCase().includes(searchUser.value.toLowerCase())) ?? [];
 });
-const filteredUserCount = computed(() => filteredUser.value.length);
-const userPaginated = computed(() => {
+const filteredUserCount: Ref<number> = computed(() => filteredUser.value.length);
+const userPaginated: Ref<User[]> = computed(() => {
     const startIndex = (userPage.value - 1) * 10;
     const endIndex = startIndex + 10;
     const paginatedUsers = filteredUser.value?.slice(startIndex, endIndex) ?? [];

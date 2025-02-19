@@ -52,22 +52,24 @@
 </template>
 <script setup lang="ts">
 import { router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Ref, ref } from 'vue';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
 import { FormSubmitEvent } from '@primevue/forms';
 import { useConfirm, useToast } from 'primevue';
+import { User, UserForm } from '@/Core/Models/user';
+import { FormModalExpose } from '@/Core/Models/form-modal';
 
 const toast = useToast();
 const confirm = useConfirm();
 
 const emit = defineEmits(['data-change'])
 
-const dialogVisible = ref(false);
-const editMode = ref(false);
-const loading = ref(false);
+const dialogVisible : Ref<boolean> = ref(false);
+const editMode : Ref<boolean> = ref(false);
+const loading : Ref<boolean> = ref(false);
 
-const formData = useForm({
+const formData = useForm<UserForm>({
     id: null,
     name: null,
     email: null,
@@ -89,7 +91,6 @@ function clearError(field: string) {
         delete formErrors.value[field];
     }
 }
-
 function closeDialog() {
     dialogVisible.value = false;
 }
@@ -128,7 +129,7 @@ function addSubmitAction(event: FormSubmitEvent) {
         })
     }
 }
-function editAction(data: any) {
+function editAction(data: User) {
     dialogVisible.value = true;
     editMode.value = true;
 
@@ -168,7 +169,7 @@ function editSubmitAction(event: FormSubmitEvent) {
         })
     }
 }
-function deleteAction(data: any) {
+function deleteAction(data: User) {
     confirm.require({
         message: 'Do you want to delete this user ?',
         header: 'Warning',
@@ -217,7 +218,7 @@ function deleteAction(data: any) {
     });
 }
 
-defineExpose({
+defineExpose<FormModalExpose<User>>({
     addAction,
     editAction,
     deleteAction,
