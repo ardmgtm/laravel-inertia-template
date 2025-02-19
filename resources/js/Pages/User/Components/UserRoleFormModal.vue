@@ -1,7 +1,23 @@
 <template>
+    <Dialog :header="(!editMode ? 'Add' : 'Edit') + ' User Role'" v-model:visible="dialogVisible"
+        class="w-full max-w-xl" modal>
+        <AppForm v-model="formData" label-position="left" :label-width="192" v-model:errors="formErrors"
+            @submit="(e) => !editMode ? addSubmitAction(e) : editSubmitAction(e)">
+            <AppFormField name="name" label="Name" required>
+                <AppFormInput id="name" v-model="formData.name"/>
+            </AppFormField>
 
+            <div class="flex justify-end w-full gap-2 mt-4">
+                <Button label="Cancel" severity="secondary" outlined @click.prevent="closeDialog" />
+                <Button :label="!editMode ? 'Create' : 'Update'" severity="primary" type="submit" :loading="loading" />
+            </div>
+        </AppForm>
+    </Dialog>
 </template>
 <script setup lang="ts">
+import AppForm from '@/Components/AppForm/AppForm.vue';
+import AppFormField from '@/Components/AppForm/AppFormField.vue';
+import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 import { FormModalExpose } from '@/Core/Models/form-modal';
 import { UserRole, UserRoleForm } from '@/Core/Models/user-role';
 import { router, useForm } from '@inertiajs/vue3';
@@ -12,28 +28,29 @@ import { ref } from 'vue';
 const toast = useToast();
 const confirm = useConfirm();
 
-// CRUD user role
-const dialogFormRoleVisible = ref(false);
+const dialogVisible = ref(false);
 const editMode = ref(false);
+const loading = ref(false);
 const formData = useForm<UserRoleForm>({
     id: null,
     name: null,
 });
+const formErrors = ref();
 
 function closeDialog() {
-    dialogFormRoleVisible.value = false;
+    dialogVisible.value = false;
 }
 
 function addAction() {
-    dialogFormRoleVisible.value = true;
+    dialogVisible.value = true;
     editMode.value = false;
+    formErrors.value = {};
 
-    formData.id = null;
-    formData.name = null;
+    formData.reset();
 }
-function addActionSubmit(event: FormSubmitEvent) {
+function addSubmitAction(event: FormSubmitEvent) {
+    formErrors.value = {};
     if (event.valid) {
-        dialogFormRoleVisible.value = false;
         formData.post(route('role.create'), {
             onSuccess: (response: any) => {
                 toast.add({
@@ -42,9 +59,10 @@ function addActionSubmit(event: FormSubmitEvent) {
                     detail: response.props.flash.message,
                     life: 1000,
                 });
-                router.reload({ only: ['roles'] });
+                dialogVisible.value = false;
             },
             onError: (errors) => {
+                formErrors.value = errors;
                 toast.add({
                     severity: 'error',
                     summary: 'Failed',
@@ -56,15 +74,16 @@ function addActionSubmit(event: FormSubmitEvent) {
     }
 }
 function editAction(dataRole: UserRole) {
-    dialogFormRoleVisible.value = true;
+    dialogVisible.value = true;
     editMode.value = true;
+    formErrors.value = {};
 
     formData.id = dataRole.id;
     formData.name = dataRole.name;
 }
-async function editActionSubmit(event: FormSubmitEvent) {
+async function editSubmitAction(event: FormSubmitEvent) {
+    formErrors.value = {};
     if (event.valid) {
-        dialogFormRoleVisible.value = false;
         formData.put(route('role.update', { id: formData.id }), {
             onSuccess: (response: any) => {
                 toast.add({
@@ -73,10 +92,10 @@ async function editActionSubmit(event: FormSubmitEvent) {
                     detail: response.props.flash.message,
                     life: 3000,
                 });
-                router.reload({ only: ['roles'] });
+                dialogVisible.value = false;
             },
             onError: (errors) => {
-                console.log(errors);
+                formErrors.value = errors;
                 toast.add({
                     severity: 'error',
                     summary: 'Failed',
@@ -89,7 +108,7 @@ async function editActionSubmit(event: FormSubmitEvent) {
 }
 function deleteAction(dataRole: UserRole) {
     confirm.require({
-        message: 'Apakah anda yakin untuk mengahapus user ini ?',
+        message: 'Do you want to delete this user role ?',
         header: 'Warning',
         icon: 'pi pi-exclamation-triangle',
         rejectLabel: 'Cancel',

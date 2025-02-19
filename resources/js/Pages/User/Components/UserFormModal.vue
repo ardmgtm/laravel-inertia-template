@@ -1,53 +1,26 @@
 <template>
     <Dialog :header="(!editMode ? 'Add' : 'Edit') + ' User'" v-model:visible="dialogVisible" class="w-full max-w-xl"
         modal>
-        <Form class="flex flex-col gap-2" :resolver :initialValues="formData"
+        <AppForm class="flex flex-col gap-2" v-model="formData" :errors="formErrors" :resolver
             @submit="(e) => !editMode ? addSubmitAction(e) : editSubmitAction(e)">
-            <FormField name="name" v-slot="$field" class="flex">
-                <label class="flex-none font-bold w-48" for="name">Name</label>
-                <div class="flex-1">
-                    <InputText id="name" placeholder="Name" v-model="formData.name" type="text" class="w-full" fluid
-                        @input="clearError('name')" />
-                    <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
-                        {{ $field.error?.message ?? formErrors?.name }}
-                    </Message>
-                </div>
-            </FormField>
-            <FormField name="email" v-slot="$field" class="flex">
-                <label class="flex-none font-bold w-48" for="email">Email</label>
-                <div class="flex-1">
-                    <InputText id="email" placeholder="Email" v-model="formData.email" type="text" class="w-full"
-                        autocomplete="off" fluid @input="clearError('email')" />
-                    <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
-                        {{ $field.error?.message ?? formErrors?.email }}
-                    </Message>
-                </div>
-            </FormField>
-            <FormField name="username" v-slot="$field" class="flex">
-                <label class="flex-none font-bold w-48" for="username">Username</label>
-                <div class="flex-1">
-                    <InputText id="username" placeholder="Username" v-model="formData.username" type="text"
-                        autocomplete="off" class="w-full" fluid @input="clearError('username')" />
-                    <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
-                        {{ $field.error?.message ?? formErrors?.username }}
-                    </Message>
-                </div>
-            </FormField>
-            <FormField name="password" v-slot="$field" class="flex" v-if="!editMode">
-                <label class="flex-none font-bold w-48" for="password">Password</label>
-                <div class="flex-1">
-                    <Password id="password" placeholder="Password" v-model="formData.password" :feedback="false"
-                        autocomplete="off" class="w-full" toggleMask fluid @input="clearError('password')" />
-                    <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
-                        {{ $field.error?.message ?? formErrors?.password }}
-                    </Message>
-                </div>
-            </FormField>
+            <AppFormField name="name" label="Name" required>
+                <AppFormInput id="name" placeholder="Name" v-model="formData.name" type="text" />
+            </AppFormField>
+            <AppFormField name="email" label="Email" required>
+                <AppFormInput id="email" placeholder="Email" v-model="formData.email" type="email" />
+            </AppFormField>
+            <AppFormField name="username" label="Username" required>
+                <AppFormInput id="username" placeholder="Username" v-model="formData.username" type="text" />
+            </AppFormField>
+            <AppFormField name="password" label="Password" required v-if="!editMode">
+                <Password id="password" placeholder="Password" v-model="formData.password" :feedback="false"
+                    autocomplete="off" toggleMask fluid />
+            </AppFormField>
             <div class="flex justify-end w-full gap-2 mt-2">
                 <Button label="Cancel" severity="secondary" @click.prevent="closeDialog" />
-                <Button :label="!editMode ? 'Create' : 'Update'" severity="primary" type="submit" :loading />
+                <Button :label="!editMode ? 'Create' : 'Update'" severity="primary" type="submit" :loading="loading" />
             </div>
-        </Form>
+        </AppForm>
     </Dialog>
 </template>
 <script setup lang="ts">
@@ -59,15 +32,18 @@ import { FormSubmitEvent } from '@primevue/forms';
 import { useConfirm, useToast } from 'primevue';
 import { User, UserForm } from '@/Core/Models/user';
 import { FormModalExpose } from '@/Core/Models/form-modal';
+import AppForm from '@/Components/AppForm/AppForm.vue';
+import AppFormField from '@/Components/AppForm/AppFormField.vue';
+import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 
 const toast = useToast();
 const confirm = useConfirm();
 
 const emit = defineEmits(['data-change'])
 
-const dialogVisible : Ref<boolean> = ref(false);
-const editMode : Ref<boolean> = ref(false);
-const loading : Ref<boolean> = ref(false);
+const dialogVisible: Ref<boolean> = ref(false);
+const editMode: Ref<boolean> = ref(false);
+const loading: Ref<boolean> = ref(false);
 
 const formData = useForm<UserForm>({
     id: null,
@@ -86,11 +62,6 @@ const resolver = yupResolver(
     })
 );
 
-function clearError(field: string) {
-    if (formErrors.value && formErrors.value[field]) {
-        delete formErrors.value[field];
-    }
-}
 function closeDialog() {
     dialogVisible.value = false;
 }
