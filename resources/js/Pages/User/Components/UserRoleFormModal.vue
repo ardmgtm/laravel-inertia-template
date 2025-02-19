@@ -28,6 +28,8 @@ import { ref } from 'vue';
 const toast = useToast();
 const confirm = useConfirm();
 
+const emit = defineEmits(['data-created','data-updated','data-deleted']);
+
 const dialogVisible = ref(false);
 const editMode = ref(false);
 const loading = ref(false);
@@ -60,6 +62,7 @@ function addSubmitAction(event: FormSubmitEvent) {
                     life: 1000,
                 });
                 dialogVisible.value = false;
+                emit('data-created');
             },
             onError: (errors) => {
                 formErrors.value = errors;
@@ -93,6 +96,7 @@ async function editSubmitAction(event: FormSubmitEvent) {
                     life: 3000,
                 });
                 dialogVisible.value = false;
+                emit('data-updated');
             },
             onError: (errors) => {
                 formErrors.value = errors;
@@ -130,6 +134,7 @@ function deleteAction(dataRole: UserRole) {
                         detail: response.props.flash.message,
                         life: 3000
                     });
+                    emit('data-deleted');
                 },
                 onError: (errors) => {
                     toast.add({

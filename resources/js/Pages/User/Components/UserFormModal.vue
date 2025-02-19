@@ -39,7 +39,7 @@ import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 const toast = useToast();
 const confirm = useConfirm();
 
-const emit = defineEmits(['data-change'])
+const emit = defineEmits(['data-created','data-updated','data-deleted']);
 
 const dialogVisible: Ref<boolean> = ref(false);
 const editMode: Ref<boolean> = ref(false);
@@ -83,7 +83,7 @@ function addSubmitAction(event: FormSubmitEvent) {
                     life: 1000,
                 });
                 closeDialog();
-                emit('data-change');
+                emit('data-created');
             },
             onError: (errors) => {
                 formErrors.value = errors;
@@ -121,7 +121,7 @@ function editSubmitAction(event: FormSubmitEvent) {
                     life: 1000,
                 });
                 closeDialog();
-                emit('data-change');
+                emit('data-updated');
             },
             onError: (errors) => {
                 formErrors.value = errors;
@@ -164,7 +164,7 @@ function deleteAction(data: User) {
                         detail: response.props.flash.message,
                         life: 3000,
                     });
-                    emit('data-change');
+                    emit('data-deleted');
                 },
                 onError: (errors) => {
                     if (errors.message) {

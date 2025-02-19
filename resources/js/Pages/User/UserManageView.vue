@@ -1,4 +1,5 @@
 <template>
+
     <Head title="User Manage" />
     <AdminLayout title="User Manage" :breadcrumbs>
         <template #action>
@@ -82,7 +83,11 @@
             </div>
         </Popover>
     </AdminLayout>
-    <UserFormModal ref="userFormModalRef" @data-change="dtHandler.loadData" />
+    <UserFormModal 
+        ref="userFormModalRef" 
+        @data-created="dtHandler.loadData" 
+        @data-updated="dtHandler.loadData"
+        @data-deleted="dtHandler.loadData"/>
 </template>
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';

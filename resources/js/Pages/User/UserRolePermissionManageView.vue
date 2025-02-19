@@ -161,7 +161,7 @@
             </div>
         </div>
     </AdminLayout>
-    <UserRoleFormModal ref="userRoleFormModalRef"/>
+    <UserRoleFormModal ref="userRoleFormModalRef" @data-deleted="idSelectedRole = null"/>
 </template>
 <script setup lang="ts">
 import AppLetterAvatar from '@/Components/AppAvatarLetter.vue';
@@ -220,7 +220,6 @@ const editUserRoleAction = () => {
 const deleteUserRoleAction = () => {
     if (selectedRole.value) {
         userRoleFormModalRef.value?.deleteAction(selectedRole.value);
-        idSelectedRole.value = null;
     }
 };
 
