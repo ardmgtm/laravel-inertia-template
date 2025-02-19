@@ -1,11 +1,12 @@
 <template>
+
     <Head title="Role Manage" />
     <AdminLayout title="Role Manage" :breadcrumbs>
         <div class="flex">
             <div class="w-80 mr-4 flex-flex-col flex-grow-0 flex-shrink-0">
                 <div class="flex justify-end mb-4 gap-4">
                     <div class="flex-1">
-                        <AppInputSearch v-model="search"/>
+                        <AppInputSearch v-model="search" />
                     </div>
                     <div class="flex-none">
                         <Button icon="pi pi-plus" @click="addUserRoleAction" v-if="can('role.create')"
@@ -64,11 +65,15 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded
-                                            v-tooltip.bottom="'Action'" @click="(e)=>$refs.roleMenu?.toggle(e)"/>
+                                            v-tooltip.bottom="'Action'" @click="(e) => $refs.roleMenu?.toggle(e)" />
                                         <Popover ref="roleMenu">
                                             <div class="flex flex-col">
-                                                <Button icon="pi pi-pen-to-square" variant="text" severity="secondary" label="Edit User Role" class="w-full flex justify-start" @click="editUserRoleAction"/>
-                                                <Button icon="pi pi-trash" variant="text" severity="danger" label="Delete User Role" class="w-full flex justify-start" @click="deleteUserRoleAction"/>
+                                                <Button icon="pi pi-pen-to-square" variant="text" severity="secondary"
+                                                    label="Edit User Role" class="w-full flex justify-start"
+                                                    @click="editUserRoleAction" />
+                                                <Button icon="pi pi-trash" variant="text" severity="danger"
+                                                    label="Delete User Role" class="w-full flex justify-start"
+                                                    @click="deleteUserRoleAction" />
                                             </div>
                                         </Popover>
                                     </div>
@@ -89,9 +94,8 @@
                                                         </h5>
                                                         <ToggleSwitch
                                                             :disabled="!can('role.assign_permission') || selectedRole.id == 1"
-                                                            :model-value="permissionList.every(permission => permission.role_has_permission == 1)"
-                                                            :true-value="1" :false-value="0"
-                                                            @value-change="(newValue) => permissionList.forEach(function (permission) { permission.role_has_permission = newValue; onSwitchChange(selectedRole.id, permission, newValue) })" />
+                                                            :model-value="permissionList.every(permission => permission.role_has_permission)"
+                                                            @value-change="(val) => permissionList.forEach(function (permission) { permission.role_has_permission = val; onSwitchChange(selectedRole.id, permission, val) })" />
                                                     </div>
                                                     <Divider />
                                                     <div class="grid grid-cols-1 2xl:grid-cols-2">
@@ -102,9 +106,8 @@
                                                             </span>
                                                             <ToggleSwitch
                                                                 :disabled="!can('role.assign_permission') || selectedRole.id == 1"
-                                                                :true-value="1" :false-value="0"
-                                                                v-model="permissionObj.role_has_permission as string"
-                                                                @value-change="(newValue) => { onSwitchChange(selectedRole.id, permissionObj, newValue); console.log(newValue); }" />
+                                                                v-model="permissionObj.role_has_permission"
+                                                                @value-change="(val: boolean) => onSwitchChange(selectedRole.id, permissionObj, val)" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -161,7 +164,7 @@
             </div>
         </div>
     </AdminLayout>
-    <UserRoleFormModal ref="userRoleFormModalRef" @data-deleted="idSelectedRole = null"/>
+    <UserRoleFormModal ref="userRoleFormModalRef" @data-deleted="idSelectedRole = null" />
 </template>
 <script setup lang="ts">
 import AppLetterAvatar from '@/Components/AppAvatarLetter.vue';
@@ -176,6 +179,7 @@ import { computed, ComputedRef, ref, Ref } from 'vue';
 import UserRoleFormModal from './Components/UserRoleFormModal.vue';
 import { FormModalExpose } from '@/Core/Models/form-modal';
 import AppInputSearch from '@/Components/AppInputSearch.vue';
+import { string } from 'yup';
 
 const toast = useToast();
 
@@ -209,7 +213,7 @@ const totalUser: Ref<number> = ref(0);
 
 const isAnyRoleSelected: ComputedRef<boolean> = computed(() => idSelectedRole.value != null);
 const permissionLoading: Ref<boolean> = ref(false);
-    
+
 const userRoleFormModalRef = ref<FormModalExpose<UserRole>>();
 const addUserRoleAction = () => userRoleFormModalRef.value?.addAction();
 const editUserRoleAction = () => {
@@ -280,13 +284,13 @@ function onSwitchChange(idRole: number, permissionData: PermissionItem, newValue
     const formData = {
         id_permission: permissionData.id,
         permission_name: permissionData.name,
-        value: newValue === 1,
+        value: newValue,
     };
     return new Promise((resolve, reject) => {
         return axios.put(route('role.switch_permission', idRole), formData)
             .then((response) => {
                 let responseData = response.data;
-                totalPermissionGranted.value = newValue == 0 ? totalPermissionGranted.value - 1 : totalPermissionGranted.value + 1;
+                totalPermissionGranted.value = !newValue ? totalPermissionGranted.value - 1 : totalPermissionGranted.value + 1;
                 toast.add({
                     severity: 'success',
                     summary: 'Success',
@@ -297,7 +301,7 @@ function onSwitchChange(idRole: number, permissionData: PermissionItem, newValue
             })
             .catch((error) => {
                 let errorResponseData = error.response.data;
-                permissionData.role_has_permission = newValue == 0 ? 1 : 0;
+                permissionData.role_has_permission = newValue;
                 toast.add({
                     severity: 'error',
                     summary: 'Error',

@@ -18,5 +18,5 @@ export interface PermissionGroups{
 export interface PermissionItem{
     id: number;
     name: string;
-    role_has_permission: number | boolean | string;
+    role_has_permission: boolean;
 }
