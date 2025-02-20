@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\User\RoleAndPermissionController;
+use App\Http\Controllers\User\UserActivityController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,11 +25,16 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::controller(RoleAndPermissionController::class)->group(function () {
         Route::get('/user-roles', 'index')->name('role.browse');
-        Route::post('/role', 'create')->name('role.create')->can('role.create');
-        Route::put('/role/{role}', 'update')->name('role.update')->can('role.update');
-        Route::delete('/role/{role}', 'delete')->name('role.delete')->can('role.delete');
-        Route::get('/role/{role}/permissions', 'getRolePermission')->name('role.permission_list')->can('role.browse');
-        Route::get('/role/{role}/users', 'getRoleUser')->name('role.user_list')->can('role.browse');
-        Route::put('/role/{role}/switch-permission', 'switchPermission')->name('role.switch_permission')->can('role.assign_permission');
+        Route::post('/user-roles', 'create')->name('role.create')->can('role.create');
+        Route::put('/user-roles/{role}', 'update')->name('role.update')->can('role.update');
+        Route::delete('/user-roles/{role}', 'delete')->name('role.delete')->can('role.delete');
+
+        Route::get('/user-roles/{role}/permissions', 'getRolePermission')->name('role.permission_list')->can('role.browse');
+        Route::get('/user-roles/{role}/users', 'getRoleUser')->name('role.user_list')->can('role.browse');
+        Route::put('/user-roles/{role}/switch-permission', 'switchPermission')->name('role.switch_permission')->can('role.assign_permission');
+    });
+    Route::controller(UserActivityController::class)->group(function(){
+        Route::get('/user-activity','index')->name('user_activity.browse');
+        Route::get('/user-activity/data-table', 'dataTable')->name('user_activity.data_table');
     });
 });

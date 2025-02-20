@@ -26,6 +26,7 @@ export const sideMenuItemData: MenuItem[] = [
             }, 
             { 
                 label: 'User Activity',
+                url: basicRoute('user_activity.browse'),
             }
         ]
     },
