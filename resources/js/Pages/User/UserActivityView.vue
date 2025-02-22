@@ -1,59 +1,38 @@
 <template>
     <Head title="User Activity"/>
     <AdminLayout title="User Activity" :breadcrumbs>
-        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" dataKey="id"
-            emptyMessage="No Users Data.">
-            <template #header-start>
-                <div v-if="selectedData?.length > 0">
-                    <div class="border border-gray-300 rounded-lg px-2 flex items-center">
-                        <div class="font-bold">
-                            <Button icon="pi pi-times" variant="text" severity="secondary" @click="selectedData = []"
-                                rounded />
-                            <span>{{ selectedData.length }} selected</span>
-                        </div>
-                        <Divider layout="vertical" />
-                        <div>
-                            <Button rounded icon="pi pi-user-plus" variant="text" severity="secondary"
-                                v-tooltip.bottom="'Assign Role'" />
-                            <Button rounded icon="pi pi-download" variant="text" severity="secondary"
-                                v-tooltip.bottom="'Download Data'" />
-                            <Button rounded icon="pi pi-trash" variant="text" severity="secondary"
-                                v-tooltip.bottom="'Delete User'" />
-                            <Button rounded icon="pi pi-ellipsis-v" variant="text" severity="secondary"
-                                v-tooltip.bottom="'More Action'" />
+        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" dataKey="id"
+            emptyMessage="No Data">
+            <Column selectionMode="multiple" headerStyle="width: 3rem" />
+            <Column field="user.name" header="User" class="w-72">
+                <template #body="slotProps">
+                    <div class="flex flex-row gap-4 items-center">
+                        <AppAvatarLetter :name="slotProps.data.user?.name ?? '?'"/>
+                        <div class="flex flex-col">
+                            <div class="font-bold">{{ slotProps.data.user?.name ?? 'Guest' }}</div>
+                            <div class="text-xs italic">{{ slotProps.data.user?.username }}</div>
                         </div>
                     </div>
-                </div>
-            </template>
-            <Column selectionMode="multiple" headerStyle="width: 3rem" />
-            <Column field="name" header="Name" class="min-w-72" sortable>
-                <template #filter="{ filterModel, filterCallback }">
-                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="username" header="Username" class="min-w-72" sortable>
-                <template #filter="{ filterModel, filterCallback }">
-                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
-                </template>
-            </Column>
-            <Column field="email" header="Email" class="min-w-72" sortable>
-                <template #filter="{ filterModel, filterCallback }">
-                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
-                </template>
-            </Column>
-            <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false" sortable>
+            <Column field="ip_address" header="IP Address" class="w-48"></Column>
+            <Column field="timestamp" header="Timestamp" class="w-48"></Column>
+            <Column field="status_code" header="Status Code" class="w-24">
                 <template #body="slotProps">
-                    <Tag icon="pi pi-circle-fill" :severity="slotProps.data.is_active ? 'success' : 'danger'"
-                        :value="slotProps.data.is_active ? 'Active' : 'Inactive'" />
-                </template>
-                <template #filter="{ filterModel, filterCallback }">
-                    
+                    <Tag :severity="getSeverityByStatusCode(slotProps.data.status_code)" :value="slotProps.data.status_code"/>
                 </template>
             </Column>
+            <Column field="method" header="Method" class="w-24">
+                <template #body="slotProps">
+                    <Tag :severity="getSeverityByMethod(slotProps.data.method)" :value="slotProps.data.method"/>
+                </template>
+            </Column>
+            <Column field="route" header="Path" class="min-w-72"></Column>
         </AppDataTableServer>
     </AdminLayout>
 </template>
 <script setup lang="ts">
+import AppAvatarLetter from '@/Components/AppAvatarLetter.vue';
 import AppDataTableServer from '@/Components/AppDataTable/AppDataTableServer.vue';
 import { createDataTableHandler } from '@/Core/Handlers/data-table-handler';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
@@ -72,12 +51,23 @@ const breadcrumbs: Ref<MenuItem[]> = ref([
 ]);
 
 const selectedData = ref();
-const dtHandler = createDataTableHandler(route('user.data_table'));
-const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    username: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    email: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    is_active: { value: null, matchMode: FilterMatchMode.EQUALS },
-});
+const dtHandler = createDataTableHandler(route('user_activity.data_table'));
+
+const severityMethod : any = {
+  "GET": "success",
+  "POST": "info",
+  "PUT": "warn",
+  "PATCH": "warn",
+  "DELETE": "error"
+}
+const getSeverityByMethod = (method: string) : string => severityMethod[method];
+
+const getSeverityByStatusCode = (statusCode : number) : string => {
+    if (statusCode >= 200 && statusCode < 300) return "success";  
+    if (statusCode >= 300 && statusCode < 400) return "info";     
+    if (statusCode >= 400 && statusCode < 500) return "warn";     
+    if (statusCode >= 500) return "error";                        
+    return "info";
+};
+
 </script>

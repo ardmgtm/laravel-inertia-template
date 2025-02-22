@@ -14,12 +14,11 @@ return new class extends Migration
         Schema::create('user_activity', function (Blueprint $table) {
             $table->id();
             $table->timestamp('timestamp');
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('method', 10);
             $table->unsignedSmallInteger('status_code');
-            $table->string('status_name', 30);
-            $table->string('route_name', 50);
             $table->string('route', 100);
+            $table->string('route_name', 50)->nullable();
             $table->ipAddress('ip_address');
             $table->string('user_agent');
             $table->string('description')->nullable();

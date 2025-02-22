@@ -1,17 +1,15 @@
 <template>
     <Button outlined rounded class="p-1" @click="toggle">
-        <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle"
-            class="h-9 w-9" />
+        <AppAvatarLetter :name="user.name"/>
     </Button>
     <Menu ref="menu" :model="accountMenuItems" class="w-full md:w-60 m-2" id="overlay_menu" :popup="true">
         <template #start>
             <button v-ripple
-                class="relative overflow-hidden w-full border-0 bg-transparent flex items-center p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
-                <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" class="mr-2"
-                    shape="circle" />
+                class="relative overflow-hidden w-full  border-0 bg-transparent flex items-center gap-2 p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
+                <AppAvatarLetter :name="user.name"/>
                 <span class="inline-flex flex-col items-start">
-                    <span class="font-bold">Amy Elsner</span>
-                    <span class="text-sm">Admin</span>
+                    <span class="font-bold">{{ user.name }}</span>
+                    <span class="text-sm">{{ user.username }}</span>
                 </span>
             </button>
         </template>
@@ -30,11 +28,15 @@
 </template>
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { MenuItem } from 'primevue/menuitem';
+import { User } from '@/Core/Models/user';
+import AppAvatarLetter from '@/Components/AppAvatarLetter.vue';
 
 const menu = ref();
-const accountMenuItems : Ref<MenuItem[]> = ref([
+const user : Ref<User> = ref(usePage().props.auth.user as User);
+
+const accountMenuItems: Ref<MenuItem[]> = ref([
     {
         items: [
             {
@@ -50,11 +52,11 @@ const accountMenuItems : Ref<MenuItem[]> = ref([
     }
 ]);
 
-function toggle(event: Event){
+function toggle(event: Event) {
     menu.value.toggle(event);
 };
 
-function logoutAction(){
+function logoutAction() {
     router.post(route('logout'));
 }
 </script>

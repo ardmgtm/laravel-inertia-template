@@ -1,11 +1,22 @@
 <template>
     <div class="custom-table-wrapper">
-        <DataTable scrollable paginator v-model:selection="selection" :lazy="true" class="custom-pagination"
+        <DataTable 
+            paginator 
+            removableSort 
+            v-model:selection="selection" 
+            filterDisplay="row" 
+            :lazy="true" 
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink JumpToPageInput CurrentPageReport NextPageLink LastPageLink"
-            :rowsPerPageOptions="[5, 10, 20, 50]" removableSort :value="handler?.loadedData?.value.data"
-            :totalRecords="handler?.loadedData?.value.totalRecords" :first="(handler.page - 1) * handler.size"
-            :rows="handler.size" filterDisplay="row" @filter="handler?.onFilter" @sort="handler?.onSort"
-            @page="handler?.onPage" v-bind="$attrs" v-on="$attrs">
+            :rowsPerPageOptions="[5, 10, 20, 50]" 
+            :value="handler?.loadedData?.value.data"
+            :totalRecords="handler?.loadedData?.value.totalRecords" 
+            :first="(handler.page - 1) * handler.size"
+            :rows="handler.size" 
+            @filter="handler?.onFilter" 
+            @sort="handler?.onSort"
+            @page="handler?.onPage" 
+            v-bind="$attrs" 
+            v-on="$attrs">
             <template #empty>
                 <div class="py-4 flex justify-center">
                     {{ emptyMessage }}
@@ -70,12 +81,5 @@ const emit = defineEmits(['update:selection', 'update:filters']);
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.custom-pagination .p-paginator {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
 }
 </style>

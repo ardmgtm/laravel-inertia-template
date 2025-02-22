@@ -31,8 +31,8 @@ class UserActivityLog
         $userAgent = $request->header('User-Agent');
 
         $activityRecord = [
-            'timestamps' => now(),
-            'user_id' => $user?->user_id,
+            'timestamp' => now(),
+            'user_id' => $user?->id,
             'method' => $method,
             'status_code' => $statusCode,
             'route_name' => $routeName,
