@@ -4,7 +4,6 @@
         effectiveLabelPosition === 'top' ? 'flex-col' : 'flex-row'
     ]">
         <label :for="name" :style="{
-            fontWeight: 'bold',
             marginBottom: effectiveLabelPosition === 'left' ? '0' : '0.5rem',
             width: effectiveLabelPosition === 'left' ? `${effectiveLabelWidth}px` : '100%'
         }">
@@ -14,7 +13,7 @@
         <div :class="[effectiveLabelPosition === 'left' ? 'flex-1' : 'w-full']">
             <slot/>
             <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
-                {{ $field.error?.message || formErrors?.[name] }}
+                {{ $field.error?.message || formErrors?.[name ?? 0] }}
             </Message>
         </div>
     </FormField>
@@ -24,8 +23,8 @@
 import { computed, inject, onMounted } from 'vue';
 
 interface Props {
-    name: string;
-    label: string;
+    name?: string;
+    label?: string;
     required?: boolean;
     labelWidth?: number;
     labelPosition?: 'top' | 'left';

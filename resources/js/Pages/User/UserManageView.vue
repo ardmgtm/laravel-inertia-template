@@ -63,7 +63,7 @@
                 <template #body="slotProps">
                     <div class="flex gap-2">
                         <Button icon="pi pi-ellipsis-v" severity="secondary" variant="text" rounded
-                            @click="(e) => { $refs.op?.toggle(e); selectedRowData = slotProps.data; }" />
+                            @click="(e) => { ($refs.op as any).toggle(e); selectedRowData = slotProps.data; }" />
                     </div>
                 </template>
             </Column>

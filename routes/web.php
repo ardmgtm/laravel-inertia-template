@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\User\RoleAndPermissionController;
 use App\Http\Controllers\User\UserActivityController;
@@ -36,5 +37,9 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(UserActivityController::class)->group(function(){
         Route::get('/user-activity','index')->name('user_activity.browse');
         Route::get('/user-activity/data-table', 'dataTable')->name('user_activity.data_table');
+    });
+    Route::controller(AccountController::class)->group(function () {
+        Route::get('/account', 'index')->name('account.browse');
+        Route::post('/account/update-information', 'updateInformation')->name('account.update_information');
     });
 });

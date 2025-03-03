@@ -64,7 +64,7 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded
-                                            v-tooltip.bottom="'Action'" @click="(e) => $refs.roleMenu?.toggle(e)" />
+                                            v-tooltip.bottom="'Action'" @click="(e) => ($refs.roleMenu as any).toggle(e)" />
                                         <Popover ref="roleMenu">
                                             <div class="flex flex-col">
                                                 <Button icon="pi pi-pen-to-square" variant="text" severity="secondary"
