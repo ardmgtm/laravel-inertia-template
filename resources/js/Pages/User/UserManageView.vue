@@ -5,7 +5,7 @@
             <Button label="Add User" icon="pi pi-plus" @click="addUserAction" />
         </template>
         <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" dataKey="id"
-            emptyMessage="No Users Data.">
+            empty-message="No Users Data.">
             <template #header-start>
                 <div v-if="selectedData?.length > 0">
                     <div class="border border-gray-300 rounded-lg px-2 flex items-center">
@@ -29,22 +29,22 @@
                 </div>
             </template>
             <Column selectionMode="multiple" headerStyle="width: 3rem" />
-            <Column field="name" header="Name" class="min-w-72" sortable>
+            <Column field="name" header="Name" class="min-w-72" sortable :show-clear-button="false">
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="username" header="Username" class="min-w-72" sortable>
+            <Column field="username" header="Username" class="min-w-72" sortable :show-clear-button="false">
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="email" header="Email" class="min-w-72" sortable>
+            <Column field="email" header="Email" class="min-w-72" sortable :show-clear-button="false">
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false" sortable>
+            <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false" sortable :show-clear-button="false">
                 <template #body="slotProps">
                     <Tag icon="pi pi-circle-fill" :severity="slotProps.data.is_active ? 'success' : 'danger'"
                         :value="slotProps.data.is_active ? 'Active' : 'Inactive'" />
@@ -63,7 +63,7 @@
                 <template #body="slotProps">
                     <div class="flex gap-2">
                         <Button icon="pi pi-ellipsis-v" severity="secondary" variant="text" rounded
-                            @click="(e) => { $refs.op?.toggle(e); selectedRowData = slotProps.data; }" />
+                            @click="(e) => { ($refs as any).op?.toggle(e); selectedRowData = slotProps.data; }" />
                     </div>
                 </template>
             </Column>
@@ -120,7 +120,7 @@ const selectedData = ref();
 const dtHandler = createDataTableHandler(route('user.data_table'));
 
 const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    __global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     name: { value: null, matchMode: FilterMatchMode.CONTAINS },
     username: { value: null, matchMode: FilterMatchMode.CONTAINS },
     email: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -128,6 +128,11 @@ const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
 });
 
 const statusOptions = ref([
+    {
+        value: null,
+        label: 'All',
+        severity: 'secondary',
+    },
     {
         value: false,
         label: 'Inactive',
