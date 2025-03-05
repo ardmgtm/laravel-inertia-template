@@ -1,4 +1,5 @@
 <template>
+
     <Head title="User Manage" />
     <AdminLayout title="User Manage" :breadcrumbs>
         <template #action>
@@ -28,33 +29,40 @@
                     </div>
                 </div>
             </template>
-            <Column selectionMode="multiple" headerStyle="width: 3rem" frozen/>
-            <Column field="name" header="Name" class="min-w-72" sortable :show-clear-button="false">
+            <Column selectionMode="multiple" headerStyle="width: 3rem" frozen />
+            <Column field="name" header="Name" class="min-w-72" :show-clear-button="false">
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="username" header="Username" class="min-w-72" sortable :show-clear-button="false">
+            <Column field="username" header="Username" class="min-w-72" :show-clear-button="false">
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="email" header="Email" class="min-w-72" sortable :show-clear-button="false">
+            <Column field="email" header="Email" class="min-w-72" :show-clear-button="false">
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="roles.name" header="Role" class="min-w-72" sortable :show-clear-button="false">
+            <Column field="roles.name" header="Role" class="min-w-48" :showFilterMenu="false"
+                :show-clear-button="false">
                 <template #body="slotProps">
                     <div class="flex flex-wrap">
                         <AppColorTag v-for="role in slotProps.data.roles" :key="role.id" :label="role.name" />
                     </div>
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
-                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
+                    <Select size="small" v-model="filterModel.value" option-value="id" option-label="name"
+                        :show-clear="true" :options="roleOptions" class="min-w-48">
+                        <template #option="slotProps">
+                            <AppColorTag :label="slotProps.option.name" />
+                        </template>
+                    </Select>
                 </template>
             </Column>
-            <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false" sortable :show-clear-button="false">
+            <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false"
+                :show-clear-button="false">
                 <template #body="slotProps">
                     <Tag icon="pi pi-circle-fill" :severity="slotProps.data.is_active ? 'success' : 'danger'"
                         :value="slotProps.data.is_active ? 'Active' : 'Inactive'" />
@@ -92,7 +100,7 @@
         @data-deleted="dtHandler.loadData" />
 </template>
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { ref, Ref } from 'vue';
@@ -112,6 +120,9 @@ const breadcrumbs: Ref<MenuItem[]> = ref([
         url: route('user.browse'),
     }
 ])
+
+const roleOptions = ref<UserRole[]>(usePage().props.roles as UserRole[]);
+
 const userFormModalRef = ref<FormModalExpose<User>>();
 const selectedRowData = ref<User>();
 
