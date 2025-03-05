@@ -17,7 +17,6 @@ class RoleAndPermissionController extends Controller
 
     public function index(Request $request)
     {
-        $this->logActivity($request, 'View user role and permission management page');
         return Inertia::render('User/UserRolePermissionManageView', [
             'roles' => Role::all(),
         ]);

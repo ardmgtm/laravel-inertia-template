@@ -12,7 +12,6 @@ class UserActivityController extends Controller
 {
     public function index(Request $request)
     {
-        $this->logActivity($request, 'View user activity page');
         return Inertia::render('User/UserActivityView');
     }
 

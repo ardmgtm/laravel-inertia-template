@@ -17,15 +17,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', fn() => Inertia::render('Dashboard/DashboardView'))->name('dashboard');
 
     Route::controller(UserController::class)->group(function () {
-        Route::get('/users', 'index')->name('user.browse');
-        Route::post('/users', 'store')->name('user.create');
-        Route::put('/users/{user}', 'update')->name('user.update');
-        Route::delete('/users/{user}', 'destroy')->name('user.delete');
+        Route::get('/users', 'index')->name('user.browse')->can('user.browse');
+        Route::post('/users', 'create')->name('user.create')->can('user.create');
+        Route::put('/users/{user}', 'update')->name('user.update')->can('user.update');
+        Route::delete('/users/{user}', 'delete')->name('user.delete')->can('user.delete');
 
-        Route::get('/users/data-table', 'dataTable')->name('user.data_table');
+        Route::get('/users/data-table', 'dataTable')->name('user.data_table')->can('user.browse');
     });
     Route::controller(RoleAndPermissionController::class)->group(function () {
-        Route::get('/user-roles', 'index')->name('role.browse');
+        Route::get('/user-roles', 'index')->name('role.browse')->can('role.browse');
         Route::post('/user-roles', 'create')->name('role.create')->can('role.create');
         Route::put('/user-roles/{role}', 'update')->name('role.update')->can('role.update');
         Route::delete('/user-roles/{role}', 'delete')->name('role.delete')->can('role.delete');

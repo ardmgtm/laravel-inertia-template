@@ -18,11 +18,10 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $this->logActivity($request, 'View user management page');
         return Inertia::render('User/UserManageView');
     }
 
-    public function store(CreateUserRequest $request)
+    public function create(CreateUserRequest $request)
     {
         $this->logActivity($request, 'Create new user');
         $data = $request->validated();
@@ -52,7 +51,7 @@ class UserController extends Controller
         }
     }
 
-    public function destroy(Request $request, User $user)
+    public function delete(Request $request, User $user)
     {
         $this->logActivity($request, 'Delete user (id: ' . $user->id . ')');
         DB::beginTransaction();
