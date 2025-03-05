@@ -12,13 +12,17 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 use Throwable;
 
 class UserController extends Controller
 {
     public function index(Request $request)
     {
-        return Inertia::render('User/UserManageView');
+        $data = [
+            'roles' => Role::all(),
+        ];
+        return Inertia::render('User/UserManageView', $data);
     }
 
     public function create(CreateUserRequest $request)
@@ -27,7 +31,8 @@ class UserController extends Controller
         $data = $request->validated();
         DB::beginTransaction();
         try {
-            User::create($data);
+            $user = User::create($data);
+            $user->assignRole($data['roles']);
             DB::commit();
             return InertiaSuccessResponse::redirectBack('Success to create user');
         } catch (Throwable $e) {
@@ -43,10 +48,12 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $user->update($data);
+            $user->syncRoles($data['roles']);
             DB::commit();
             return InertiaSuccessResponse::redirectBack('Success to update user');
         } catch (Throwable $e) {
             DB::rollBack();
+            throw $e;
             return InertiaFailedResponse::redirectBack('Failed to update user');
         }
     }
@@ -67,7 +74,7 @@ class UserController extends Controller
 
     public function dataTable(Request $request)
     {
-        $query = User::query();
+        $query = User::query()->with(['roles']);
         return DataTableResponse::load($request, $query);
     }
 }

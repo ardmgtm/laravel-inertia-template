@@ -28,7 +28,7 @@
                     </div>
                 </div>
             </template>
-            <Column selectionMode="multiple" headerStyle="width: 3rem" />
+            <Column selectionMode="multiple" headerStyle="width: 3rem" frozen/>
             <Column field="name" header="Name" class="min-w-72" sortable :show-clear-button="false">
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
@@ -40,6 +40,16 @@
                 </template>
             </Column>
             <Column field="email" header="Email" class="min-w-72" sortable :show-clear-button="false">
+                <template #filter="{ filterModel, filterCallback }">
+                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
+                </template>
+            </Column>
+            <Column field="roles.name" header="Role" class="min-w-72" sortable :show-clear-button="false">
+                <template #body="slotProps">
+                    <div class="flex flex-wrap">
+                        <AppColorTag v-for="role in slotProps.data.roles" :key="role.id" :label="role.name" />
+                    </div>
+                </template>
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
@@ -59,7 +69,7 @@
                     </Select>
                 </template>
             </Column>
-            <Column field="id" class="w-16">
+            <Column field="id" class="w-16" frozen align-frozen="right">
                 <template #body="slotProps">
                     <div class="flex gap-2">
                         <Button icon="pi pi-ellipsis-v" severity="secondary" variant="text" rounded
@@ -93,6 +103,8 @@ import { createDataTableHandler } from '@/Core/Handlers/data-table-handler';
 import AppDataTableServer from '@/Components/AppDataTable/AppDataTableServer.vue';
 import { FormModalExpose } from '@/Core/Models/form-modal';
 import { User } from '@/Core/Models/user';
+import { UserRole } from '@/Core/Models/user-role';
+import AppColorTag from '@/Components/AppColorTag.vue';
 
 const breadcrumbs: Ref<MenuItem[]> = ref([
     {
@@ -120,11 +132,12 @@ const selectedData = ref();
 const dtHandler = createDataTableHandler(route('user.data_table'));
 
 const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
-    __global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    username: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    email: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    is_active: { value: null, matchMode: FilterMatchMode.EQUALS },
+    '__global': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'username': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'email': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'roles.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'is_active': { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
 const statusOptions = ref([
