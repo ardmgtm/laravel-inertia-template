@@ -1,12 +1,12 @@
 <template>
     <Button outlined rounded class="p-1" @click="toggle">
-        <AppAvatarLetter :name="user.name"/>
+        <AppProfilePicture :name="user.name" :url="user.profile_picture"/>
     </Button>
     <Menu ref="menu" :model="accountMenuItems" class="w-full md:w-60 m-2" id="overlay_menu" :popup="true">
         <template #start>
             <button v-ripple
                 class="relative overflow-hidden w-full  border-0 bg-transparent flex items-center gap-2 p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
-                <AppAvatarLetter :name="user.name"/>
+                <AppProfilePicture :name="user.name" :url="user.profile_picture"/>
                 <span class="inline-flex flex-col items-start">
                     <span class="font-bold">{{ user.name }}</span>
                     <span class="text-sm">{{ user.username }}</span>
@@ -27,14 +27,14 @@
     </Menu>
 </template>
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
+import { computed, Ref, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { MenuItem } from 'primevue/menuitem';
 import { User } from '@/Core/Models/user';
-import AppAvatarLetter from '@/Components/AppAvatarLetter.vue';
+import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 
 const menu = ref();
-const user : Ref<User> = ref(usePage().props.auth.user as User);
+const user : Ref<User> = computed(()=>usePage().props.auth.user as User);
 
 const accountMenuItems: Ref<MenuItem[]> = ref([
     {

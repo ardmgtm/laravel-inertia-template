@@ -1,4 +1,5 @@
 <template>
+
     <Head title="Role Manage" />
     <AdminLayout title="Role Manage" :breadcrumbs>
         <div class="flex">
@@ -64,7 +65,8 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded
-                                            v-tooltip.bottom="'Action'" @click="(e) => ($refs.roleMenu as any).toggle(e)" />
+                                            v-tooltip.bottom="'Action'"
+                                            @click="(e) => ($refs.roleMenu as any).toggle(e)" />
                                         <Popover ref="roleMenu">
                                             <div class="flex flex-col">
                                                 <Button icon="pi pi-pen-to-square" variant="text" severity="secondary"
@@ -128,7 +130,7 @@
                                                     <div v-for="user in userPaginated" :key="user.id">
                                                         <div
                                                             class="shrink-0 rounded-lg py-2 px-5 border gap-4 border-gray-200 flex align-middle items-center bg-white group-hover:bg-primary-200 cursor-pointer mt-2">
-                                                            <AppLetterAvatar :name="user.name" />
+                                                            <AppProfilePicture :user />
                                                             <div class="flex items-center">
                                                                 <div class=" flex flex-col text-gray-900">
                                                                     <div class="truncate text-md font-bold">
@@ -166,7 +168,7 @@
     <UserRoleFormModal ref="userRoleFormModalRef" @data-deleted="idSelectedRole = null" />
 </template>
 <script setup lang="ts">
-import AppLetterAvatar from '@/Components/AppAvatarLetter.vue';
+import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 import { User } from '@/Core/Models/user';
 import { PermissionGroups, PermissionItem, UserRole } from '@/Core/Models/user-role';
 import AdminLayout from '@/Layouts/AdminLayout.vue';

@@ -7,7 +7,7 @@
             <Column field="user.name" header="User" class="w-72">
                 <template #body="slotProps">
                     <div class="flex flex-row gap-4 items-center">
-                        <AppAvatarLetter :name="slotProps.data.user?.name ?? '?'"/>
+                        <AppProfilePicture :user="slotProps.data.user"/>
                         <div class="flex flex-col">
                             <div class="font-bold">{{ slotProps.data.user?.name ?? 'Guest' }}</div>
                             <div class="text-xs italic">{{ slotProps.data.user?.username }}</div>
@@ -32,14 +32,12 @@
     </AdminLayout>
 </template>
 <script setup lang="ts">
-import AppAvatarLetter from '@/Components/AppAvatarLetter.vue';
+import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 import AppDataTableServer from '@/Components/AppDataTable/AppDataTableServer.vue';
 import { createDataTableHandler } from '@/Core/Handlers/data-table-handler';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { FilterMatchMode } from '@primevue/core/api';
 
-import { DataTableFilterMetaData } from 'primevue';
 import { MenuItem } from 'primevue/menuitem';
 import { ref, Ref } from 'vue';
 

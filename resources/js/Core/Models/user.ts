@@ -3,6 +3,7 @@ export interface User {
     name: string;
     username: string;
     email: string;
+    profile_picture: string;
 }
 
 export interface UserForm {
@@ -11,6 +12,6 @@ export interface UserForm {
     username?: string | null;
     email?: string | null;
     password?: string | null;
-    profilePicture?: string | File | null;
+    profile_picture?: string | File | null;
     [key: string]: any;
 }

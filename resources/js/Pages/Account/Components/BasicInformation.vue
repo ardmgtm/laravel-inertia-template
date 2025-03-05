@@ -5,14 +5,13 @@
         <div class="flex flex-row gap-8 w-full">
             <div class="flex-none">
                 <div class="relative w-40 h-40 mx-auto group">
-                    <img :src="profilePicture ?? ''" alt="Profile"
+                    <AppProfilePicture :name="user.name" :size="160" :url="(profilePicture as string)"
                         class="w-full h-full rounded-full object-cover border shadow-sm" />
-
                     <div class="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow-lg cursor-pointer w-7 h-7"
-                        @click="uploadImage">
+                        @click="uploadImage" v-if="editMode">
                         <i class="pi pi-pencil text-gray-600"></i>
                     </div>
-                    <button v-if="profilePicture"
+                    <button v-if="profilePicture && editMode && profilePicture !== currentProfilePicture"
                         class="absolute top-1 right-1 bg-primary text-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition w-7 h-7"
                         @click="removeImage">
                         <i class="pi pi-undo"></i>
@@ -21,7 +20,7 @@
                 </div>
             </div>
             <div class="flex-1">
-                <AppForm v-model="formData" @submit="editSubmitAction">
+                <AppForm v-model="formData" @submit="editSubmitAction" v-if="editMode">
                     <AppFormField name="name" label="Name" required>
                         <AppFormInput id="name" placeholder="Name" v-model="formData.name" type="text" />
                     </AppFormField>
@@ -32,40 +31,72 @@
                         <AppFormInput id="username" placeholder="Username" v-model="formData.username" type="text" />
                     </AppFormField>
                     <AppFormField>
-                        <Button label="Update" type="submit" icon="pi pi-save" />
+                        <div class="flex gap-4">
+                            <Button label="Update" type="submit" icon="pi pi-save" :loading />
+                            <Button label="Cancel" severity="primary" variant="outlined" @click="editMode = false" />
+                        </div>
                     </AppFormField>
                 </AppForm>
+                <div v-else>
+                    <table class="table-auto w-full text-left text-lg">
+                        <tbody>
+                            <tr>
+                                <th class="font-semibold w-32">Name</th>
+                                <td>: {{ user.name }}</td>
+                            </tr>
+                            <tr>
+                                <th class="font-semibold w-32">Email</th>
+                                <td>: {{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th class="font-semibold w-32">Username</th>
+                                <td>: {{ user.username }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="flex justify-first mt-4">
+                        <Button label="Edit Information" icon="pi pi-pencil" @click="editMode = true"
+                            variant="outlined" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 <script setup lang="ts">
+import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
 import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 import { User, UserForm } from '@/Core/Models/user';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { FormSubmitEvent } from '@primevue/forms';
-import { onBeforeMount, ref } from 'vue';
+import { useToast } from 'primevue';
+import { computed, onBeforeMount, ref } from 'vue';
+
+const toast = useToast();
+const editMode = ref<boolean>(false);
+const loading = ref<boolean>(false);
+
+const user = computed<User>(() => usePage().props.auth.user as User);
 
 const formData = useForm<UserForm>({
     name: null,
     username: null,
     email: null,
-    profilePicture: null,
+    profile_picture: null,
 })
 
 onBeforeMount(() => {
-    const user = usePage().props.auth.user as User;
-    formData.name = user.name;
-    formData.username = user.username;
-    formData.email = user.email;
+    formData.name = user.value.name;
+    formData.username = user.value.username;
+    formData.email = user.value.email;
 
-    currentProfilePicture.value = 'https://primefaces.org/cdn/primevue/images/organization/walter.jpg';
-    profilePicture.value = 'https://primefaces.org/cdn/primevue/images/organization/walter.jpg';
+    currentProfilePicture.value = user.value.profile_picture;
+    profilePicture.value = user.value.profile_picture;
 });
 
-const currentProfilePicture = ref<string|null>(null);
+const currentProfilePicture = ref<string | null>(null);
 const profilePicture = ref<string | null>(null);
 const fileInput = ref<any>(null);
 
@@ -78,7 +109,7 @@ const uploadImage = () => {
 const handleFileChange = (event: Event) => {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
-        formData.profilePicture = file;
+        formData.profile_picture = file;
         const reader = new FileReader();
         reader.onload = (e) => {
             profilePicture.value = e.target?.result as string;
@@ -89,17 +120,35 @@ const handleFileChange = (event: Event) => {
 
 const removeImage = () => {
     profilePicture.value = currentProfilePicture.value;
-    formData.profilePicture = null;
+    formData.profile_picture = null;
     fileInput.value.value = '';
 };
 
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {
+        loading.value = true;
         formData.post(route('account.update_information'), {
             preserveScroll: true,
             onSuccess: (response: any) => {
-                console.log(response);
+                toast.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: response.props.flash.message,
+                    life: 3000
+                });
             },
+            onError: (error: any) => {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.message || 'An error occurred',
+                    life: 3000
+                });
+            },
+            onFinish: () => {
+                loading.value = false;
+                editMode.value = false;
+            }
         });
     }
 }
