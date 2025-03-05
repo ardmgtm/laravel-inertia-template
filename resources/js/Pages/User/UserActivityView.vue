@@ -1,33 +1,86 @@
 <template>
-    <Head title="User Activity"/>
+
+    <Head title="User Activity" />
     <AdminLayout title="User Activity" :breadcrumbs>
-        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" dataKey="id"
-            emptyMessage="No Data">
-            <Column selectionMode="multiple" headerStyle="width: 3rem" />
-            <Column field="user.name" header="User" class="w-72">
+        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" dataKey="id">
+            <template #header-start>
+                <div class="flex flex-wrap gap-4">
+                    <SelectButton v-model="selectedStatus" :options="statusOptions" option-label="label"
+                        option-value="value" />
+                </div>
+            </template>
+            <template #header-end>
+                <div>
+                    <DatePicker v-model="selectedDates" selectionMode="range" :manualInput="false" showIcon fluid
+                        :hide-on-range-selection="true" :max-date="new Date()" iconDisplay="input"
+                        placeholder="Start Date - End Date" class="w-72" :numberOfMonths="2" />
+                </div>
+            </template>
+            <Column field="user.name" header="User" class="w-60 min-w-60" :show-filter-menu="false"
+                :show-clear-button="false">
                 <template #body="slotProps">
                     <div class="flex flex-row gap-4 items-center">
-                        <AppAvatarLetter :name="slotProps.data.user?.name ?? '?'"/>
+                        <AppAvatarLetter :name="slotProps.data.user?.name ?? '?'" />
                         <div class="flex flex-col">
                             <div class="font-bold">{{ slotProps.data.user?.name ?? 'Guest' }}</div>
                             <div class="text-xs italic">{{ slotProps.data.user?.username }}</div>
                         </div>
                     </div>
                 </template>
-            </Column>
-            <Column field="ip_address" header="IP Address" class="w-48"></Column>
-            <Column field="timestamp" header="Timestamp" class="w-48"></Column>
-            <Column field="status_code" header="Status Code" class="w-24">
-                <template #body="slotProps">
-                    <Tag :severity="getSeverityByStatusCode(slotProps.data.status_code)" :value="slotProps.data.status_code"/>
+                <template #filter="{ filterModel, filterCallback }">
+                    <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="method" header="Method" class="w-24">
-                <template #body="slotProps">
-                    <Tag :severity="getSeverityByMethod(slotProps.data.method)" :value="slotProps.data.method"/>
+            <Column field="ip_address" header="IP Address" class="w-36 min-w-36" :show-filter-menu="false"
+                :show-clear-button="false">
+                <template #filter="{ filterModel, filterCallback }">
+                    <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="route" header="Path" class="min-w-72"></Column>
+            <Column field="timestamp" header="Timestamp" class="w-40 min-w-40" :show-filter-menu="false"
+                data-type="date" :show-clear-button="false">
+                <template #body="slotProps">
+                    <div>{{ formatDateTime(slotProps.data.timestamp) }}</div>
+                </template>
+                <template #filter="{ filterModel, filterCallback }">
+                    <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
+                </template>
+            </Column>
+            <Column field="status_code" header="Status" class="w-24 min-w-24" :show-filter-menu="false"
+                :show-clear-button="false">
+                <template #body="slotProps">
+                    <Tag :severity="getSeverityByStatusCode(slotProps.data.status_code)"
+                        :value="slotProps.data.status_code" />
+                </template>
+                <template #filter="{ filterModel, filterCallback }">
+                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
+                </template>
+            </Column>
+            <Column field="method" header="Method" class="w-24" :show-filter-menu="false" :show-clear-button="false">
+                <template #body="slotProps">
+                    <Tag :severity="getSeverityByMethod(slotProps.data.method)" :value="slotProps.data.method" />
+                </template>
+                <template #filter="{ filterModel, filterCallback }">
+                    <Select v-model="filterModel.value" :options="methodOptions" option-value="value"
+                        option-label="label" @change="filterCallback()">
+                        <template #option="slotProps">
+                            <Tag :value="slotProps.option.label"
+                                :severity="getSeverityByMethod(slotProps.option.value)" />
+                        </template>
+                    </Select>
+                </template>
+            </Column>
+            <Column field="route" header="Path" class="min-w-60" :show-filter-menu="false" :show-clear-button="false">
+                <template #filter="{ filterModel, filterCallback }">
+                    <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
+                </template>
+            </Column>
+            <Column field="description" header="Description" class="min-w-72" :show-filter-menu="false"
+                :show-clear-button="false">
+                <template #filter="{ filterModel, filterCallback }">
+                    <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
+                </template>
+            </Column>
         </AppDataTableServer>
     </AdminLayout>
 </template>
@@ -35,6 +88,7 @@
 import AppAvatarLetter from '@/Components/AppAvatarLetter.vue';
 import AppDataTableServer from '@/Components/AppDataTable/AppDataTableServer.vue';
 import { createDataTableHandler } from '@/Core/Handlers/data-table-handler';
+import { formatDateTime } from '@/Core/Utils/datetime-util';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { FilterMatchMode } from '@primevue/core/api';
@@ -53,21 +107,67 @@ const breadcrumbs: Ref<MenuItem[]> = ref([
 const selectedData = ref();
 const dtHandler = createDataTableHandler(route('user_activity.data_table'));
 
-const severityMethod : any = {
-  "GET": "success",
-  "POST": "info",
-  "PUT": "warn",
-  "PATCH": "warn",
-  "DELETE": "error"
-}
-const getSeverityByMethod = (method: string) : string => severityMethod[method];
+const selectedDates = ref(null);
+const selectedStatus = ref(0);
+const statusOptions = [
+    { label: 'All', value: 0 },
+    { label: 'Info', value: 'INFO' },
+    { label: 'Error', value: 'ERROR' },
+];
 
-const getSeverityByStatusCode = (statusCode : number) : string => {
-    if (statusCode >= 200 && statusCode < 300) return "success";  
-    if (statusCode >= 300 && statusCode < 400) return "info";     
-    if (statusCode >= 400 && statusCode < 500) return "warn";     
-    if (statusCode >= 500) return "error";                        
+const severityMethod: any = {
+    "GET": "success",
+    "POST": "info",
+    "PUT": "warn",
+    "PATCH": "warn",
+    "DELETE": "danger",
+}
+const getSeverityByMethod = (method: string): string => severityMethod[method];
+const methodOptions = [
+    {
+        value: null,
+        label: 'ALL',
+    },
+    {
+        value: 'GET',
+        label: 'GET',
+    },
+    {
+        value: 'POST',
+        label: 'POST',
+    },
+    {
+        value: 'PUT',
+        label: 'PUT',
+    },
+    {
+        value: 'PATCH',
+        label: 'PATCH',
+    },
+    {
+        value: 'DELETE',
+        label: 'DELETE',
+    },
+];
+
+
+const getSeverityByStatusCode = (statusCode: number): string => {
+    if (statusCode >= 200 && statusCode < 300) return "success";
+    if (statusCode >= 300 && statusCode < 400) return "info";
+    if (statusCode >= 400 && statusCode < 500) return "warn";
+    if (statusCode >= 500) return "error";
     return "info";
 };
+
+const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
+    '__global': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'user.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'ip_address': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'timestamp': { value: null, matchMode: FilterMatchMode.DATE_IS },
+    'status_code': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'method': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'route': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'description': { value: null, matchMode: FilterMatchMode.CONTAINS },
+});
 
 </script>

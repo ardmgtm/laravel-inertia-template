@@ -18,16 +18,22 @@ class RoleAndPermissionSeeder extends Seeder
 
         $permissionsName = $this->getPermissionList();
 
+        $newPermissions = [];
+
         foreach ($permissionsName as $permissionGroup) {
             $groupName = $permissionGroup['group_name'];
             foreach ($permissionGroup['permissions'] as $permission) {
+                $permissionName = $groupName . '.' . $permission;
                 Permission::updateOrCreate([
-                    'name' => $groupName . '.' . $permission,
+                    'name' => $permissionName,
                 ], [
                     'guard_name' => 'web'
                 ]);
+                $newPermissions[] = $permissionName;
             }
         }
+
+        Permission::whereNotIn('name', $newPermissions)->delete();
 
         $superadminRole = Role::updateOrCreate([
             'name' => 'Superadmin'
@@ -36,7 +42,7 @@ class RoleAndPermissionSeeder extends Seeder
         ]);
 
         $superadminRole->givePermissionTo(Permission::all());
-        $superadminUser = User::where('username','admin')->first();
+        $superadminUser = User::where('username', 'admin')->first();
         $superadminUser->assignRole('superadmin');
 
         Role::updateOrCreate([
@@ -70,7 +76,7 @@ class RoleAndPermissionSeeder extends Seeder
                 ]
             ],
             [
-                'group_name' => 'user_log',
+                'group_name' => 'user_activity',
                 'permissions' => [
                     'browse',
                 ]

@@ -12,34 +12,37 @@ class UserActivityLog
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         return $next($request);
     }
 
-    public function terminate(Request $request, Response $response) : void
+    /**
+     * Handle tasks after the response has been sent.
+     */
+    public function terminate(Request $request, Response $response): void
+    {
+        if (session()->has('record_activity')) {
+            $this->recordActivity($request, $response);
+
+            session()->forget(['record_activity', 'activity_description']);
+        }
+    }
+
+    protected function recordActivity(Request $request, Response $response): void
     {
         $user = Auth::user();
-        $method = $request->method();
-        $statusCode = $response->getStatusCode();
-        $routeName = $request->route()->getName();
-        $route = $request->path();
-        $ipClient = $request->ip();
-        $userAgent = $request->header('User-Agent');
-
-        $activityRecord = [
-            'timestamp' => now(),
-            'user_id' => $user?->id,
-            'method' => $method,
-            'status_code' => $statusCode,
-            'route_name' => $routeName,
-            'route' => $route,
-            'ip_address' => $ipClient,
-            'user_agent' => $userAgent,
-        ];
-        UserActivity::create($activityRecord);
+        UserActivity::create([
+            'timestamp'     => now(),
+            'user_id'       => $user?->id,
+            'method'        => $request->method(),
+            'status_code'   => $response->getStatusCode(),
+            'route_name'    => $request->route()?->getName(),
+            'route'         => $request->path(),
+            'ip_address'    => $request->ip(),
+            'user_agent'    => $request->header('User-Agent'),
+            'description'   => session('activity_description', '-'),
+        ]);
     }
 }
