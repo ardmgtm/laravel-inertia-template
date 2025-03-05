@@ -36,11 +36,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const firstLetter = computed(() => {
-    return props.name?.charAt(0).toUpperCase() ?? '?';
+    return props.name?.charAt(0).toUpperCase() ?? props.user?.name.charAt(0).toUpperCase() ?? '?';
 });
 
 const backgroundColor = computed(() => {
-    let name = props.name ?? '?';
+    let name = props.name ?? props.user?.name ?? '?';
     const hash = name.split('').reduce((acc, char) => {
         return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);

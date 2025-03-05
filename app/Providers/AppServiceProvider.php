@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\MediaLibrary\CustomPathGenerator;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(PathGenerator::class, CustomPathGenerator::class);
     }
 
     /**

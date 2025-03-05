@@ -8,9 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Support\Str;
 
 class User extends Authenticatable implements HasMedia
 {
