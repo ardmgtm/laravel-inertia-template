@@ -48,7 +48,7 @@
             <Column field="roles.name" header="Role" class="min-w-48" :showFilterMenu="false"
                 :show-clear-button="false">
                 <template #body="slotProps">
-                    <div class="flex flex-wrap">
+                    <div class="flex flex-wrap gap-2">
                         <AppColorTag v-for="role in slotProps.data.roles" :key="role.id" :label="role.name" />
                     </div>
                 </template>
@@ -68,7 +68,7 @@
                         :value="slotProps.data.is_active ? 'Active' : 'Inactive'" />
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
-                    <Select size="small" v-model="filterModel.value" option-value="value" option-label="label"
+                    <Select size="small" v-model="filterModel.value" option-value="value" option-label="label" :show-clear="true"
                         @change="filterCallback()" :options="statusOptions" class="min-w-24">
                         <template #option="slotProps">
                             <Tag icon="pi pi-circle-fill" :value="slotProps.option.label"
@@ -152,11 +152,6 @@ const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
 });
 
 const statusOptions = ref([
-    {
-        value: null,
-        label: 'All',
-        severity: 'secondary',
-    },
     {
         value: false,
         label: 'Inactive',

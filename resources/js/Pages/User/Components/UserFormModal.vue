@@ -17,8 +17,8 @@
                     autocomplete="off" toggleMask fluid />
             </AppFormField>
             <AppFormField name="role" label="User Role">
-                <Select id="role" v-model="formData.roles" :options="roleOptions" option-value="id" option-label="name"
-                    placeholder="Select Role" fluid :show-clear="true"/>
+                <MultiSelect id="role" v-model="formData.roles" :options="roleOptions" option-value="id" option-label="name" 
+                    placeholder="Select Role" fluid display="chip" :max-selected-labels="2"/>
             </AppFormField>
             <div class="flex justify-end w-full gap-2 mt-2">
                 <Button label="Cancel" severity="secondary" @click.prevent="closeDialog" />
@@ -116,7 +116,7 @@ function editAction(data: User) {
     formData.name = data.name;
     formData.email = data.email;
     formData.username = data.username;
-    formData.roles = data.roles?.[0]?.id;
+    formData.roles = data.roles?.map(role => role.id);
 }
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {

@@ -20,6 +20,7 @@ class AccountController extends Controller
     }
     public function updateInformation(UpdateInformationRequest $request)
     {
+        $this->logActivity($request,'Updated user information');
         $data = $request->validated();
         DB::beginTransaction();
         try{

@@ -136,6 +136,7 @@ function editSubmitAction(event: FormSubmitEvent) {
                     detail: response.props.flash.message,
                     life: 3000
                 });
+                editMode.value = false;
             },
             onError: (error: any) => {
                 toast.add({
@@ -147,7 +148,6 @@ function editSubmitAction(event: FormSubmitEvent) {
             },
             onFinish: () => {
                 loading.value = false;
-                editMode.value = false;
             }
         });
     }

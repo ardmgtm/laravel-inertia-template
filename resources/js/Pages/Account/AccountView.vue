@@ -22,10 +22,10 @@
                         <BasicInformation />
                     </div>
                     <div v-else-if="activeMenu == 'change_password'">
-                        <div>Change Password</div>
+                        <ChangePassword />
                     </div>
                     <div v-else-if="activeMenu == 'preference'">
-                        <div>Preference</div>
+                        <Preferences />
                     </div>
                 </Transition>
             </div>
@@ -36,19 +36,22 @@
 
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import BasicInformation from './Components/BasicInformation.vue';
+import { computed, ref, watch } from 'vue';
 import { MenuItem } from 'primevue/menuitem';
-
-const breadcrumbs = ref<MenuItem[]>([
-    { label: 'Account', url: '/account' },
-]);
+import BasicInformation from './Components/BasicInformation.vue';
+import ChangePassword from './Components/ChangePassword.vue';
+import Preferences from './Components/Preferences.vue';
 
 const activeMenu = ref<string>('basic_information');
 const menu = ref<MenuItem[]>([
-    { key: "basic_information", label: 'Basic Information', icon: 'pi pi-user', url: '/account' },
-    { key: "change_password", label: 'Change Password', icon: 'pi pi-key', url: '/account/change-password' },
-    { key: "preference", label: 'Preference', icon: 'pi pi-cog', url: '/account/preference' },
+    { key: "basic_information", label: 'Basic Information', icon: 'pi pi-user' },
+    { key: "change_password", label: 'Change Password', icon: 'pi pi-key' },
+    { key: "preference", label: 'Preference', icon: 'pi pi-cog' },
+]);
+
+const breadcrumbs = computed<MenuItem[]>(()=>[
+    { label: 'Account', url: '/account' },
+    ...menu.value.filter(item => item.key === activeMenu.value).map(item => ({ label: item.label }))
 ]);
 
 </script>

@@ -1,8 +1,7 @@
 <template>
     <div :style="{
         backgroundColor: backgroundColor,
-        color: textColor,
-    }" class="rounded-md flex items-center justify-center font-bold select-none px-2 py-1 text-sm">
+    }" class="rounded-md flex items-center justify-center font-bold select-none px-2 py-1 text-sm text-gray-900 text-opacity-50">
         {{ props.label }}
     </div>
 </template>
@@ -28,18 +27,6 @@ const backgroundColor = computed(() => {
     const h = hash % 360;
     const s = 60; // Lower saturation for pastel
     const l = 85; // Higher lightness for pastel
-
-    return `hsl(${h}, ${s}%, ${l}%)`;
-});
-
-const textColor = computed(() => {
-    // Extract HSL values from the background color
-    const hsl = backgroundColor.value.match(/\d+/g);
-    if (!hsl) return '#000'; // Fallback to black if parsing fails
-
-    const h = parseInt(hsl[0]);
-    const s = parseInt(hsl[1]);
-    const l = parseInt(hsl[2]) - 50; // Decrease lightness more for darker text
 
     return `hsl(${h}, ${s}%, ${l}%)`;
 });

@@ -6,7 +6,7 @@
         <label :for="name" :style="{
             marginBottom: effectiveLabelPosition === 'left' ? '0' : '0.5rem',
             width: effectiveLabelPosition === 'left' ? `${effectiveLabelWidth}px` : '100%'
-        }">
+        }" :class="effectiveLabelPosition === 'left' ? 'flex-none' : ''">
             {{ label }}
             <span v-if="required" class="text-red-500">*</span>
         </label>
