@@ -2,11 +2,13 @@
 
 namespace App\Traits;
 
+use Illuminate\Http\Request;
+
 trait UserActivityTrait
 {
-    public function logActivity(string $description): void
+    public function logActivity(Request $request,string $description): void
     {
-        session()->put('record_activity', true);
-        session()->put('activity_description', $description);
+        $request['record_activity'] = true;
+        $request['activity_description'] = $description;
     }
 }

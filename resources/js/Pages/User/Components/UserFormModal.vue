@@ -16,6 +16,10 @@
                 <Password id="password" placeholder="Password" v-model="formData.password" :feedback="false"
                     autocomplete="off" toggleMask fluid />
             </AppFormField>
+            <AppFormField name="role" label="User Role">
+                <Select id="role" v-model="formData.roles" :options="roleOptions" option-value="id" option-label="name"
+                    placeholder="Select Role" fluid :show-clear="true"/>
+            </AppFormField>
             <div class="flex justify-end w-full gap-2 mt-2">
                 <Button label="Cancel" severity="secondary" @click.prevent="closeDialog" />
                 <Button :label="!editMode ? 'Create' : 'Update'" severity="primary" type="submit" :loading="loading" />
@@ -24,7 +28,7 @@
     </Dialog>
 </template>
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { Ref, ref } from 'vue';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
@@ -35,15 +39,18 @@ import { FormModalExpose } from '@/Core/Models/form-modal';
 import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
 import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
+import { UserRole } from '@/Core/Models/user-role';
 
 const toast = useToast();
 const confirm = useConfirm();
 
-const emit = defineEmits(['data-created','data-updated','data-deleted']);
+const emit = defineEmits(['data-created', 'data-updated', 'data-deleted']);
 
 const dialogVisible: Ref<boolean> = ref(false);
 const editMode: Ref<boolean> = ref(false);
 const loading: Ref<boolean> = ref(false);
+
+const roleOptions = ref<UserRole[]>(usePage().props.roles as UserRole[]);
 
 const formData = useForm<UserForm>({
     id: null,
@@ -51,6 +58,7 @@ const formData = useForm<UserForm>({
     email: null,
     username: null,
     password: null,
+    roles: null,
 })
 const formErrors = ref();
 const resolver = yupResolver(
@@ -108,6 +116,7 @@ function editAction(data: User) {
     formData.name = data.name;
     formData.email = data.email;
     formData.username = data.username;
+    formData.roles = data.roles?.[0]?.id;
 }
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {

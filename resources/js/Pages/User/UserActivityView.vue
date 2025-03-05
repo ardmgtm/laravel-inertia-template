@@ -3,19 +3,6 @@
     <Head title="User Activity" />
     <AdminLayout title="User Activity" :breadcrumbs>
         <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" dataKey="id">
-            <template #header-start>
-                <div class="flex flex-wrap gap-4">
-                    <SelectButton v-model="selectedStatus" :options="statusOptions" option-label="label"
-                        option-value="value" />
-                </div>
-            </template>
-            <template #header-end>
-                <div>
-                    <DatePicker v-model="selectedDates" selectionMode="range" :manualInput="false" showIcon fluid
-                        :hide-on-range-selection="true" :max-date="new Date()" iconDisplay="input"
-                        placeholder="Start Date - End Date" class="w-72" :numberOfMonths="2" />
-                </div>
-            </template>
             <Column field="user.name" header="User" class="w-60 min-w-60" :show-filter-menu="false"
                 :show-clear-button="false">
                 <template #body="slotProps">
@@ -43,7 +30,8 @@
                     <div>{{ formatDateTime(slotProps.data.timestamp) }}</div>
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
-                    <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
+                    <DatePicker v-model="filterModel.value" :manualInput="false" showIcon fluid @date-select="filterCallback" date-format="dd M yy"
+                        :hide-on-range-selection="true" :max-date="new Date()" iconDisplay="input" class="w-40"/>
                 </template>
             </Column>
             <Column field="status_code" header="Status" class="w-24 min-w-24" :show-filter-menu="false"
@@ -107,15 +95,7 @@ const breadcrumbs: Ref<MenuItem[]> = ref([
 const selectedData = ref();
 const dtHandler = createDataTableHandler(route('user_activity.data_table'));
 
-const selectedDates = ref(null);
-const selectedStatus = ref(0);
-const statusOptions = [
-    { label: 'All', value: 0 },
-    { label: 'Info', value: 'INFO' },
-    { label: 'Error', value: 'ERROR' },
-];
-
-const severityMethod: any = {
+const severityMethod: {[key: string]: string} = {
     "GET": "success",
     "POST": "info",
     "PUT": "warn",
@@ -150,7 +130,6 @@ const methodOptions = [
     },
 ];
 
-
 const getSeverityByStatusCode = (statusCode: number): string => {
     if (statusCode >= 200 && statusCode < 300) return "success";
     if (statusCode >= 300 && statusCode < 400) return "info";
@@ -169,5 +148,4 @@ const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
     'route': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'description': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
-
 </script>

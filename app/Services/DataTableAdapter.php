@@ -32,6 +32,8 @@ class DataTableAdapter
 
         return [
             'data' => $this->query->get(),
+            'sql' => $this->query->toSql(),
+            'binding' => $this->query->getBindings(),
             'totalRecords' => $totalRecords,
         ];
     }
@@ -102,8 +104,7 @@ class DataTableAdapter
 
     protected function isDateFormat($value): bool
     {
-        $dateFormatted = date('Y-m-d', strtotime($value));
-        return strlen($value) > 1 && $dateFormatted === $value;
+        return (bool) strtotime($value);
     }
 
     protected function applyStringFilter(string $field, string $matchMode, $value): void
@@ -151,6 +152,10 @@ class DataTableAdapter
             'lte' => fn() => $this->query->whereDate($field, '<=', $value),
             'gt' => fn() => $this->query->whereDate($field, '>', $value),
             'gte' => fn() => $this->query->whereDate($field, '>=', $value),
+            'dateIs' => fn() => $this->query->whereDate($field, '=', $value),
+            'dateIsNot' => fn() => $this->query->whereDate($field, '!=', $value),
+            'dateBefore' => fn() => $this->query->whereDate($field, '<', $value),
+            'dateAfter' => fn() => $this->query->whereDate($field, '>', $value),
         ];
 
         if (isset($conditions[$matchMode])) {
