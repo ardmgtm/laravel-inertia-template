@@ -23,10 +23,8 @@ class UserActivityLog
      */
     public function terminate(Request $request, Response $response): void
     {
-        if (session()->has('record_activity')) {
+        if (isset($request['record_activity']) && $request['record_activity']) {
             $this->recordActivity($request, $response);
-
-            session()->forget(['record_activity', 'activity_description']);
         }
     }
 
@@ -42,7 +40,7 @@ class UserActivityLog
             'route'         => $request->path(),
             'ip_address'    => $request->ip(),
             'user_agent'    => $request->header('User-Agent'),
-            'description'   => session('activity_description', '-'),
+            'description'   => $request['activity_description'] ?? '-',
         ]);
     }
 }
