@@ -1,5 +1,12 @@
 <template>
-    <div 
+    <img 
+        :src="url ?? user?.profile_picture" 
+        alt="profile" 
+        :style="{ width: size + 'px', height: size + 'px' }"
+        class="rounded-full"
+        v-if="url || user?.profile_picture"/>
+    <div
+        v-else
         class="rounded-full flex items-center justify-center font-bold select-none" 
         :style="{ 
             backgroundColor: backgroundColor,
@@ -14,11 +21,14 @@
 </template>
 
 <script setup lang="ts">
+import { User } from '@/Core/Models/user';
 import { computed } from 'vue';
 
 interface Props {
-    name: string;
+    name?: string;
+    url?: string;
     size?: number;
+    user?: User;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,25 +36,23 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const firstLetter = computed(() => {
-    return props.name.charAt(0).toUpperCase();
+    return props.name?.charAt(0).toUpperCase() ?? '?';
 });
 
 const backgroundColor = computed(() => {
-    // Generate a pastel color based on the name
-    const hash = props.name.split('').reduce((acc, char) => {
+    let name = props.name ?? '?';
+    const hash = name.split('').reduce((acc, char) => {
         return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);
     
-    // Generate HSL color with high lightness for pastel effect
     const h = hash % 360;
-    const s = 60; // Lower saturation for pastel
-    const l = 85; // Higher lightness for pastel
+    const s = 60;
+    const l = 85;
     
     return `hsl(${h}, ${s}%, ${l}%)`;
 });
 
 const textColor = computed(() => {
-    // Always return a dark color for contrast
-    return '#2D3748'; // Tailwind gray-800
+    return '#2D3748';
 });
 </script>

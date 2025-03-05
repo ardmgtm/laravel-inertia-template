@@ -25,7 +25,7 @@ class UpdateInformationRequest extends FormRequest
             'name' => ['required', 'string'],
             'email' => ['required', 'email'],
             'username' => ['required', 'string'],
-            'profilePicture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+            'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ];
     }
 }
