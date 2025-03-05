@@ -65,19 +65,14 @@ class RoleAndPermissionController extends Controller
     {
         try {
             $roleId = $role->id;
-            $permissions = Permission::select('id', 'name')
-                ->leftJoin('role_has_permissions', function ($join) use ($roleId) {
-                    $join->on('permissions.id', '=', 'role_has_permissions.permission_id')
-                        ->where('role_has_permissions.role_id', '=', $roleId);
-                })
-                ->addSelect(DB::raw('
-                    CASE
-                        WHEN role_has_permissions.role_id IS NOT NULL
-                        THEN TRUE
-                        ELSE FALSE
-                    END AS role_has_permission'))
-                ->orderBy('id')
-                ->get();
+            $permissions = Permission::with(['roles' => function ($query) use ($roleId) {
+                $query->where('role_id', $roleId);
+            }])
+            ->get()
+            ->map(function ($permission) use ($roleId) {
+                $permission->role_has_permission = $permission->roles->contains('id', $roleId);
+                return $permission;
+            });
             $permissions = $permissions->map(function ($p) {
                 $p->role_has_permission = boolval($p->role_has_permission);
                 return $p;
