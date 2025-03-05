@@ -9,6 +9,7 @@ use App\Http\Responses\DataTableResponse;
 use App\Http\Responses\InertiaFailedResponse;
 use App\Http\Responses\InertiaSuccessResponse;
 use App\Models\User;
+use App\Traits\UserActivityTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -16,13 +17,16 @@ use Throwable;
 
 class UserController extends Controller
 {
+    use UserActivityTrait;
     public function index(Request $request)
     {
+        $this->logActivity('View user management page');
         return Inertia::render('User/UserManageView');
     }
 
     public function store(CreateUserRequest $request)
     {
+        $this->logActivity('Create new user');
         $data = $request->validated();
         DB::beginTransaction();
         try {
@@ -37,6 +41,7 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
+        $this->logActivity('Update user (id: ' . $user->id . ')');
         $data = $request->validated();
         DB::beginTransaction();
         try {
@@ -51,6 +56,7 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user)
     {
+        $this->logActivity('Delete user (id: ' . $user->id . ')');
         DB::beginTransaction();
         try {
             $user->delete();

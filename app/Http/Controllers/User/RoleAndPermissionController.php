@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Role\RoleRequest;
 use App\Http\Requests\Role\UpdateRolePermissionRequest;
 use App\Models\User;
+use App\Traits\UserActivityTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -14,10 +15,13 @@ use Spatie\Permission\Models\Role;
 
 class RoleAndPermissionController extends Controller
 {
+    use UserActivityTrait;
+
     private const SUPERADMIN_ROLE_ID = 1;
 
     public function index(Request $request)
     {
+        $this->logActivity('View user role and permission management page');
         return Inertia::render('User/UserRolePermissionManageView',[
             'roles' => Role::all(),
         ]);
@@ -25,13 +29,15 @@ class RoleAndPermissionController extends Controller
 
     public function create(RoleRequest $request)
     {
+        $this->logActivity('Create new role');
         $validated = $request->validated();
         Role::create($validated);
         return redirect()->back()->with('message', 'Success to create role');
     }
 
-    public function update(Role $role, RoleRequest $request)
+    public function update(RoleRequest $request, Role $role)
     {
+        $this->logActivity('Update role (id: ' . $role->id . ')');
         $validated = $request->validated();
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
             return redirect()->back()->withErrors(['message' => 'Superadmin cannot be changed']);
@@ -40,8 +46,9 @@ class RoleAndPermissionController extends Controller
         return redirect()->back()->with('message', 'Success to update role');
     }
 
-    public function delete(Role $role, Request $request)
+    public function delete(Request $request, Role $role)
     {
+        $this->logActivity('Delete role (id: ' . $role->id . ')');
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
             return redirect()->back()->withErrors(['message' => 'Superadmin cannot be deleted']);
         }
@@ -58,19 +65,14 @@ class RoleAndPermissionController extends Controller
     {
         try {
             $roleId = $role->id;
-            $permissions = Permission::select('id', 'name')
-                ->leftJoin('role_has_permissions', function ($join) use ($roleId) {
-                    $join->on('permissions.id', '=', 'role_has_permissions.permission_id')
-                        ->where('role_has_permissions.role_id', '=', $roleId);
-                })
-                ->addSelect(DB::raw('
-                    CASE
-                        WHEN role_has_permissions.role_id IS NOT NULL
-                        THEN TRUE
-                        ELSE FALSE
-                    END AS role_has_permission'))
-                ->orderBy('id')
-                ->get();
+            $permissions = Permission::with(['roles' => function ($query) use ($roleId) {
+                $query->where('role_id', $roleId);
+            }])
+            ->get()
+            ->map(function ($permission) use ($roleId) {
+                $permission->role_has_permission = $permission->roles->contains('id', $roleId);
+                return $permission;
+            });
             $permissions = $permissions->map(function ($p) {
                 $p->role_has_permission = boolval($p->role_has_permission);
                 return $p;
