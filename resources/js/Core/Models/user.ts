@@ -6,10 +6,11 @@ export interface User {
 }
 
 export interface UserForm {
-    id: number | null;
-    name: string | null;
-    username: string | null;
-    email: string | null;
-    password: string | null;
+    id?: number | null;
+    name?: string | null;
+    username?: string | null;
+    email?: string | null;
+    password?: string | null;
+    profilePicture?: string | File | null;
     [key: string]: any;
 }
