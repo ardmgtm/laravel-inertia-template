@@ -1,5 +1,4 @@
 <template>
-
     <Head title="Role Manage" />
     <AdminLayout title="Role Manage" :breadcrumbs>
         <div class="flex">
@@ -66,15 +65,15 @@
                                     <div class="flex gap-2">
                                         <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded
                                             v-tooltip.bottom="'Action'"
-                                            @click="(e) => ($refs.roleMenu as any).toggle(e)" />
+                                            @click="(e) => ($refs.roleMenu as any).toggle(e)" v-if="can(['role.update','role.delete'])"/>
                                         <Popover ref="roleMenu">
                                             <div class="flex flex-col">
                                                 <Button icon="pi pi-pen-to-square" variant="text" severity="secondary"
                                                     label="Edit User Role" class="w-full flex justify-start"
-                                                    @click="editUserRoleAction" />
+                                                    @click="editUserRoleAction" v-if="can('role.update')"/>
                                                 <Button icon="pi pi-trash" variant="text" severity="danger"
                                                     label="Delete User Role" class="w-full flex justify-start"
-                                                    @click="deleteUserRoleAction" />
+                                                    @click="deleteUserRoleAction" v-if="can(('role.delete'))"/>
                                             </div>
                                         </Popover>
                                     </div>
@@ -180,11 +179,9 @@ import { computed, ComputedRef, ref, Ref } from 'vue';
 import UserRoleFormModal from './Components/UserRoleFormModal.vue';
 import { FormModalExpose } from '@/Core/Models/form-modal';
 import AppInputSearch from '@/Components/AppInputSearch.vue';
+import { can } from '@/Core/Utiils/permission-check';
 
 const toast = useToast();
-
-//TODO : Implement can
-const can = (params: any) => true;
 
 const breadcrumbs: Ref<MenuItem[]> = ref([
     {

@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', {
             return this.permissions.some(p => p.name === permission);
         },
         hasPermissions(permissions: string[]): boolean {
-            return permissions.every(permission => this.permissions.some(p => p.name === permission));
+            return permissions.some(permission => this.permissions.some(p => p.name === permission));
         },
     }
 });

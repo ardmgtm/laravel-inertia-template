@@ -8,7 +8,7 @@
             :class="{ 'text-primary font-bold': isActive || submenuExpand }" @click.stop="onclickHandle">
             <div v-if="props.icon != null"
                 class="rounded-lg border h-8 w-8 flex items-center justify-center group-hover:border-primary"
-                :class="{ 'border-primary': isActive, 'border-surface-300': !isActive }">
+                :class="{ 'border-primary': isActive || submenuExpand, 'border-surface-300': !isActive && !submenuExpand }">
                 <i class="group-hover:text-primary"
                     :class="[props.icon, { 'text-primary': isActive || submenuExpand, 'text-surface-500': !isActive && !submenuExpand }]" />
             </div>

@@ -1,9 +1,8 @@
 <template>
-
     <Head title="User Manage" />
     <AdminLayout title="User Manage" :breadcrumbs>
         <template #action>
-            <Button label="Add User" icon="pi pi-plus" @click="addUserAction" />
+            <Button label="Add User" icon="pi pi-plus" @click="addUserAction" v-if="can('user.create')" />
         </template>
         <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" data-key="id"
             empty-message="No Users Data.">
@@ -45,7 +44,7 @@
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="roles.name" header="Role" class="min-w-48" :showFilterMenu="false"
+            <Column field="roles.name" header="Role" class="min-w-32 w-32" :showFilterMenu="false"
                 :show-clear-button="false">
                 <template #body="slotProps">
                     <div class="flex flex-wrap gap-2">
@@ -54,7 +53,7 @@
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
                     <Select size="small" v-model="filterModel.value" option-value="id" option-label="name"
-                        @change="filterCallback()" :show-clear="true" :options="roleOptions" class="min-w-48">
+                        @change="filterCallback()" :show-clear="true" :options="roleOptions" class="min-w-32">
                         <template #option="slotProps">
                             <AppColorTag :label="slotProps.option.name" />
                         </template>
@@ -77,7 +76,7 @@
                     </Select>
                 </template>
             </Column>
-            <Column field="id" class="w-16">
+            <Column field="id" class="w-16" v-if="can(['user.update', 'user.delete'])">
                 <template #body="slotProps">
                     <div class="flex gap-2">
                         <Button icon="pi pi-ellipsis-v" severity="secondary" variant="text" rounded
@@ -90,9 +89,9 @@
             <div class="flex flex-col gap-1 w-48">
                 <span class="font-bold">Options</span>
                 <Button icon="pi pi-pen-to-square" severity="secondary" variant="text" class="w-full flex justify-start"
-                    label="Edit Users" size="small" @click="editUserAction" />
+                    label="Edit Users" size="small" @click="editUserAction" v-if="can('user.update')" />
                 <Button icon="pi pi-trash" severity="danger" variant="text" class="w-full flex justify-start"
-                    label="Delete Users" size="small" @click="deleteUserAction" />
+                    label="Delete Users" size="small" @click="deleteUserAction" v-if="can('user.delete')" />
             </div>
         </Popover>
     </AdminLayout>
@@ -113,6 +112,7 @@ import { FormModalExpose } from '@/Core/Models/form-modal';
 import { User } from '@/Core/Models/user';
 import { UserRole } from '@/Core/Models/user-role';
 import AppColorTag from '@/Components/AppColorTag.vue';
+import { can } from '@/Core/Utiils/permission-check';
 
 const breadcrumbs: Ref<MenuItem[]> = ref([
     {

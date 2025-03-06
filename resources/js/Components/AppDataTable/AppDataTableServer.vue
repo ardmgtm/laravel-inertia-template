@@ -7,8 +7,14 @@
             :rows="handler.size" @filter="handler?.onFilter" @sort="handler?.onSort" @page="handler?.onPage"
             v-bind="$attrs" v-on="$attrs">
             <template #empty>
-                <div class="py-4 flex justify-center">
-                    {{ !handler.error ? emptyMessage : 'Error Processing Data' }}
+                <div class="py-4 flex justify-center" v-if="!handler.error"> 
+                    {{ emptyMessage }}
+                </div>
+                <div v-else>
+                    <div class="py-4 flex flex-col items-center text-red-500">
+                        <i class="pi pi-exclamation-triangle text-4xl"></i>
+                        <span class="mt-2">{{ errorMessage }}</span>
+                    </div>
                 </div>
             </template>
             <template #header>
@@ -45,6 +51,10 @@ const props = defineProps({
         type: String,
         default: 'No data available.'
     },
+    errorMessage: {
+        type: String,
+        default: 'Error processing data'
+    }
 });
 const selection = computed({
     get: () => props.selection,
