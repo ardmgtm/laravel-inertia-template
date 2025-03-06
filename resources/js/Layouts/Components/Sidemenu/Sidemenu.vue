@@ -25,6 +25,10 @@
         <Link :href="route('dashboard')"><img src="/vite.svg" alt="app-logo" class="h-10" /></Link>
       </div>
 
+      <div>
+        <slot name="sidebar-header" />
+      </div>
+
       <!-- Links -->
       <div class="space-y-8">
         <!-- Pages group -->

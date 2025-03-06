@@ -24,7 +24,7 @@ class RoleAndPermissionController extends Controller
 
     public function create(RoleRequest $request)
     {
-        $this->logActivity($request, 'Create new role');
+        $this->logActivity('Create new role');
         $validated = $request->validated();
         Role::create($validated);
         return redirect()->back()->with('message', 'Success to create role');
@@ -32,7 +32,7 @@ class RoleAndPermissionController extends Controller
 
     public function update(RoleRequest $request, Role $role)
     {
-        $this->logActivity($request, 'Update role (id: ' . $role->id . ')');
+        $this->logActivity('Update role (id: ' . $role->id . ')');
         $validated = $request->validated();
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
             return redirect()->back()->withErrors(['message' => 'Superadmin cannot be changed']);
@@ -43,7 +43,7 @@ class RoleAndPermissionController extends Controller
 
     public function delete(Request $request, Role $role)
     {
-        $this->logActivity($request, 'Delete role (id: ' . $role->id . ')');
+        $this->logActivity('Delete role (id: ' . $role->id . ')');
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
             return redirect()->back()->withErrors(['message' => 'Superadmin cannot be deleted']);
         }

@@ -18,6 +18,6 @@ class UserActivityController extends Controller
     public function dataTable(Request $request)
     {
         $query = UserActivity::with(['user']);
-        return DataTableResponse::load($request, $query);
+        return DataTableResponse::load($query);
     }
 }

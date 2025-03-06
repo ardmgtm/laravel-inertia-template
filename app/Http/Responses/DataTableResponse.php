@@ -8,8 +8,9 @@ use Illuminate\Http\Request;
 
 class DataTableResponse
 {
-    public static function load(Request $request, Builder $builder)
+    public static function load(Builder $builder)
     {
+        $request = request();
         $dataLoad = DataTableAdapter::load($builder, $request);
         return response()->json($dataLoad);
     }

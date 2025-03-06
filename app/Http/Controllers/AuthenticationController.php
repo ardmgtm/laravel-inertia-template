@@ -15,13 +15,13 @@ class AuthenticationController extends Controller
     }
     public function login(LoginRequest $request)
     {
-        $this->logActivity($request, 'User logged in');
+        $this->logActivity('User logged in');
         $request->authenticate();
         return redirect()->route('dashboard')->with('flash', ['message' => 'Login successful']);
     }
     public function logout(Request $request)
     {
-        $this->logActivity($request, 'User logged out');
+        $this->logActivity('User logged out');
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

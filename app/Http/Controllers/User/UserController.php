@@ -27,7 +27,7 @@ class UserController extends Controller
 
     public function create(CreateUserRequest $request)
     {
-        $this->logActivity($request, 'Create new user');
+        $this->logActivity('Create new user');
         $data = $request->validated();
         DB::beginTransaction();
         try {
@@ -43,7 +43,7 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
-        $this->logActivity($request, 'Update user (id: ' . $user->id . ')');
+        $this->logActivity('Update user (id: ' . $user->id . ')');
         $data = $request->validated();
         DB::beginTransaction();
         try {
@@ -60,7 +60,7 @@ class UserController extends Controller
 
     public function delete(Request $request, User $user)
     {
-        $this->logActivity($request, 'Delete user (id: ' . $user->id . ')');
+        $this->logActivity('Delete user (id: ' . $user->id . ')');
         DB::beginTransaction();
         try {
             $user->delete();
@@ -75,6 +75,6 @@ class UserController extends Controller
     public function dataTable(Request $request)
     {
         $query = User::query()->with(['roles']);
-        return DataTableResponse::load($request, $query);
+        return DataTableResponse::load($query);
     }
 }
