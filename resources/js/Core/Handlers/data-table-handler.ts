@@ -37,14 +37,14 @@ function createDataTableHandler(url: string, request: unknown = {}): DataTableHa
         filters: {},
         loadedData: ref({ data: [], totalRecords: 0 }),
         url,
-        request: { page: 1, size: 10, filters:[], sorts:[] } as DataTableRequest,
-        
+        request: { page: 1, size: 10, filters: [], sorts: [] } as DataTableRequest,
+
         loadData: () => {
             handler.loading.value = true;
-            handler.error.value = false;
             axios.get(handler.url, {
                 params: handler.request
             }).then((response) => {
+                handler.error.value = false;
                 handler.loadedData.value = {
                     data: response.data.data,
                     totalRecords: response.data.totalRecords

@@ -49,7 +49,6 @@ const clearFormError = (field: string) => {
         } else if (updatedErrors[field]) {
             delete updatedErrors[field];
         }
-        console.log(updatedErrors);
         emit('update:errors', updatedErrors);
     }
 };

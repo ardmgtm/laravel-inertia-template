@@ -32,8 +32,6 @@ class DataTableAdapter
 
         return [
             'data' => $this->query->get(),
-            'sql' => $this->query->toSql(),
-            'binding' => $this->query->getBindings(),
             'totalRecords' => $totalRecords,
         ];
     }
@@ -113,8 +111,6 @@ class DataTableAdapter
 
         [$field, $matchMode, $value] = $filter;
 
-        $value = $this->castFilterValue($value);
-
         if (is_numeric($value)) {
             $this->applyNumericFilter($field, $matchMode, $value);
         } elseif (is_bool($value)) {
@@ -147,7 +143,23 @@ class DataTableAdapter
 
     protected function isDateFormat($value): bool
     {
-        return (bool) strtotime($value);
+        $patterns = [
+            'Y-m-d',
+            'Y-m-d H:i:s',
+            'Y-m-d H:i',
+            'Y-m-d\TH:i:sP',
+            'Y-m-d\TH:i:s',
+            'Y-m-d\TH:i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            $parsedDate = \DateTime::createFromFormat($pattern, $value);
+            if ($parsedDate && $parsedDate->format($pattern) === $value) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function applyStringFilter(string $field, string $matchMode, $value): void

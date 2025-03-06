@@ -7,7 +7,7 @@
             :rows="handler.size" @filter="handler?.onFilter" @sort="handler?.onSort" @page="handler?.onPage"
             v-bind="$attrs" v-on="$attrs">
             <template #empty>
-                <div class="py-4 flex justify-center" v-if="!handler.error"> 
+                <div class="py-4 flex justify-center" v-if="!handler?.error.value"> 
                     {{ emptyMessage }}
                 </div>
                 <div v-else>
