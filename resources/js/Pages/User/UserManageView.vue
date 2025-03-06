@@ -30,17 +30,17 @@
                 </div>
             </template>
             <Column selectionMode="multiple" headerStyle="width: 3rem" frozen />
-            <Column field="name" header="Name" class="min-w-72" :show-clear-button="false">
+            <Column field="name" header="Name" class="min-w-72" :show-clear-button="false" sortable>
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="username" header="Username" class="min-w-72" :show-clear-button="false">
+            <Column field="username" header="Username" class="min-w-72" :show-clear-button="false" sortable>
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="email" header="Email" class="min-w-72" :show-clear-button="false">
+            <Column field="email" header="Email" class="min-w-72" :show-clear-button="false" sortable>
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>

@@ -4,16 +4,16 @@
         <Divider />
         <AppForm v-model="formData" @submit="submitAction">
             <AppFormField name="old_password" label="Old Password" required>
-                <Password id="old_password" v-model="formData.old_password" :feedback="false" autocomplete="one-time-code"
-                    toggleMask fluid />
+                <Password id="old_password" v-model="formData.old_password" :feedback="false"
+                    autocomplete="new-password" toggleMask fluid />
             </AppFormField>
             <AppFormField name="new_password" label="New Password" required>
-                <Password id="new_password" v-model="formData.new_password" :feedback="false" autocomplete="off"
-                    toggleMask fluid />
+                <Password id="new_password" v-model="formData.new_password" :feedback="false"
+                    autocomplete="new-password" toggleMask fluid />
             </AppFormField>
             <AppFormField name="confirm_password" label="Confirm Password" required>
-                <Password id="confirm_password" v-model="formData.confirm_password" :feedback="false" autocomplete="off"
-                    toggleMask fluid />
+                <Password id="confirm_password" v-model="formData.confirm_password" :feedback="false"
+                    autocomplete="new-password" toggleMask fluid />
             </AppFormField>
             <AppFormField>
                 <div class="flex gap-4">
