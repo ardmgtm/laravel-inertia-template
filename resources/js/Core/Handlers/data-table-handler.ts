@@ -16,6 +16,7 @@ interface DataTableResponse {
 
 interface DataTableHandler {
     loading: Ref<boolean>;
+    error: Ref<boolean>;
     page: number;
     size: number;
     filters: { [key: string]: DataTableFilterMetaData };
@@ -30,6 +31,7 @@ interface DataTableHandler {
 function createDataTableHandler(url: string, request: unknown = {}): DataTableHandler {
     const handler = {
         loading: ref(false),
+        error: ref(false),
         page: 1,
         size: 10,
         filters: {},
@@ -39,6 +41,7 @@ function createDataTableHandler(url: string, request: unknown = {}): DataTableHa
         
         loadData: () => {
             handler.loading.value = true;
+            handler.error.value = false;
             axios.get(handler.url, {
                 params: handler.request
             }).then((response) => {
@@ -47,6 +50,8 @@ function createDataTableHandler(url: string, request: unknown = {}): DataTableHa
                     totalRecords: response.data.totalRecords
                 };
             }).catch(error => {
+                handler.error.value = true;
+                handler.loadedData.value = { data: [], totalRecords: 0 };
                 throw error;
             }).finally(() => {
                 handler.loading.value = false;

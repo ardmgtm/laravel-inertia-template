@@ -8,7 +8,7 @@
             v-bind="$attrs" v-on="$attrs">
             <template #empty>
                 <div class="py-4 flex justify-center">
-                    {{ emptyMessage }}
+                    {{ !handler.error ? emptyMessage : 'Error Processing Data' }}
                 </div>
             </template>
             <template #header>

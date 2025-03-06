@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </template>
-            <Column field="id" selectionMode="multiple" headerStyle="width: 3rem"/>
+            <Column field="id" selectionMode="multiple" headerStyle="width: 3rem" />
             <Column field="name" header="Name" class="min-w-72" :show-clear-button="false" sortable>
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
@@ -54,7 +54,7 @@
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
                     <Select size="small" v-model="filterModel.value" option-value="id" option-label="name"
-                        :show-clear="true" :options="roleOptions" class="min-w-48">
+                        @change="filterCallback()" :show-clear="true" :options="roleOptions" class="min-w-48">
                         <template #option="slotProps">
                             <AppColorTag :label="slotProps.option.name" />
                         </template>
@@ -68,8 +68,8 @@
                         :value="slotProps.data.is_active ? 'Active' : 'Inactive'" />
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
-                    <Select size="small" v-model="filterModel.value" option-value="value" option-label="label" :show-clear="true"
-                        @change="filterCallback()" :options="statusOptions" class="min-w-24">
+                    <Select size="small" v-model="filterModel.value" option-value="value" option-label="label"
+                        :show-clear="true" @change="filterCallback()" :options="statusOptions" class="min-w-24">
                         <template #option="slotProps">
                             <Tag icon="pi pi-circle-fill" :value="slotProps.option.label"
                                 :severity="slotProps.option.severity" />
