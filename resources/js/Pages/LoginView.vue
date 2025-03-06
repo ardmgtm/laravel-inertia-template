@@ -87,6 +87,7 @@ function loginAction(event: FormSubmitEvent) {
                     detail: 'Login Successful',
                     life: 3000,
                 });
+                authStore.setUser(response.props.flash.user);
                 authStore.setRoles(response.props.flash.roles);
                 authStore.setPermissions(response.props.flash.permissions);
             },

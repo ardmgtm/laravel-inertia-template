@@ -19,6 +19,13 @@ class AuthenticationController extends Controller
         $request->authenticate();
         return redirect()->route('dashboard')->with([
             'message' => 'Login successful',
+            'user' => [
+                'id' => $request->user()?->id,
+                'name' => $request->user()?->name,
+                'username' => $request->user()?->username,
+                'email' => $request->user()?->email,
+                'profile_picture' => $request->user()?->profile_picture,
+            ],
             'roles' => $request->user()?->roles->map(function ($role) {
                 return [
                     'id' => $role->id,
