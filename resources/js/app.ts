@@ -12,6 +12,11 @@ import customPreset from './Core/Configs/custom-themes';
 import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
 import Tooltip from 'primevue/tooltip';
+import { createPinia } from 'pinia';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+
+const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -24,6 +29,7 @@ createInertiaApp({
         ),
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
+            .use(pinia)
             .use(plugin)
             .use(PrimeVue, {
                 ripple: true,

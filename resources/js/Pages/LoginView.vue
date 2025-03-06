@@ -43,15 +43,17 @@
         © {{ currentYear }} Your Company. All rights reserved.
     </footer>
 </template>
-<script setup>
+<script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { useToast } from "primevue/usetoast";
-import { Form } from '@primevue/forms';
+import { Form, FormSubmitEvent } from '@primevue/forms';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
+import { useAuthStore } from '@/Stores/auth-store';
 
 const toast = useToast();
+const authStore = useAuthStore();
 
 const currentYear = new Date().getFullYear();
 const formSignIn = useForm({
@@ -73,19 +75,20 @@ function togglePassword() {
     showPassword.value = !showPassword.value;
 }
 
-function loginAction(valid) {
-    if(valid){
+function loginAction(event: FormSubmitEvent) {
+    if(event.valid){
         loading.value = true;
         formSignIn.post(route('login'),{
             preserveScroll: true,
-            onSuccess: (_) => {
+            onSuccess: (response: any) => {
                 toast.add({
                     severity: 'success',
                     summary: 'Success',
                     detail: 'Login Successful',
-                    group: 'tc',
-                    life: 1000,
+                    life: 3000,
                 });
+                authStore.setRoles(response.props.flash.roles);
+                authStore.setPermissions(response.props.flash.permissions);
             },
             onError: (errors) => {
                 if(errors.message){

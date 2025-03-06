@@ -1,7 +1,7 @@
 export interface UserRole {
     id: number;
     name: string;
-    permissions? : PermissionGroups;
+    permissions?: PermissionGroups;
     [key: string]: any;
 }
 
@@ -11,11 +11,16 @@ export interface UserRoleForm {
     [key: string]: any;
 }
 
-export interface PermissionGroups{
-    [key:string] : Array<PermissionItem>;
+export interface Permission {
+    id: number;
+    name: string;
 }
 
-export interface PermissionItem{
+export interface PermissionGroups {
+    [key: string]: Array<PermissionItem>;
+}
+
+export interface PermissionItem {
     id: number;
     name: string;
     role_has_permission: boolean;

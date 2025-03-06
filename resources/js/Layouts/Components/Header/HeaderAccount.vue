@@ -32,9 +32,11 @@ import { router, usePage } from '@inertiajs/vue3';
 import { MenuItem } from 'primevue/menuitem';
 import { User } from '@/Core/Models/user';
 import AppProfilePicture from '@/Components/AppProfilePicture.vue';
+import { useAuthStore } from '@/Stores/auth-store';
 
 const menu = ref();
 const user : Ref<User> = computed(()=>usePage().props.auth.user as User);
+const authStore = useAuthStore();
 
 const accountMenuItems: Ref<MenuItem[]> = ref([
     {
@@ -58,6 +60,8 @@ function toggle(event: Event) {
 };
 
 function logoutAction() {
-    router.post(route('logout'));
+    router.post(route('logout'),{},{
+        onSuccess: (response : any) => authStore.$reset()
+    });
 }
 </script>

@@ -29,7 +29,8 @@
             :style="{ height: submenuExpand ? submenuHeight : '0' }">
             <li v-for="subMenu in props.items">
                 <SidemenuItem :label="subMenu.label" :url="subMenu.url" @item-active="updateActiveState"
-                    :items="subMenu.items" @click="onclickHandle" />
+                    v-if="can(subMenu.permissions as string | string[])" :items="subMenu.items"
+                    @click="onclickHandle" />
             </li>
         </ul>
     </div>
@@ -38,6 +39,8 @@
 import { ref, computed, onMounted } from "vue";
 import { MenuItem } from "primevue/menuitem";
 import { router, usePage } from "@inertiajs/vue3";
+import { can } from "@/Core/Utiils/permission-check";
+import { SideMenuItem } from "@/Core/Configs/sidemenu-item";
 
 const emit = defineEmits(["item-active"]);
 
@@ -59,7 +62,7 @@ const props = defineProps({
         required: false,
     },
     items: {
-        type: Array as () => MenuItem[],
+        type: Array as () => SideMenuItem[],
         required: false,
     }
 })

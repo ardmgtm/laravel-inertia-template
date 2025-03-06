@@ -37,7 +37,7 @@
             <ul>
               <li v-for="menuItem in sideMenuItemData">
                 <SidemenuItem :label="menuItem.label" :sparator="menuItem.separator" :icon="menuItem.icon"
-                  :url="menuItem.url" :items="menuItem.items" />
+                  :url="menuItem.url" :items="menuItem.items" v-if="can(menuItem.permissions)"/>
               </li>
             </ul>
           </nav>
@@ -53,6 +53,7 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import SidemenuItem from './SidemenuItem.vue';
 import { sideMenuItemData } from '@/Core/Configs/sidemenu-item';
 import { Link } from '@inertiajs/vue3';
+import { can } from '@/Core/Utiils/permission-check';
 
 const props = defineProps({
   sidebarOpen: {

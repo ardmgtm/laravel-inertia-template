@@ -35,6 +35,9 @@ import Sidemenu from './Components/Sidemenu/Sidemenu.vue';
 import Header from './Components/Header/Header.vue';
 import { MenuItem } from 'primevue/menuitem';
 import { Toast } from 'primevue';
+import { useAuthStore } from '@/Stores/auth-store';
+
+const authStore = useAuthStore();
 
 const sidebarOpen = ref(false);
 const props = defineProps({

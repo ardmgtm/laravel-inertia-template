@@ -17,7 +17,21 @@ class AuthenticationController extends Controller
     {
         $this->logActivity('User logged in');
         $request->authenticate();
-        return redirect()->route('dashboard')->with('flash', ['message' => 'Login successful']);
+        return redirect()->route('dashboard')->with([
+            'message' => 'Login successful',
+            'roles' => $request->user()?->roles->map(function ($role) {
+                return [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                ];
+            }),
+            'permissions' => $request->user()?->getAllPermissions()->map(function ($permission) {
+                return [
+                    'id' => $permission->id,
+                    'name' => $permission->name,
+                ];
+            }),
+        ]);
     }
     public function logout(Request $request)
     {
