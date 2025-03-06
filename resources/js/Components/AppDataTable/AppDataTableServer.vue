@@ -1,22 +1,11 @@
 <template>
     <div class="custom-table-wrapper">
-        <DataTable 
-            paginator 
-            removableSort 
-            v-model:selection="selection" 
-            filterDisplay="row" 
-            :lazy="true" 
+        <DataTable paginator removableSort lazy scrollable filterDisplay="row" v-model:selection="selection"
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink JumpToPageInput CurrentPageReport NextPageLink LastPageLink"
-            :rowsPerPageOptions="[5, 10, 20, 50]" 
-            :value="handler?.loadedData?.value.data"
-            :totalRecords="handler?.loadedData?.value.totalRecords" 
-            :first="(handler.page - 1) * handler.size"
-            :rows="handler.size" 
-            @filter="handler?.onFilter" 
-            @sort="handler?.onSort"
-            @page="handler?.onPage" 
-            v-bind="$attrs" 
-            v-on="$attrs">
+            :rowsPerPageOptions="[5, 10, 20, 50]" :value="handler?.loadedData?.value.data"
+            :totalRecords="handler?.loadedData?.value.totalRecords" :first="(handler.page - 1) * handler.size"
+            :rows="handler.size" @filter="handler?.onFilter" @sort="handler?.onSort" @page="handler?.onPage"
+            v-bind="$attrs" v-on="$attrs">
             <template #empty>
                 <div class="py-4 flex justify-center">
                     {{ emptyMessage }}

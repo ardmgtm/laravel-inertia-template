@@ -5,7 +5,7 @@
         <template #action>
             <Button label="Add User" icon="pi pi-plus" @click="addUserAction" />
         </template>
-        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" dataKey="id"
+        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" data-key="id"
             empty-message="No Users Data.">
             <template #header-start>
                 <div v-if="selectedData?.length > 0">
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </template>
-            <Column selectionMode="multiple" headerStyle="width: 3rem" frozen />
+            <Column field="id" selectionMode="multiple" headerStyle="width: 3rem"/>
             <Column field="name" header="Name" class="min-w-72" :show-clear-button="false" sortable>
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
@@ -77,7 +77,7 @@
                     </Select>
                 </template>
             </Column>
-            <Column field="id" class="w-16" frozen align-frozen="right">
+            <Column field="id" class="w-16">
                 <template #body="slotProps">
                     <div class="flex gap-2">
                         <Button icon="pi pi-ellipsis-v" severity="secondary" variant="text" rounded
