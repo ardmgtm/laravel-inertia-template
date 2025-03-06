@@ -13,7 +13,7 @@
         <div :class="[effectiveLabelPosition === 'left' ? 'flex-1' : 'w-full']">
             <slot/>
             <Message class="h-2 mt-2" severity="error" size="small" variant="simple">
-                {{ $field.error?.message || formErrors?.[name ?? 0] }}
+                {{ $field.error?.message || formErrorsMessage }}
             </Message>
         </div>
     </FormField>
@@ -46,6 +46,11 @@ const effectiveLabelWidth = computed(() =>
 
 const registerFormField = inject('registerFormField') as (field: any) => void;
 const formErrors = inject('formErrors') as any;
+
+const formErrorsMessage = computed(() => {
+    const error = formErrors?.value?.[props?.name ?? ''] ?? '';
+    return Array.isArray(error) ? error[0] : error;
+});
 
 onMounted(() => {
     registerFormField({

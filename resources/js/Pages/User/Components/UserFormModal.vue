@@ -1,7 +1,7 @@
 <template>
     <Dialog :header="(!editMode ? 'Add' : 'Edit') + ' User'" v-model:visible="dialogVisible" class="w-full max-w-xl"
         modal>
-        <AppForm class="flex flex-col gap-2" v-model="formData" :errors="formErrors" :resolver
+        <AppForm class="flex flex-col gap-2" v-model="formData" v-model:errors="formErrors" :resolver
             @submit="(e) => !editMode ? addSubmitAction(e) : editSubmitAction(e)">
             <AppFormField name="name" label="Name" required>
                 <AppFormInput id="name" placeholder="Name" v-model="formData.name" type="text" />
@@ -17,8 +17,8 @@
                     autocomplete="off" toggleMask fluid />
             </AppFormField>
             <AppFormField name="role" label="User Role">
-                <MultiSelect id="role" v-model="formData.roles" :options="roleOptions" option-value="id" option-label="name" 
-                    placeholder="Select Role" fluid display="chip" :max-selected-labels="2"/>
+                <MultiSelect id="role" v-model="formData.roles" :options="roleOptions" option-value="id"
+                    option-label="name" placeholder="Select Role" fluid display="chip" :max-selected-labels="2" />
             </AppFormField>
             <div class="flex justify-end w-full gap-2 mt-2">
                 <Button label="Cancel" severity="secondary" @click.prevent="closeDialog" />
@@ -28,8 +28,8 @@
     </Dialog>
 </template>
 <script setup lang="ts">
-import { router, useForm, usePage } from '@inertiajs/vue3';
-import { Ref, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { reactive, Ref, ref } from 'vue';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
 import { FormSubmitEvent } from '@primevue/forms';
@@ -40,6 +40,7 @@ import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
 import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 import { UserRole } from '@/Core/Models/user-role';
+import axios from 'axios';
 
 const toast = useToast();
 const confirm = useConfirm();
@@ -52,7 +53,7 @@ const loading: Ref<boolean> = ref(false);
 
 const roleOptions = ref<UserRole[]>(usePage().props.roles as UserRole[]);
 
-const formData = useForm<UserForm>({
+const formData = reactive<UserForm>({
     id: null,
     name: null,
     email: null,
@@ -76,41 +77,48 @@ function closeDialog() {
 function addAction() {
     dialogVisible.value = true;
     editMode.value = false;
-    formData.reset();
+    formErrors.value = [];
+
+    formData.id = null;
+    formData.name = '';
+    formData.email = '';
+    formData.username = '';
+    formData.password = '';
+    formData.roles = [];
 }
 function addSubmitAction(event: FormSubmitEvent) {
     formErrors.value = {};
     if (event.valid) {
         loading.value = true;
-        formData.post(route('user.create'), {
-            onSuccess: (response: any) => {
+        axios.post(route('user.create'), formData)
+            .then((response) => {
                 toast.add({
                     severity: 'success',
                     summary: 'Success',
-                    detail: response.props.flash.message,
-                    life: 1000,
+                    detail: response.data.message,
+                    life: 3000,
                 });
                 closeDialog();
                 emit('data-created');
-            },
-            onError: (errors) => {
-                formErrors.value = errors;
+            })
+            .catch((error) => {
+                formErrors.value = error.response.data.errors;
                 toast.add({
                     severity: 'error',
                     summary: 'Failed',
-                    detail: errors.message ?? 'Failed to create user !',
+                    detail: error.response.data.message ?? 'Failed to create user!',
                     life: 3000,
                 });
-            },
-            onFinish: () => {
+            })
+            .finally(() => {
                 loading.value = false;
-            }
-        })
+            });
     }
 }
 function editAction(data: User) {
     dialogVisible.value = true;
     editMode.value = true;
+    formErrors.value = [];
 
     formData.id = data.id;
     formData.name = data.name;
@@ -121,32 +129,31 @@ function editAction(data: User) {
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
-        formData.put(route('user.update', { id: formData.id }), {
-            onSuccess: (response: any) => {
+        axios.put(route('user.update', { id: formData.id }), formData)
+            .then((response) => {
                 toast.add({
                     severity: 'success',
                     summary: 'Success',
-                    detail: response.props.flash.message,
-                    life: 1000,
+                    detail: response.data.message,
+                    life: 3000,
                 });
                 closeDialog();
                 emit('data-updated');
-            },
-            onError: (errors) => {
-                formErrors.value = errors;
-                if (errors.message) {
+            })
+            .catch((error) => {
+                formErrors.value = error.response.data.errors;
+                if (error.response.data.message) {
                     toast.add({
                         severity: 'error',
                         summary: 'Failed',
-                        detail: errors.message,
+                        detail: error.response.data.message,
                         life: 3000,
                     });
                 }
-            },
-            onFinish: () => {
+            })
+            .finally(() => {
                 loading.value = false;
-            }
-        })
+            });
     }
 }
 function deleteAction(data: User) {
@@ -165,27 +172,30 @@ function deleteAction(data: User) {
             severity: 'danger'
         },
         accept: () => {
-            router.delete(route('user.delete', { id: data.id }), {
-                onSuccess: (response: any) => {
+            loading.value = true;
+            axios.delete(route('user.delete', { id: data.id }))
+                .then((response) => {
                     toast.add({
                         severity: 'success',
                         summary: 'Success',
-                        detail: response.props.flash.message,
+                        detail: response.data.message,
                         life: 3000,
                     });
                     emit('data-deleted');
-                },
-                onError: (errors) => {
-                    if (errors.message) {
+                })
+                .catch((error) => {
+                    if (error.response.data.message) {
                         toast.add({
                             severity: 'error',
                             summary: 'Failed',
-                            detail: errors.message,
+                            detail: error.response.data.message,
                             life: 3000,
                         });
                     }
-                }
-            })
+                })
+                .finally(() => {
+                    loading.value = false;
+                });
         },
         reject: () => {
             toast.add({

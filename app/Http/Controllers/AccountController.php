@@ -35,7 +35,6 @@ class AccountController extends Controller
             DB::commit();
             return InertiaSuccessResponse::redirectBack('Successfully updated your information');
         }catch(\Exception $e){
-            dd($e);
             DB::rollBack();
             return InertiaFailedResponse::redirectBack('Failed to update your information');
         }

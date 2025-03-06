@@ -39,9 +39,17 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['submit', 'update:modelValue','update:errors']);
 
 const clearFormError = (field: string) => {
-    if (props.errors && props.errors[field]) {
+    if (props.errors) {
         const updatedErrors = { ...props.errors };
-        delete updatedErrors[field];
+        if (Array.isArray(updatedErrors)) {
+            const index = updatedErrors.indexOf(field);
+            if (index !== -1) {
+                updatedErrors.splice(index, 1);
+            }
+        } else if (updatedErrors[field]) {
+            delete updatedErrors[field];
+        }
+        console.log(updatedErrors);
         emit('update:errors', updatedErrors);
     }
 };

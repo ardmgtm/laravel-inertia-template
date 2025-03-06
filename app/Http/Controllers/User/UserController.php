@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Responses\DataTableResponse;
-use App\Http\Responses\InertiaFailedResponse;
-use App\Http\Responses\InertiaSuccessResponse;
+use App\Http\Responses\JsonResponse;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 use Throwable;
@@ -34,27 +34,32 @@ class UserController extends Controller
             $user = User::create($data);
             $user->assignRole($data['roles']);
             DB::commit();
-            return InertiaSuccessResponse::redirectBack('Success to create user');
+            return JsonResponse::success('Success to create user');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return JsonResponse::failed('Failed to create user', $e->errors(), 422);
         } catch (Throwable $e) {
             DB::rollBack();
-            return InertiaFailedResponse::redirectBack('Failed to create user');
+            return JsonResponse::failed('Failed to create user');
         }
     }
 
     public function update(UpdateUserRequest $request, User $user)
     {
         $this->logActivity('Update user (id: ' . $user->id . ')');
-        $data = $request->validated();
         DB::beginTransaction();
         try {
+            $data = $request->validated();
             $user->update($data);
             $user->syncRoles($data['roles']);
             DB::commit();
-            return InertiaSuccessResponse::redirectBack('Success to update user');
+            return JsonResponse::success('Success to update user');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return JsonResponse::failed('Failed to update user', $e->errors(), 422);
         } catch (Throwable $e) {
             DB::rollBack();
-            throw $e;
-            return InertiaFailedResponse::redirectBack('Failed to update user');
+            return JsonResponse::failed('Failed to update user');
         }
     }
 
@@ -65,10 +70,10 @@ class UserController extends Controller
         try {
             $user->delete();
             DB::commit();
-            return InertiaSuccessResponse::redirectBack('Success to delete user');
+            return JsonResponse::success('Success to delete user');
         } catch (Throwable $e) {
             DB::rollBack();
-            return InertiaFailedResponse::redirectBack('Failed to delete user');
+            return JsonResponse::failed('Failed to delete user');
         }
     }
 
