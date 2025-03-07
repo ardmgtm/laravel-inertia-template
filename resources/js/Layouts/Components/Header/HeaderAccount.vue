@@ -6,9 +6,9 @@
         <template #start>
             <button v-ripple
                 class="relative overflow-hidden w-full  border-0 bg-transparent flex items-center gap-2 p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
-                <AppProfilePicture :name="user.name" :url="user.profile_picture"/>
+                <AppProfilePicture :name="user.name" :url="user.profile_picture" class="flex-none"/>
                 <span class="inline-flex flex-col items-start">
-                    <span class="font-bold">{{ user.name }}</span>
+                    <span class="font-bold text-left">{{ user.name }}</span>
                     <span class="text-sm">{{ user.username }}</span>
                 </span>
             </button>

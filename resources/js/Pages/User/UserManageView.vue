@@ -44,7 +44,7 @@
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="roles.name" header="Role" class="min-w-32 w-32" :showFilterMenu="false"
+            <Column field="roles.id" header="Role" class="min-w-32 w-32" :showFilterMenu="false"
                 :show-clear-button="false">
                 <template #body="slotProps">
                     <div class="flex flex-wrap gap-2">
@@ -147,7 +147,7 @@ const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
     'name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'username': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'email': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'roles.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'roles.id': { value: null, matchMode: FilterMatchMode.EQUALS },
     'is_active': { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
