@@ -52,12 +52,12 @@
                     </div>
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
-                    <Select size="small" v-model="filterModel.value" option-value="id" option-label="name"
+                    <MultiSelect size="small" v-model="filterModel.value" option-value="id" option-label="name"
                         @change="filterCallback()" :show-clear="true" :options="roleOptions" class="min-w-32">
                         <template #option="slotProps">
                             <AppColorTag :label="slotProps.option.name" />
                         </template>
-                    </Select>
+                    </MultiSelect>
                 </template>
             </Column>
             <Column field="is_active" header="Status" class="w-32 text-center" :showFilterMenu="false"

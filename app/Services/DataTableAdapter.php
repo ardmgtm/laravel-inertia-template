@@ -34,6 +34,8 @@ class DataTableAdapter
         return [
             'data' => $this->query->get(),
             'totalRecords' => $totalRecords,
+            'sql' => $this->query->toSql(),
+            'bindings' => $this->query->getBindings(),
         ];
     }
 
@@ -112,7 +114,9 @@ class DataTableAdapter
 
         [$field, $matchMode, $value] = $filter;
 
-        if (is_numeric($value)) {
+        if (is_array($value)) {
+            $this->query->whereIn($field, $value);
+        } elseif (is_numeric($value)) {
             $this->applyNumericFilter($field, $matchMode, $value);
         } elseif (is_bool($value)) {
             $this->applyBooleanFilter($field, $matchMode, $value);
@@ -123,27 +127,11 @@ class DataTableAdapter
         }
     }
 
-    protected function castFilterValue($value)
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        if (in_array(strtolower($value), ['true', 'false', '1', '0'], true)) {
-            $result = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-        } elseif (is_numeric($value)) {
-            $result = str_contains($value, '.') ? (float) $value : (int) $value;
-        } elseif ($this->isDateFormat($value)) {
-            $result = date('Y-m-d', strtotime($value));
-        } else {
-            $result = (string) $value;
-        }
-
-        return $result;
-    }
-
     protected function isDateFormat($value): bool
     {
+        if (!is_string($value)) {
+            return false;
+        }
         $patterns = [
             'Y-m-d',
             'Y-m-d H:i:s',
@@ -176,6 +164,8 @@ class DataTableAdapter
 
         if (isset($conditions[$matchMode])) {
             $conditions[$matchMode]();
+        } else {
+            throw new \InvalidArgumentException("Invalid match mode: {$matchMode}");
         }
     }
 
@@ -226,6 +216,20 @@ class DataTableAdapter
         $this->query->where($field, '=', $value ? 1 : 0);
     }
 
+    protected function applyArrayFilter(string $field, string $matchMode, array $value): void
+    {
+        $conditions = [
+            'equals' => fn() => $this->query->whereIn($field, $value),
+            'between' => fn() => $this->query->whereBetween($field, $value),
+        ];
+
+        if (isset($conditions[$matchMode])) {
+            $conditions[$matchMode]();
+        } else {
+            throw new \InvalidArgumentException("Invalid match mode: {$matchMode}");
+        }
+    }
+
     protected function applyRelationFilter(array $filter): void
     {
         if (count($filter) !== 3) {
@@ -234,7 +238,9 @@ class DataTableAdapter
 
         [$field, $matchMode, $value] = $filter;
 
-        if (is_numeric($value)) {
+        if (is_array($value)) {
+            $this->applyArrayRelationFilter($field, $matchMode, $value);
+        } elseif (is_numeric($value)) {
             $this->applyNumericRelationFilter($field, $matchMode, $value);
         } elseif (is_bool($value)) {
             $this->applyBooleanRelationFilter($field, $matchMode, $value);
@@ -369,9 +375,31 @@ class DataTableAdapter
         }
     }
 
+    protected function applyArrayRelationFilter(string $field, string $matchMode, array $value): void
+    {
+        $relation = explode('.', $field);
+        $fieldName = array_pop($relation);
+        $has = implode(".", $relation);
+
+        $conditions = [
+            'equals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+                $query->whereIn($fieldName, $value);
+            }),
+            'between' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+                $query->whereBetween($fieldName, $value);
+            }),
+        ];
+
+        if (isset($conditions[$matchMode])) {
+            $conditions[$matchMode]();
+        } else {
+            throw new \InvalidArgumentException("Invalid match mode: {$matchMode}");
+        }
+    }
+
     protected function hasValidFilters(): bool
     {
-        return $this->request->has('filters') && is_array($this->request->filters);
+        return $this->request->has('filters') && is_array($this->request->filters) && count($this->request->filters) === 3;
     }
 
     protected function applyPagination(): self
