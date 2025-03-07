@@ -95,7 +95,10 @@ class DataTableAdapter
         }
 
         foreach ($this->request->filters as $filter) {
-            list($field, $condition, $value) = $filter;
+            if (count($filter) !== 3) {
+                continue;
+            }
+            [$field, $matchMode, $value] = $filter;
             if (strpos($field, ".") !== false) {
                 $this->applyRelationFilter($filter);
             } else {
@@ -399,7 +402,7 @@ class DataTableAdapter
 
     protected function hasValidFilters(): bool
     {
-        return $this->request->has('filters') && is_array($this->request->filters) && count($this->request->filters) === 3;
+        return $this->request->has('filters') && is_array($this->request->filters);
     }
 
     protected function applyPagination(): self
