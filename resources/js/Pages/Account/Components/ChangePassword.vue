@@ -2,18 +2,18 @@
     <div class="col-span-12 lg:col-span-4 p-4 flex-1 border border-gray-200 rounded-md">
         <h2 class="text-2xl font-bold">Change Password</h2>
         <Divider />
-        <AppForm v-model="formData" @submit="submitAction">
+        <AppForm v-model="formData" v-model:errors="formErrors" @submit="submitAction">
             <AppFormField name="old_password" label="Old Password" required>
-                <Password id="old_password" v-model="formData.old_password" :feedback="false"
-                    autocomplete="new-password" toggleMask fluid />
+                <Password id="old_password" v-model="formData.old_password" :feedback="false" autocomplete="off"
+                    toggleMask fluid />
             </AppFormField>
             <AppFormField name="new_password" label="New Password" required>
-                <Password id="new_password" v-model="formData.new_password" :feedback="false"
-                    autocomplete="new-password" toggleMask fluid />
+                <Password id="new_password" v-model="formData.new_password" :feedback="false" autocomplete="off"
+                    toggleMask fluid />
             </AppFormField>
             <AppFormField name="confirm_password" label="Confirm Password" required>
-                <Password id="confirm_password" v-model="formData.confirm_password" :feedback="false"
-                    autocomplete="new-password" toggleMask fluid />
+                <Password id="confirm_password" v-model="formData.confirm_password" :feedback="false" autocomplete="off"
+                    toggleMask fluid />
             </AppFormField>
             <AppFormField>
                 <div class="flex gap-4">
@@ -26,17 +26,48 @@
 <script setup lang="ts">
 import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
+import { useForm } from '@inertiajs/vue3';
+import { FormSubmitEvent } from '@primevue/forms';
+import { useToast } from 'primevue';
 import { ref } from 'vue';
 
+const toast = useToast();
+
 const loading = ref<boolean>(false);
-const formData = ref({
+const formData = useForm({
     old_password: '',
     new_password: '',
     confirm_password: '',
 });
+const formErrors = ref();
 
-function submitAction() {
-    console.log(formData.value);
+function submitAction(event: FormSubmitEvent) {
+    if (event.valid) {
+        loading.value = true;
+        formData.post(route('account.change_password'), {
+            onSuccess: (response: any) => {
+                toast.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: response.props.flash.message,
+                    life: 3000
+                });
+                formData.reset();
+            },
+            onError: (errors) => {
+                formErrors.value = errors;
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: errors.message || 'An error occurred',
+                    life: 3000
+                });
+            },
+            onFinish: () => {
+                loading.value = false;
+            }
+        })
+    }
 }
 
 </script>

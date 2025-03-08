@@ -42,5 +42,6 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(AccountController::class)->group(function () {
         Route::get('/account', 'index')->name('account.browse');
         Route::post('/account/update-information', 'updateInformation')->name('account.update_information');
+        Route::post('/account/change-password', 'changePassword')->name('account.change_password');
     });
 });
