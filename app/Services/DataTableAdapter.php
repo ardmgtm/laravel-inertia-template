@@ -121,13 +121,19 @@ class DataTableAdapter
             $this->query->whereIn($field, $value);
         } elseif (is_numeric($value)) {
             $this->applyNumericFilter($field, $matchMode, $value);
-        } elseif (is_bool($value)) {
+        } elseif ($this->isBoolean($value)) {
             $this->applyBooleanFilter($field, $matchMode, $value);
         } elseif ($this->isDateFormat($value)) {
             $this->applyDateFilter($field, $matchMode, $value);
         } else {
             $this->applyStringFilter($field, $matchMode, $value);
         }
+    }
+
+    
+    protected function isBoolean($value): bool
+    {
+        return is_bool($value) || in_array(strtolower($value), ['true', 'false', '1', '0'], true);
     }
 
     protected function isDateFormat($value): bool
@@ -216,7 +222,12 @@ class DataTableAdapter
 
     protected function applyBooleanFilter(string $field, string $matchMode, $value): void
     {
-        $this->query->where($field, '=', $value ? 1 : 0);
+        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+        if ($matchMode === 'equals') {
+            $this->query->where($field, '=', $value ? 1 : 0);
+        } else {
+            $this->applyStringFilter($field, $matchMode, $value);
+        }
     }
 
     protected function applyArrayFilter(string $field, string $matchMode, array $value): void
