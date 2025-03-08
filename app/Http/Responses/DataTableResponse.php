@@ -10,8 +10,12 @@ class DataTableResponse
 {
     public static function load(Builder $builder)
     {
-        $request = request();
-        $dataLoad = DataTableAdapter::load($builder, $request);
-        return response()->json($dataLoad);
+        try {
+            $request = request();
+            $dataLoad = DataTableAdapter::load($builder, $request);
+            return response()->json($dataLoad, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }
