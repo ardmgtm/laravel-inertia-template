@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SwitchStatusRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Responses\DataTableResponse;
@@ -10,7 +11,6 @@ use App\Http\Responses\JsonResponse;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 use Throwable;
@@ -25,6 +25,12 @@ class UserController extends Controller
         return Inertia::render('User/UserManageView', $data);
     }
 
+    public function dataTable(Request $request)
+    {
+        $query = User::query()->with(['roles']);
+        return DataTableResponse::load($query);
+    }
+
     public function create(CreateUserRequest $request)
     {
         $this->logActivity('Create new user');
@@ -35,9 +41,6 @@ class UserController extends Controller
             $user->assignRole($data['roles']);
             DB::commit();
             return JsonResponse::success('Success to create user');
-        } catch (ValidationException $e) {
-            DB::rollBack();
-            return JsonResponse::failed('Failed to create user', $e->errors(), 422);
         } catch (Throwable $e) {
             DB::rollBack();
             return JsonResponse::failed('Failed to create user');
@@ -54,9 +57,6 @@ class UserController extends Controller
             $user->syncRoles($data['roles']);
             DB::commit();
             return JsonResponse::success('Success to update user');
-        } catch (ValidationException $e) {
-            DB::rollBack();
-            return JsonResponse::failed('Failed to update user', $e->errors(), 422);
         } catch (Throwable $e) {
             DB::rollBack();
             return JsonResponse::failed('Failed to update user');
@@ -77,9 +77,18 @@ class UserController extends Controller
         }
     }
 
-    public function dataTable(Request $request)
+    public function switchStatus(SwitchStatusRequest $request)
     {
-        $query = User::query()->with(['roles']);
-        return DataTableResponse::load($query);
+        DB::beginTransaction();
+        try {
+            $data = $request->validated();
+            $this->logActivity('Update user status (ids: ' . json_encode($data['ids']) . ')');
+            User::whereIn('id', $data['ids'])->update(['is_active' => $data['status']]);
+            DB::commit();
+            return JsonResponse::success('Success to update status');
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return JsonResponse::failed('Failed to update status');
+        }
     }
 }

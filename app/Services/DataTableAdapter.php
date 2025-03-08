@@ -25,11 +25,11 @@ class DataTableAdapter
 
     public function process(): array
     {
-        $this->applySorting()
-            ->applyFiltering()
-            ->applyPagination();
+        $this->applySorting();
+        $this->applyFiltering();
 
         $totalRecords = $this->getTotalRecords();
+        $this->applyPagination();
 
         return [
             'data' => $this->query->get(),

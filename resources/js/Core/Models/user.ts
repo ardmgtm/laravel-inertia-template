@@ -7,6 +7,7 @@ export interface User {
     email: string;
     profile_picture: string;
     roles?: UserRole[];
+    is_active: boolean;
 }
 
 export interface UserForm {

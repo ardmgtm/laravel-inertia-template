@@ -1,4 +1,5 @@
 <template>
+
     <Head title="User Manage" />
     <AdminLayout title="User Manage" :breadcrumbs>
         <template #action>
@@ -14,14 +15,14 @@
                                 rounded />
                             <span>{{ selectedData.length }} selected</span>
                         </div>
-                        <Divider layout="vertical" />
+                        <Divider layout="vertical" class="bg-gray-800" />
                         <div>
                             <Button rounded icon="pi pi-user-plus" variant="text" severity="secondary"
                                 v-tooltip.bottom="'Assign Role'" />
-                            <Button rounded icon="pi pi-download" variant="text" severity="secondary"
-                                v-tooltip.bottom="'Download Data'" />
-                            <Button rounded icon="pi pi-trash" variant="text" severity="secondary"
-                                v-tooltip.bottom="'Delete User'" />
+                            <Button rounded icon="pi pi-check-circle" variant="text" severity="secondary"
+                                @click="switchStatusAction(selectedData, true)" v-tooltip.bottom="'Enable User'" />
+                            <Button rounded icon="pi pi-times-circle" variant="text" severity="secondary"
+                                @click="switchStatusAction(selectedData, false)" v-tooltip.bottom="'Disable User'" />
                             <Button rounded icon="pi pi-ellipsis-v" variant="text" severity="secondary"
                                 v-tooltip.bottom="'More Action'" />
                         </div>
@@ -32,6 +33,12 @@
             <Column field="name" header="Name" class="min-w-72" :show-clear-button="false" sortable>
                 <template #filter="{ filterModel, filterCallback }">
                     <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
+                </template>
+                <template #body="slotProps">
+                    <div class="flex gap-4">
+                        <AppProfilePicture :user="(slotProps.data as User)"/>
+                        <div>{{ slotProps.data.name }}</div>
+                    </div>
                 </template>
             </Column>
             <Column field="username" header="Username" class="min-w-72" :show-clear-button="false" sortable>
@@ -53,7 +60,7 @@
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
                     <MultiSelect size="small" v-model="filterModel.value" option-value="id" option-label="name"
-                        @change="filterCallback()" :show-clear="true" :options="roleOptions" class="min-w-32">
+                        @change="filterCallback()" :options="roleOptions" class="min-w-32">
                         <template #option="slotProps">
                             <AppColorTag :label="slotProps.option.name" />
                         </template>
@@ -86,17 +93,23 @@
             </Column>
         </AppDataTableServer>
         <Popover ref="op">
-            <div class="flex flex-col gap-1 w-48">
+            <div class="flex flex-col gap-1 w-48" @click="($refs.op as any).hide()">
                 <span class="font-bold">Options</span>
                 <Button icon="pi pi-pen-to-square" severity="secondary" variant="text" class="w-full flex justify-start"
-                    label="Edit Users" size="small" @click="editUserAction" v-if="can('user.update')" />
+                    label="Edit User" size="small" @click="editUserAction" v-if="can('user.update')" />
+                <Button icon="pi pi-check-circle" severity="secondary" variant="text" class="w-full flex justify-start"
+                    label="Enable User" size="small" @click="switchStatusAction([selectedRowData], true)"
+                    v-if="can('user.update') && (selectedRowData?.is_active == false)" />
+                <Button icon="pi pi-times-circle" severity="secondary" variant="text" class="w-full flex justify-start"
+                    label="Disable User" size="small" @click="switchStatusAction([selectedRowData], false)"
+                    v-if="can('user.update') && (selectedRowData?.is_active == true)" />
                 <Button icon="pi pi-trash" severity="danger" variant="text" class="w-full flex justify-start"
-                    label="Delete Users" size="small" @click="deleteUserAction" v-if="can('user.delete')" />
+                    label="Delete User" size="small" @click="deleteUserAction" v-if="can('user.delete')" />
             </div>
         </Popover>
     </AdminLayout>
-    <UserFormModal ref="userFormModalRef" @data-created="dtHandler.loadData" @data-updated="dtHandler.loadData"
-        @data-deleted="dtHandler.loadData" />
+    <UserFormModal ref="userFormModalRef" @data-created="refreshData" @data-updated="refreshData"
+        @data-deleted="refreshData" />
 </template>
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
@@ -105,7 +118,7 @@ import { FilterMatchMode } from '@primevue/core/api';
 import { ref, Ref } from 'vue';
 import { MenuItem } from 'primevue/menuitem';
 import UserFormModal from './Components/UserFormModal.vue';
-import { DataTableFilterMetaData } from 'primevue';
+import { DataTableFilterMetaData, useToast } from 'primevue';
 import { createDataTableHandler } from '@/Core/Handlers/data-table-handler';
 import AppDataTableServer from '@/Components/AppDataTable/AppDataTableServer.vue';
 import { FormModalExpose } from '@/Core/Models/form-modal';
@@ -113,6 +126,10 @@ import { User } from '@/Core/Models/user';
 import { UserRole } from '@/Core/Models/user-role';
 import AppColorTag from '@/Components/AppColorTag.vue';
 import { can } from '@/Core/Utiils/permission-check';
+import axios from 'axios';
+import AppProfilePicture from '@/Components/AppProfilePicture.vue';
+
+const toast = useToast();
 
 const breadcrumbs: Ref<MenuItem[]> = ref([
     {
@@ -126,6 +143,11 @@ const roleOptions = ref<UserRole[]>(usePage().props.roles as UserRole[]);
 const userFormModalRef = ref<FormModalExpose<User>>();
 const selectedRowData = ref<User>();
 
+const refreshData = () => {
+    dtHandler.loadData();
+    selectedData.value = null;
+}
+
 const addUserAction = () => userFormModalRef.value?.addAction();
 const editUserAction = () => {
     if (selectedRowData.value) {
@@ -137,6 +159,31 @@ const deleteUserAction = () => {
         userFormModalRef.value?.deleteAction(selectedRowData.value);
     }
 };
+const switchStatusAction = (users: User[], status: boolean) => {
+    const userIds = users.map(user => user.id);
+
+    axios.post(route('user.switch_status'), {
+        ids: userIds,
+        status: status,
+    })
+        .then((response) => {
+            toast.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: response.data.message,
+                life: 3000,
+            });
+            refreshData();
+        })
+        .catch((error) => {
+            toast.add({
+                severity: 'error',
+                summary: 'Failed',
+                detail: error.response.data.message,
+                life: 3000,
+            });
+        });
+}
 
 // Datatable
 const selectedData = ref();

@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/users/{user}', 'delete')->name('user.delete')->can('user.delete');
 
         Route::get('/users/data-table', 'dataTable')->name('user.data_table')->can('user.browse');
+        Route::post('/users/switch-status','switchStatus')->name('user.switch_status')->can('user.update');
     });
     Route::controller(RoleAndPermissionController::class)->group(function () {
         Route::get('/user-roles', 'index')->name('role.browse')->can('role.browse');

@@ -1,22 +1,24 @@
 <template>
-    <img 
-        :src="url ?? user?.profile_picture" 
-        alt="profile" 
-        :style="{ width: size + 'px', height: size + 'px', minWidth: size + 'px', minHeight: size + 'px' }"
-        class="rounded-full"
-        v-if="url || user?.profile_picture"/>
-    <div
-        v-else
-        class="rounded-full flex items-center justify-center font-bold select-none" 
-        :style="{ 
-            backgroundColor: backgroundColor,
-            color: textColor,
-            width: size + 'px',
-            height: size + 'px',
-            fontSize: size * 0.4 + 'px'
-        }"
-    >
-        {{ firstLetter }}
+    <div class="flex-none">
+        <img 
+            :src="url ?? user?.profile_picture" 
+            alt="profile" 
+            :style="{ width: size + 'px', height: size + 'px', minWidth: size + 'px', minHeight: size + 'px' }"
+            class="rounded-full"
+            v-if="url || user?.profile_picture"/>
+        <div
+            v-else
+            class="rounded-full flex items-center justify-center font-bold select-none" 
+            :style="{ 
+                backgroundColor: backgroundColor,
+                color: textColor,
+                width: size + 'px',
+                height: size + 'px',
+                fontSize: size * 0.4 + 'px'
+            }"
+        >
+            {{ firstLetter }}
+        </div>
     </div>
 </template>
 
