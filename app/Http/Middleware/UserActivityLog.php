@@ -14,11 +14,15 @@ class UserActivityLog
     {
         return $next($request);
     }
-    
+
     public function terminate(Request $request, Response $response): void
     {
-        if (isset($request['record_activity']) && $request['record_activity']) {
-            $this->recordActivity($request, $response);
+        try {
+            if ($request->boolean('record_activity')) {
+                $this->recordActivity($request, $response);
+            }
+        } catch (\Throwable $th) {
+            return;
         }
     }
 

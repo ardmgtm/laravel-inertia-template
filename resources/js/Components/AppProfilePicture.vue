@@ -1,22 +1,15 @@
 <template>
     <div class="flex-none">
-        <img 
-            :src="url ?? user?.profile_picture" 
-            alt="profile" 
+        <img :src="url ?? user?.profile_picture ?? ''" alt="profile"
             :style="{ width: size + 'px', height: size + 'px', minWidth: size + 'px', minHeight: size + 'px' }"
-            class="rounded-full"
-            v-if="url || user?.profile_picture"/>
-        <div
-            v-else
-            class="rounded-full flex items-center justify-center font-bold select-none" 
-            :style="{ 
-                backgroundColor: backgroundColor,
-                color: textColor,
-                width: size + 'px',
-                height: size + 'px',
-                fontSize: size * 0.4 + 'px'
-            }"
-        >
+            class="rounded-full object-cover" v-if="url || user?.profile_picture" />
+        <div v-else class="rounded-full flex items-center justify-center font-bold select-none" :style="{
+            backgroundColor: backgroundColor,
+            color: textColor,
+            width: size + 'px',
+            height: size + 'px',
+            fontSize: size * 0.4 + 'px'
+        }">
             {{ firstLetter }}
         </div>
     </div>
@@ -27,10 +20,10 @@ import { User } from '@/Core/Models/user';
 import { computed } from 'vue';
 
 interface Props {
-    name?: string;
-    url?: string;
+    name?: string | null;
+    url?: string | null;
     size?: number;
-    user?: User;
+    user?: User | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -46,11 +39,11 @@ const backgroundColor = computed(() => {
     const hash = name.split('').reduce((acc, char) => {
         return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);
-    
+
     const h = hash % 360;
     const s = 60;
     const l = 85;
-    
+
     return `hsl(${h}, ${s}%, ${l}%)`;
 });
 

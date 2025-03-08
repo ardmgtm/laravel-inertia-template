@@ -1,15 +1,15 @@
 <template>
     <Button outlined rounded class="p-1" @click="toggle">
-        <AppProfilePicture :name="user.name" :url="user.profile_picture"/>
+        <AppProfilePicture :user="user" />
     </Button>
     <Menu ref="menu" :model="accountMenuItems" class="w-full md:w-60 m-2" id="overlay_menu" :popup="true">
         <template #start>
             <button v-ripple
                 class="relative overflow-hidden w-full  border-0 bg-transparent flex items-center gap-2 p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
-                <AppProfilePicture :name="user.name" :url="user.profile_picture" class="flex-none"/>
+                <AppProfilePicture :user="user" class="flex-none" />
                 <span class="inline-flex flex-col items-start">
-                    <span class="font-bold text-left">{{ user.name }}</span>
-                    <span class="text-sm">{{ user.username }}</span>
+                    <span class="font-bold text-left">{{ user?.name }}</span>
+                    <span class="text-sm">{{ user?.username }}</span>
                 </span>
             </button>
         </template>
@@ -28,15 +28,15 @@
 </template>
 <script setup lang="ts">
 import { computed, Ref, ref } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { MenuItem } from 'primevue/menuitem';
 import { User } from '@/Core/Models/user';
 import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 import { useAuthStore } from '@/Stores/auth-store';
 
 const menu = ref();
-const user : Ref<User> = computed(()=>usePage().props.auth.user as User);
 const authStore = useAuthStore();
+const user: Ref<User | null> = computed(() => authStore.user);
 
 const accountMenuItems: Ref<MenuItem[]> = ref([
     {
@@ -60,8 +60,8 @@ function toggle(event: Event) {
 };
 
 function logoutAction() {
-    router.post(route('logout'),{},{
-        onSuccess: (response : any) => authStore.$reset()
+    router.post(route('logout'), {}, {
+        onSuccess: (response: any) => authStore.$reset()
     });
 }
 </script>

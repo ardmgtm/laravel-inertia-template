@@ -5,7 +5,7 @@
         <div class="flex flex-row gap-8 w-full">
             <div class="flex-none">
                 <div class="relative w-40 h-40 mx-auto group">
-                    <AppProfilePicture :name="user.name" :size="160" :url="(profilePicture as string)"
+                    <AppProfilePicture :name="user?.name" :size="160" :url="(profilePicture as string)"
                         class="w-full h-full rounded-full object-cover border shadow-sm" />
                     <div class="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow-lg cursor-pointer w-7 h-7"
                         @click="uploadImage" v-if="editMode">
@@ -42,15 +42,15 @@
                         <tbody>
                             <tr>
                                 <th class="font-semibold w-32">Name</th>
-                                <td>: {{ user.name }}</td>
+                                <td>: {{ user?.name }}</td>
                             </tr>
                             <tr>
                                 <th class="font-semibold w-32">Email</th>
-                                <td>: {{ user.email }}</td>
+                                <td>: {{ user?.email }}</td>
                             </tr>
                             <tr>
                                 <th class="font-semibold w-32">Username</th>
-                                <td>: {{ user.username }}</td>
+                                <td>: {{ user?.username }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -69,18 +69,20 @@ import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
 import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 import { User, UserForm } from '@/Core/Models/user';
-import { useForm, usePage } from '@inertiajs/vue3';
 import { FormSubmitEvent } from '@primevue/forms';
 import { useToast } from 'primevue';
-import { computed, onBeforeMount, ref } from 'vue';
+import { computed, onBeforeMount, reactive, ref } from 'vue';
+import axios from 'axios';
+import { useAuthStore } from '@/Stores/auth-store';
 
 const toast = useToast();
 const editMode = ref<boolean>(false);
 const loading = ref<boolean>(false);
 
-const user = computed<User>(() => usePage().props.auth.user as User);
+const authStore = useAuthStore();
+const user = computed<User | null>(() => authStore.user);
 
-const formData = useForm<UserForm>({
+const formData = reactive<UserForm>({
     name: null,
     username: null,
     email: null,
@@ -88,16 +90,16 @@ const formData = useForm<UserForm>({
 })
 
 onBeforeMount(() => {
-    formData.name = user.value.name;
-    formData.username = user.value.username;
-    formData.email = user.value.email;
+    formData.name = user.value?.name;
+    formData.username = user.value?.username;
+    formData.email = user.value?.email;
 
-    currentProfilePicture.value = user.value.profile_picture;
-    profilePicture.value = user.value.profile_picture;
+    currentProfilePicture.value = user.value?.profile_picture;
+    profilePicture.value = user.value?.profile_picture;
 });
 
-const currentProfilePicture = ref<string | null>(null);
-const profilePicture = ref<string | null>(null);
+const currentProfilePicture = ref<string | undefined>();
+const profilePicture = ref<string |undefined>();
 const fileInput = ref<any>(null);
 
 const uploadImage = () => {
@@ -127,28 +129,28 @@ const removeImage = () => {
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
-        formData.post(route('account.update_information'), {
-            preserveScroll: true,
-            onSuccess: (response: any) => {
-                toast.add({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: response.props.flash.message,
-                    life: 3000
-                });
-                editMode.value = false;
-            },
-            onError: (error: any) => {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: error.message || 'An error occurred',
-                    life: 3000
-                });
-            },
-            onFinish: () => {
-                loading.value = false;
+        axios.post(route('account.update_information'), formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
             }
+        }).then(response => {
+            toast.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: response.data.message,
+                life: 3000
+            });
+            authStore.setUser(response.data.data.user);
+            editMode.value = false;
+        }).catch(error => {
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.response?.data?.message || 'An error occurred',
+                life: 3000
+            });
+        }).finally(() => {
+            loading.value = false;
         });
     }
 }

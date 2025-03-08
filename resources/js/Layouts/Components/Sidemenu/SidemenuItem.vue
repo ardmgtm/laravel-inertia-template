@@ -3,8 +3,8 @@
         <span class="p-2 font-bold text-gray-500">{{ props.label }}</span>
     </div>
     <div v-else>
-        <div v-ripple
-            class="flex gap-2 p-2 items-center rounded-lg cursor-pointer group ripple-box bg-surface-50 hover:bg-surface-100"
+        <component :is="url ? Link : 'div'" v-ripple :href="props.url ?? ''"
+            class="flex gap-2 p-2 items-center rounded-lg cursor-pointer group ripple-box hover:bg-surface-100"
             :class="{ 'text-primary font-bold': isActive || submenuExpand }" @click.stop="onclickHandle">
             <div v-if="props.icon != null"
                 class="rounded-lg border h-8 w-8 flex items-center justify-center group-hover:border-primary"
@@ -24,7 +24,7 @@
                 <i class="pi pi-chevron-down transition duration-300 text-gray-400"
                     :class="{ '-rotate-180': submenuExpand, 'rotate-0': !submenuExpand }"></i>
             </div>
-        </div>
+        </component>
         <ul class="ml-4 transition-height duration-300 ease-in-out overflow-hidden"
             :style="{ height: submenuExpand ? submenuHeight : '0' }">
             <li v-for="subMenu in props.items">
@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { MenuItem } from "primevue/menuitem";
-import { router, usePage } from "@inertiajs/vue3";
+import { Link, usePage } from "@inertiajs/vue3";
 import { can } from "@/Core/Utiils/permission-check";
 import { SideMenuItem } from "@/Core/Configs/sidemenu-item";
 
@@ -103,8 +103,6 @@ const submenuHeight = computed(() => {
 function onclickHandle() {
     if (props.items) {
         submenuExpand.value = !submenuExpand.value;
-    } else if (props.url) {
-        router.visit(props.url);
     }
 }
 </script>
