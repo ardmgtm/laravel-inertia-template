@@ -18,10 +18,11 @@ class UserActivityLog
     public function terminate(Request $request, Response $response): void
     {
         try {
+            $request->files->replace([]);
             if ($request->boolean('record_activity')) {
                 $this->recordActivity($request, $response);
             }
-        } catch (\Throwable $th) {
+        } catch (\Throwable) {
             return;
         }
     }
