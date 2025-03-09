@@ -1,5 +1,5 @@
 <template>
-    <Dialog :header="(!editMode ? 'Add' : 'Edit') + ' User'" v-model:visible="dialogVisible" class="w-full max-w-xl"
+    <Dialog :header="(!editMode ? 'Add' : 'Edit') + ' User'" v-model:visible="dialogVisible" class="w-full max-w-xl" :draggable="false"
         modal>
         <AppForm class="flex flex-col gap-2" v-model="formData" v-model:errors="formErrors" :resolver
             @submit="(e) => !editMode ? addSubmitAction(e) : editSubmitAction(e)">
