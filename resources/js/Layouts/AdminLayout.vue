@@ -11,7 +11,7 @@
                         <div class="flex items-start flex-col flex-1" v-if="props.title">
                             
                             <div class="flex items-end justify-between w-full">
-                                <div class="font-bold text-3xl text-surface-900 dark:text-surface-0">
+                                <div class="font-bold text-2xl text-surface-900 dark:text-surface-0">
                                     {{ props.title }}
                                 </div>
                                 <div class="flex-none">
@@ -34,9 +34,6 @@ import Sidemenu from './Components/Sidemenu/Sidemenu.vue';
 import Header from './Components/Header/Header.vue';
 import { MenuItem } from 'primevue/menuitem';
 import { Toast } from 'primevue';
-import { useAuthStore } from '@/Stores/auth-store';
-
-const authStore = useAuthStore();
 
 const sidebarOpen = ref(false);
 const props = defineProps({
