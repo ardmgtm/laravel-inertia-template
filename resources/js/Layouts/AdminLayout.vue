@@ -4,13 +4,12 @@
     <div class="flex h-screen overflow-hidden">
         <Sidemenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
         <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
+            <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" :breadcrumbs="breadcrumbs"/>
             <main class="grow">
                 <Transition name="page" mode="out-in" appear>
                     <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
                         <div class="flex items-start flex-col flex-1" v-if="props.title">
-                            <Breadcrumb :home="home" :model="breadcrumbs" class="p-0 mb-4"
-                                v-if="showBreadcrumbs" />
+                            
                             <div class="flex items-end justify-between w-full">
                                 <div class="font-bold text-3xl text-surface-900 dark:text-surface-0">
                                     {{ props.title }}
@@ -50,12 +49,6 @@ const props = defineProps({
         required: false,
     }
 })
-
-const home = ref({
-    icon: 'pi pi-home',
-    url: '/',
-});
-const showBreadcrumbs = computed(() => props.breadcrumbs != null && props.breadcrumbs.length > 0);
 </script>
 <style scoped>
     .page-enter-from,
