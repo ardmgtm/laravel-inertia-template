@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Role\RoleRequest;
 use App\Http\Requests\Role\UpdateRolePermissionRequest;
+use App\Http\Responses\JsonResponse;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,9 +18,10 @@ class RoleAndPermissionController extends Controller
 
     public function index(Request $request)
     {
-        return Inertia::render('User/UserRolePermissionManageView', [
-            'roles' => Role::all(),
-        ]);
+        $data = [
+            'roles' => fn() => Role::all(),
+        ];
+        return Inertia::render('User/UserRolePermissionManageView', $data);
     }
 
     public function create(RoleRequest $request)
@@ -56,7 +58,7 @@ class RoleAndPermissionController extends Controller
         return redirect()->back()->with('message', 'Success to delete role');
     }
 
-    public function getRolePermission(Role $role, Request $request)
+    public function getRolePermission(Request $request, Role $role)
     {
         try {
             $roleId = $role->id;
@@ -75,55 +77,38 @@ class RoleAndPermissionController extends Controller
             $permissionsGrouped = $permissions->groupBy(function ($item) {
                 return explode('.', $item['name'])[0];
             });
-            return response()->json([
-                'status' => true,
-                'message' => 'Success to get permission list',
-                'data' => [
-                    'permissions' => $permissionsGrouped,
-                    'total_assigned_permission' => $permissions->where('role_has_permission', 1)->count(),
-                ],
-            ], 200);
+            $data = [
+                'permissions' => $permissionsGrouped,
+                'total_assigned_permission' => $permissions->where('role_has_permission', 1)->count(),
+            ];
+            return JsonResponse::success('Success to get permission list', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to get permission list',
-                'data' => [],
-            ], 500);
+            return JsonResponse::failed('Failed to get permission list');
         }
     }
 
-    public function getRoleUser(Role $role, Request $request)
+    public function getRoleUser(Request $request, Role $role)
     {
         try {
             $roleId = $role->id;
             $users = User::with(['roles'])
                 ->whereHas('roles', fn($q) => $q->where('id', '=', $roleId))
                 ->get();
-            return response()->json([
-                'status' => true,
-                'message' => 'Success to get user list',
-                'data' => [
-                    'users' => $users,
-                    'user_count' => $users->count(),
-                ],
-            ], 200);
+            $data = [
+                'users' => $users,
+                'user_count' => $users->count(),
+            ];
+            return JsonResponse::success('Success to get user list', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to get user list',
-                'data' => [],
-            ], 500);
+            return JsonResponse::failed('Failed to get user list');
         }
     }
 
-    public function switchPermission(Role $role, UpdateRolePermissionRequest $request)
+    public function switchPermission(UpdateRolePermissionRequest $request, Role $role)
     {
         $validated = $request->validated();
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Superadmin cannot be changed',
-            ], 403);
+            return JsonResponse::failed('Superadmin cannot be changed', [], 403);
         }
         try {
             $permission = Permission::find($validated['id_permission']);
@@ -132,17 +117,9 @@ class RoleAndPermissionController extends Controller
             } else {
                 $role->revokePermissionTo($permission);
             }
-            return response()->json([
-                'status' => true,
-                'message' => 'Successfully updated role permissions',
-                'data' => [],
-            ], 200);
+            return JsonResponse::success('Success to update role permissions');
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to update role permissions',
-                'data' => $th,
-            ], 500);
+            return JsonResponse::failed('Failed to update role permissions');
         }
     }
 }
