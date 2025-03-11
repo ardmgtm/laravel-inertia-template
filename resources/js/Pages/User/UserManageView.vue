@@ -8,26 +8,26 @@
         <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" data-key="id"
             empty-message="No Users Data.">
             <template #header-start>
-                <div v-if="selectedData?.length > 0">
-                    <div class="border border-gray-300 rounded-lg px-2 flex items-center">
-                        <div class="font-bold">
-                            <Button icon="pi pi-times" variant="text" severity="secondary" @click="selectedData = []"
-                                rounded />
-                            <span>{{ selectedData.length }} selected</span>
-                        </div>
-                        <Divider layout="vertical" class="bg-gray-800" />
-                        <div>
-                            <Button rounded icon="pi pi-user-plus" variant="text" severity="secondary"
-                                v-tooltip.bottom="'Assign Role'" />
-                            <Button rounded icon="pi pi-check-circle" variant="text" severity="secondary"
-                                @click="switchStatusAction(selectedData, true)" v-tooltip.bottom="'Enable User'" />
-                            <Button rounded icon="pi pi-times-circle" variant="text" severity="secondary"
-                                @click="switchStatusAction(selectedData, false)" v-tooltip.bottom="'Disable User'" />
-                            <Button rounded icon="pi pi-ellipsis-v" variant="text" severity="secondary"
-                                v-tooltip.bottom="'More Action'" />
+                <Transition name="fadetransition" mode="out-in" appear>
+                    <div v-if="selectedData?.length > 0">
+                        <div class="border border-gray-300 rounded-lg px-2 flex items-center">
+                            <div class="font-bold">
+                                <Button icon="pi pi-times" variant="text" severity="secondary" @click="selectedData = []"
+                                    rounded />
+                                <span>{{ selectedData.length }} selected</span>
+                            </div>
+                            <Divider layout="vertical" class="bg-gray-800" />
+                            <div>
+                                <Button rounded icon="pi pi-check-circle" variant="text" severity="secondary"
+                                    @click="switchStatusAction(selectedData, true)" v-tooltip.bottom="'Enable User'" />
+                                <Button rounded icon="pi pi-times-circle" variant="text" severity="secondary"
+                                    @click="switchStatusAction(selectedData, false)" v-tooltip.bottom="'Disable User'" />
+                                <Button rounded icon="pi pi-ellipsis-v" variant="text" severity="secondary"
+                                    v-tooltip.bottom="'More Action'" />
+                            </div>
                         </div>
                     </div>
-                </div>
+                </Transition>
             </template>
             <Column field="id" selectionMode="multiple" headerStyle="width: 3rem" />
             <Column field="name" header="Name" class="min-w-72" :show-clear-button="false" sortable>
