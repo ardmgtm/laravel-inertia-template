@@ -11,13 +11,13 @@ class DataTableAdapter
     protected Builder|QueryBuilder $query;
     protected Request $request;
 
-    public function __construct(Builder|QueryBuilder $query, Request $request = null)
+    public function __construct(Builder|QueryBuilder $query, Request $request)
     {
         $this->query = $query;
         $this->request = $request ?? request();
     }
 
-    public static function load(Builder|QueryBuilder $query, Request $request = null): array
+    public static function load(Builder|QueryBuilder $query, Request $request): array
     {
         $instance = new self($query, $request);
         return $instance->process();
@@ -34,8 +34,6 @@ class DataTableAdapter
         return [
             'data' => $this->query->get(),
             'totalRecords' => $totalRecords,
-            'sql' => $this->query->toSql(),
-            'bindings' => $this->query->getBindings(),
         ];
     }
 
@@ -130,7 +128,6 @@ class DataTableAdapter
         }
     }
 
-    
     protected function isBoolean($value): bool
     {
         return is_bool($value) || in_array(strtolower($value), ['true', 'false', '1', '0'], true);
@@ -150,7 +147,7 @@ class DataTableAdapter
             'Y-m-d\TH:i:sP',
             'Y-m-d\TH:i:s.v\Z',
         ];
-        
+
         foreach ($patterns as $pattern) {
             $parsedDate = \DateTime::createFromFormat($pattern, $value);
             if ($parsedDate && $parsedDate->format($pattern) === $value) {

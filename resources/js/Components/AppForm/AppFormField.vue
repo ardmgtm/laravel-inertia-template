@@ -1,7 +1,7 @@
 <template>
     <FormField v-bind="$attrs" v-on="$attrs" :name="name" v-slot="$field" :class="[
         'flex',
-        effectiveLabelPosition === 'top' ? 'flex-col' : 'flex-row'
+        effectiveLabelPosition === 'top' ? 'flex-col' : 'flex-col md:flex-row'
     ]">
         <label :for="name" :style="{
             marginBottom: effectiveLabelPosition === 'left' ? '0' : '0.5rem',

@@ -1,5 +1,4 @@
 <template>
-
     <Head title="User Manage" />
     <AdminLayout title="User Manage" :breadcrumbs>
         <template #action>
@@ -12,8 +11,8 @@
                     <div v-if="selectedData?.length > 0">
                         <div class="border border-gray-300 rounded-lg px-2 flex items-center">
                             <div class="font-bold">
-                                <Button icon="pi pi-times" variant="text" severity="secondary" @click="selectedData = []"
-                                    rounded />
+                                <Button icon="pi pi-times" variant="text" severity="secondary"
+                                    @click="selectedData = []" rounded />
                                 <span>{{ selectedData.length }} selected</span>
                             </div>
                             <Divider layout="vertical" class="bg-gray-800" />
@@ -21,7 +20,8 @@
                                 <Button rounded icon="pi pi-check-circle" variant="text" severity="secondary"
                                     @click="switchStatusAction(selectedData, true)" v-tooltip.bottom="'Enable User'" />
                                 <Button rounded icon="pi pi-times-circle" variant="text" severity="secondary"
-                                    @click="switchStatusAction(selectedData, false)" v-tooltip.bottom="'Disable User'" />
+                                    @click="switchStatusAction(selectedData, false)"
+                                    v-tooltip.bottom="'Disable User'" />
                                 <Button rounded icon="pi pi-ellipsis-v" variant="text" severity="secondary"
                                     v-tooltip.bottom="'More Action'" />
                             </div>
@@ -36,7 +36,7 @@
                 </template>
                 <template #body="slotProps">
                     <div class="flex gap-4">
-                        <AppProfilePicture :user="(slotProps.data as User)"/>
+                        <AppProfilePicture :user="(slotProps.data as User)" />
                         <div>{{ slotProps.data.name }}</div>
                     </div>
                 </template>
