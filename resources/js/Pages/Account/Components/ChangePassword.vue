@@ -30,6 +30,7 @@ import { useForm } from '@inertiajs/vue3';
 import { FormSubmitEvent } from '@primevue/forms';
 import { useToast } from 'primevue';
 import { ref } from 'vue';
+import axios from 'axios';
 
 const toast = useToast();
 
@@ -44,29 +45,37 @@ const formErrors = ref();
 function submitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
-        formData.post(route('account.change_password'), {
-            onSuccess: (response: any) => {
+        formErrors.value = null;
+        axios.post(route('account.change_password'), {
+            old_password: formData.old_password,
+            new_password: formData.new_password,
+            confirm_password: formData.confirm_password,
+        })
+            .then(response => {
                 toast.add({
                     severity: 'success',
                     summary: 'Success',
-                    detail: response.props.flash.message,
+                    detail: response.data?.message || 'Password changed successfully',
                     life: 3000
                 });
-                formData.reset();
-            },
-            onError: (errors) => {
-                formErrors.value = errors;
+                formData.old_password = '';
+                formData.new_password = '';
+                formData.confirm_password = '';
+            })
+            .catch(error => {
+                if (error.response && error.response.data && error.response.data.errors) {
+                    formErrors.value = error.response.data.errors;
+                }
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: errors.message || 'An error occurred',
+                    detail: error.response?.data?.message || 'An error occurred',
                     life: 3000
                 });
-            },
-            onFinish: () => {
+            })
+            .finally(() => {
                 loading.value = false;
-            }
-        })
+            });
     }
 }
 
