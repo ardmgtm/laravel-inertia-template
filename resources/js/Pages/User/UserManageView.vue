@@ -4,7 +4,7 @@
         <template #action>
             <Button label="Add User" icon="pi pi-plus" @click="addUserAction" v-if="can('user.create')" />
         </template>
-        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" data-key="id"
+        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" data-key="id" filter-display="row"
             empty-message="No Users Data.">
             <template #header-start>
                 <Transition name="fadetransition" mode="out-in" appear>

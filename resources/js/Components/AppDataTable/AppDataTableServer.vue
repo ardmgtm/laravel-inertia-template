@@ -1,6 +1,6 @@
 <template>
     <div class="custom-table-wrapper">
-        <DataTable paginator removableSort lazy scrollable filterDisplay="row" v-model:selection="selection"
+        <DataTable paginator removableSort lazy scrollable v-model:selection="selection"
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink JumpToPageInput CurrentPageReport NextPageLink LastPageLink"
             :rowsPerPageOptions="[5, 10, 20, 50]" :value="handler?.loadedData?.value.data"
             :totalRecords="handler?.loadedData?.value.totalRecords" :first="(handler.page - 1) * handler.size"
@@ -72,10 +72,10 @@ const emit = defineEmits(['update:selection', 'update:filters']);
 
 .table-loading-overlay {
     position: absolute;
-    top: 190px;
+    top: 120px;
     left: 0;
     width: 100%;
-    height: calc(100% - 190px - 58px);
+    height: calc(100% - 120px - 58px);
     background: rgba(255, 255, 255, 0.7);
     display: flex;
     justify-content: center;

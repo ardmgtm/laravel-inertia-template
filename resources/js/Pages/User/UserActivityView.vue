@@ -1,8 +1,7 @@
 <template>
-
     <Head title="User Activity" />
     <AdminLayout title="User Activity" :breadcrumbs>
-        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" dataKey="id">
+        <AppDataTableServer :handler="dtHandler" v-model:selection="selectedData" :filters="filters" dataKey="id" filter-display="row">
             <Column field="user.name" header="User" class="w-60 min-w-60" :show-filter-menu="false"
                 :show-clear-button="false">
                 <template #body="slotProps">
