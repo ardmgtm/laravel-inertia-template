@@ -43,7 +43,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         $superadminRole->givePermissionTo(Permission::all());
         $superadminUser = User::where('username', 'admin')->first();
-        $superadminUser->assignRole('superadmin');
+        $superadminUser->assignRole('Superadmin');
 
         Role::updateOrCreate([
             'name' => 'Viewer'
