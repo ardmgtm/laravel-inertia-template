@@ -14,6 +14,7 @@ abstract class Controller
     {
         $user = Auth::user();
         $user = $user instanceof User ? $user : null;
+
         return $user;
     }
 }

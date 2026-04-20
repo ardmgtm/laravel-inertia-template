@@ -35,10 +35,10 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'flash' => [
-                'message' => fn() => $request->session()->get('message'),
-                'user' => fn() => $request->session()->get('user'),
-                'roles' => fn() => $request->session()->get('roles'),
-                'permissions' => fn() => $request->session()->get('permissions'),
+                'message' => fn () => $request->session()->get('message'),
+                'user' => fn () => $request->session()->get('user'),
+                'roles' => fn () => $request->session()->get('roles'),
+                'permissions' => fn () => $request->session()->get('permissions'),
             ],
         ];
     }

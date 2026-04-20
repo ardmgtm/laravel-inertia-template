@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserActivity extends Model
 {
     public $table = 'user_activity';
+
     public $guarded = [];
+
     public $timestamps = false;
 
     public function user(): BelongsTo

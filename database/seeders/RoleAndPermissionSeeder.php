@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndPermissionSeeder extends Seeder
 {
@@ -14,7 +15,7 @@ class RoleAndPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissionsName = $this->getPermissionList();
 
@@ -23,11 +24,11 @@ class RoleAndPermissionSeeder extends Seeder
         foreach ($permissionsName as $permissionGroup) {
             $groupName = $permissionGroup['group_name'];
             foreach ($permissionGroup['permissions'] as $permission) {
-                $permissionName = $groupName . '.' . $permission;
+                $permissionName = $groupName.'.'.$permission;
                 Permission::updateOrCreate([
                     'name' => $permissionName,
                 ], [
-                    'guard_name' => 'web'
+                    'guard_name' => 'web',
                 ]);
                 $newPermissions[] = $permissionName;
             }
@@ -36,9 +37,9 @@ class RoleAndPermissionSeeder extends Seeder
         Permission::whereNotIn('name', $newPermissions)->delete();
 
         $superadminRole = Role::updateOrCreate([
-            'name' => 'Superadmin'
+            'name' => 'Superadmin',
         ], [
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         $superadminRole->givePermissionTo(Permission::all());
@@ -46,9 +47,9 @@ class RoleAndPermissionSeeder extends Seeder
         $superadminUser->assignRole('Superadmin');
 
         Role::updateOrCreate([
-            'name' => 'Viewer'
+            'name' => 'Viewer',
         ], [
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
     }
 
@@ -63,7 +64,7 @@ class RoleAndPermissionSeeder extends Seeder
                     'update',
                     'delete',
                     'assign_role',
-                ]
+                ],
             ],
             [
                 'group_name' => 'role',
@@ -73,13 +74,13 @@ class RoleAndPermissionSeeder extends Seeder
                     'update',
                     'delete',
                     'assign_permission',
-                ]
+                ],
             ],
             [
                 'group_name' => 'user_activity',
                 'permissions' => [
                     'browse',
-                ]
+                ],
             ],
         ];
     }

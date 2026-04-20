@@ -3,12 +3,17 @@
 namespace App\Services;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 
 class DataTableAdapter
 {
     protected Builder|QueryBuilder $query;
+
     protected Request $request;
 
     public function __construct(Builder|QueryBuilder $query, Request $request)
@@ -20,6 +25,7 @@ class DataTableAdapter
     public static function load(Builder|QueryBuilder $query, Request $request): array
     {
         $instance = new self($query, $request);
+
         return $instance->process();
     }
 
@@ -58,19 +64,19 @@ class DataTableAdapter
                             $relationInstance = $model->{$relationName}();
                             $relationTable = $relationInstance->getRelated()->getTable();
 
-                            if ($relationInstance instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+                            if ($relationInstance instanceof BelongsTo) {
                                 $foreignKey = $relationInstance->getQualifiedForeignKeyName();
                                 $ownerKey = $relationInstance->getQualifiedOwnerKeyName();
                             } elseif (
-                                $relationInstance instanceof \Illuminate\Database\Eloquent\Relations\HasOne ||
-                                $relationInstance instanceof \Illuminate\Database\Eloquent\Relations\HasMany ||
-                                $relationInstance instanceof \Illuminate\Database\Eloquent\Relations\HasManyThrough
+                                $relationInstance instanceof HasOne ||
+                                $relationInstance instanceof HasMany ||
+                                $relationInstance instanceof HasManyThrough
                             ) {
                                 $foreignKey = $relationInstance->getQualifiedForeignKeyName();
                                 $localKey = $relationInstance->getQualifiedParentKeyName();
                             }
 
-                            if (!collect($this->query->getQuery()->joins)->pluck('table')->contains($relationTable)) {
+                            if (! collect($this->query->getQuery()->joins)->pluck('table')->contains($relationTable)) {
                                 $this->query->join($relationTable, $foreignKey, '=', $ownerKey ?? $localKey);
                             }
 
@@ -88,7 +94,7 @@ class DataTableAdapter
 
     protected function applyFiltering(): self
     {
-        if (!$this->hasValidFilters()) {
+        if (! $this->hasValidFilters()) {
             return $this;
         }
 
@@ -97,7 +103,7 @@ class DataTableAdapter
                 continue;
             }
             [$field, $matchMode, $value] = $filter;
-            if (strpos($field, ".") !== false) {
+            if (strpos($field, '.') !== false) {
                 $this->applyRelationFilter($filter);
             } else {
                 $this->applyFilter($filter);
@@ -135,7 +141,7 @@ class DataTableAdapter
 
     protected function isDateFormat($value): bool
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return false;
         }
         $patterns = [
@@ -161,12 +167,12 @@ class DataTableAdapter
     protected function applyStringFilter(string $field, string $matchMode, $value): void
     {
         $conditions = [
-            'contains' => fn() => $this->query->where($field, 'LIKE', "%{$value}%"),
-            'notContains' => fn() => $this->query->where($field, 'NOT LIKE', "%{$value}%"),
-            'startsWith' => fn() => $this->query->where($field, 'LIKE', "{$value}%"),
-            'endsWith' => fn() => $this->query->where($field, 'LIKE', "%{$value}"),
-            'equals' => fn() => $this->query->where($field, '=', $value),
-            'notEquals' => fn() => $this->query->where($field, '!=', $value),
+            'contains' => fn () => $this->query->where($field, 'LIKE', "%{$value}%"),
+            'notContains' => fn () => $this->query->where($field, 'NOT LIKE', "%{$value}%"),
+            'startsWith' => fn () => $this->query->where($field, 'LIKE', "{$value}%"),
+            'endsWith' => fn () => $this->query->where($field, 'LIKE', "%{$value}"),
+            'equals' => fn () => $this->query->where($field, '=', $value),
+            'notEquals' => fn () => $this->query->where($field, '!=', $value),
         ];
 
         if (isset($conditions[$matchMode])) {
@@ -179,12 +185,12 @@ class DataTableAdapter
     protected function applyNumericFilter(string $field, string $matchMode, $value): void
     {
         $conditions = [
-            'equals' => fn() => $this->query->where($field, '=', $value),
-            'notEquals' => fn() => $this->query->where($field, '!=', $value),
-            'lt' => fn() => $this->query->where($field, '<', $value),
-            'lte' => fn() => $this->query->where($field, '<=', $value),
-            'gt' => fn() => $this->query->where($field, '>', $value),
-            'gte' => fn() => $this->query->where($field, '>=', $value),
+            'equals' => fn () => $this->query->where($field, '=', $value),
+            'notEquals' => fn () => $this->query->where($field, '!=', $value),
+            'lt' => fn () => $this->query->where($field, '<', $value),
+            'lte' => fn () => $this->query->where($field, '<=', $value),
+            'gt' => fn () => $this->query->where($field, '>', $value),
+            'gte' => fn () => $this->query->where($field, '>=', $value),
         ];
 
         if (isset($conditions[$matchMode])) {
@@ -199,16 +205,16 @@ class DataTableAdapter
         $value = date('Y-m-d', strtotime($value));
 
         $conditions = [
-            'equals' => fn() => $this->query->whereDate($field, '=', $value),
-            'notEquals' => fn() => $this->query->whereDate($field, '!=', $value),
-            'lt' => fn() => $this->query->whereDate($field, '<', $value),
-            'lte' => fn() => $this->query->whereDate($field, '<=', $value),
-            'gt' => fn() => $this->query->whereDate($field, '>', $value),
-            'gte' => fn() => $this->query->whereDate($field, '>=', $value),
-            'dateIs' => fn() => $this->query->whereDate($field, '=', $value),
-            'dateIsNot' => fn() => $this->query->whereDate($field, '!=', $value),
-            'dateBefore' => fn() => $this->query->whereDate($field, '<', $value),
-            'dateAfter' => fn() => $this->query->whereDate($field, '>', $value),
+            'equals' => fn () => $this->query->whereDate($field, '=', $value),
+            'notEquals' => fn () => $this->query->whereDate($field, '!=', $value),
+            'lt' => fn () => $this->query->whereDate($field, '<', $value),
+            'lte' => fn () => $this->query->whereDate($field, '<=', $value),
+            'gt' => fn () => $this->query->whereDate($field, '>', $value),
+            'gte' => fn () => $this->query->whereDate($field, '>=', $value),
+            'dateIs' => fn () => $this->query->whereDate($field, '=', $value),
+            'dateIsNot' => fn () => $this->query->whereDate($field, '!=', $value),
+            'dateBefore' => fn () => $this->query->whereDate($field, '<', $value),
+            'dateAfter' => fn () => $this->query->whereDate($field, '>', $value),
         ];
 
         if (isset($conditions[$matchMode])) {
@@ -231,8 +237,8 @@ class DataTableAdapter
     protected function applyArrayFilter(string $field, string $matchMode, array $value): void
     {
         $conditions = [
-            'equals' => fn() => $this->query->whereIn($field, $value),
-            'between' => fn() => $this->query->whereBetween($field, $value),
+            'equals' => fn () => $this->query->whereIn($field, $value),
+            'between' => fn () => $this->query->whereBetween($field, $value),
         ];
 
         if (isset($conditions[$matchMode])) {
@@ -267,24 +273,24 @@ class DataTableAdapter
     {
         $relation = explode('.', $field);
         $fieldName = array_pop($relation);
-        $has = implode(".", $relation);
+        $has = implode('.', $relation);
         $conditions = [
-            'contains' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'contains' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, 'LIKE', "%{$value}%");
             }),
-            'notContains' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'notContains' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, 'NOT LIKE', "%{$value}%");
             }),
-            'startsWith' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'startsWith' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, 'LIKE', "{$value}%");
             }),
-            'endsWith' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'endsWith' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, 'LIKE', "%{$value}");
             }),
-            'equals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '=', $value);
             }),
-            'notEquals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'notEquals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '!=', $value);
             }),
         ];
@@ -298,25 +304,25 @@ class DataTableAdapter
     {
         $relation = explode('.', $field);
         $fieldName = array_pop($relation);
-        $has = implode(".", $relation);
+        $has = implode('.', $relation);
 
         $conditions = [
-            'equals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '=', $value);
             }),
-            'notEquals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'notEquals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '!=', $value);
             }),
-            'lt' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'lt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '<', $value);
             }),
-            'lte' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'lte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '<=', $value);
             }),
-            'gt' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'gt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '>', $value);
             }),
-            'gte' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'gte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->where($fieldName, '>=', $value);
             }),
         ];
@@ -332,7 +338,7 @@ class DataTableAdapter
     {
         $relation = explode('.', $field);
         $fieldName = array_pop($relation);
-        $has = implode(".", $relation);
+        $has = implode('.', $relation);
 
         $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
             $query->where($fieldName, '=', $value ? 1 : 0);
@@ -343,39 +349,39 @@ class DataTableAdapter
     {
         $relation = explode('.', $field);
         $fieldName = array_pop($relation);
-        $has = implode(".", $relation);
+        $has = implode('.', $relation);
 
         $value = date('Y-m-d', strtotime($value));
 
         $conditions = [
-            'equals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '=', $value);
             }),
-            'notEquals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'notEquals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '!=', $value);
             }),
-            'lt' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'lt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '<', $value);
             }),
-            'lte' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'lte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '<=', $value);
             }),
-            'gt' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'gt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '>', $value);
             }),
-            'gte' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'gte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '>=', $value);
             }),
-            'dateIs' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'dateIs' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '=', $value);
             }),
-            'dateIsNot' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'dateIsNot' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '!=', $value);
             }),
-            'dateBefore' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'dateBefore' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '<', $value);
             }),
-            'dateAfter' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'dateAfter' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereDate($fieldName, '>', $value);
             }),
         ];
@@ -391,13 +397,13 @@ class DataTableAdapter
     {
         $relation = explode('.', $field);
         $fieldName = array_pop($relation);
-        $has = implode(".", $relation);
+        $has = implode('.', $relation);
 
         $conditions = [
-            'equals' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereIn($fieldName, $value);
             }),
-            'between' => fn() => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
+            'between' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
                 $query->whereBetween($fieldName, $value);
             }),
         ];

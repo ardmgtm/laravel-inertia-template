@@ -9,6 +9,7 @@ class Media extends BaseMedia
     public function getPathAttribute()
     {
         $collection = $this->collection_name;
+
         return "storage/{$collection}/{$this->id}/{$this->file_name}";
     }
 }

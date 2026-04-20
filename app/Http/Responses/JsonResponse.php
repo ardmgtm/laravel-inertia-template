@@ -12,6 +12,7 @@ class JsonResponse
             'data' => $data,
         ], $status);
     }
+
     public static function failed(string $message, array $errors = [], int $status = 500)
     {
         return response()->json([

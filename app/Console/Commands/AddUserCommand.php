@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\User;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class AddUserCommand extends Command
 {
@@ -36,12 +35,14 @@ class AddUserCommand extends Command
         // Check if a user with the same username already exists
         if (User::where('username', $username)->exists()) {
             $this->error('A user with this username already exists!');
+
             return;
         }
 
         // Check if a user with the same email already exists
         if (User::where('email', $email)->exists()) {
             $this->error('A user with this email already exists!');
+
             return;
         }
 

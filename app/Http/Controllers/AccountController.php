@@ -15,6 +15,7 @@ class AccountController extends Controller
     {
         return Inertia::render('Account/AccountView');
     }
+
     public function updateInformation(UpdateInformationRequest $request)
     {
         $this->logActivity('Updated user information');
@@ -28,19 +29,22 @@ class AccountController extends Controller
                     ->toMediaCollection('profile_picture');
             }
             DB::commit();
+
             return JsonResponse::success('Success to update your information', ['user' => $user]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return JsonResponse::failed('Failed to update your information');
         }
     }
+
     public function changePassword(ChangePasswordRequest $request)
     {
         $this->logActivity('Change user password');
         $data = $request->validated();
         try {
             $user = $this->user();
-            if (!password_verify($data['old_password'], $user->password)) {
+            if (! password_verify($data['old_password'], $user->password)) {
                 return JsonResponse::failed('The provided password does not match your current password');
             }
 

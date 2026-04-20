@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\User;
+use Illuminate\Console\Command;
 use Spatie\Permission\Models\Role;
 
 class AssignUserRoleCommand extends Command
@@ -31,14 +31,16 @@ class AssignUserRoleCommand extends Command
         $roleName = $this->ask('Masukkan nama role');
 
         $user = User::where('username', $username)->first();
-        if (!$user) {
+        if (! $user) {
             $this->error("User dengan username '{$username}' tidak ditemukan!");
+
             return;
         }
 
         $role = Role::where('name', $roleName)->first();
-        if (!$role) {
+        if (! $role) {
             $this->error("Role '{$roleName}' tidak ditemukan!");
+
             return;
         }
 

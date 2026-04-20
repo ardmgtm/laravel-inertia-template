@@ -12,9 +12,9 @@ Route::get('/login', [AuthenticationController::class, 'loginPage'])->name('logi
 Route::post('/login', [AuthenticationController::class, 'login'])->name('login')->middleware(['guest']);
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/', fn() => redirect()->route('dashboard'));
+    Route::get('/', fn () => redirect()->route('dashboard'));
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
-    Route::get('/dashboard', fn() => Inertia::render('Dashboard/DashboardView'))->name('dashboard');
+    Route::get('/dashboard', fn () => Inertia::render('Dashboard/DashboardView'))->name('dashboard');
 
     Route::controller(UserController::class)->group(function () {
         Route::get('/users', 'index')->name('user.browse')->can('user.browse');
@@ -23,7 +23,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/users/{user}', 'delete')->name('user.delete')->can('user.delete');
 
         Route::get('/users/data-table', 'dataTable')->name('user.data_table')->can('user.browse');
-        Route::post('/users/switch-status','switchStatus')->name('user.switch_status')->can('user.update');
+        Route::post('/users/switch-status', 'switchStatus')->name('user.switch_status')->can('user.update');
     });
     Route::controller(RoleAndPermissionController::class)->group(function () {
         Route::get('/user-roles', 'index')->name('role.browse')->can('role.browse');
@@ -35,8 +35,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/user-roles/{role}/users', 'getRoleUser')->name('role.user_list')->can('role.browse');
         Route::put('/user-roles/{role}/switch-permission', 'switchPermission')->name('role.switch_permission')->can('role.assign_permission');
     });
-    Route::controller(UserActivityController::class)->group(function(){
-        Route::get('/user-activity','index')->name('user_activity.browse');
+    Route::controller(UserActivityController::class)->group(function () {
+        Route::get('/user-activity', 'index')->name('user_activity.browse');
         Route::get('/user-activity/data-table', 'dataTable')->name('user_activity.data_table');
     });
     Route::controller(AccountController::class)->group(function () {

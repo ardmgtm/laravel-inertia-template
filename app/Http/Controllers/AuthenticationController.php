@@ -13,10 +13,12 @@ class AuthenticationController extends Controller
     {
         return Inertia::render('LoginView');
     }
+
     public function login(LoginRequest $request)
     {
         $this->logActivity('User logged in');
         $request->authenticate();
+
         return redirect()->route('dashboard')->with([
             'message' => 'Login successful',
             'user' => [
@@ -40,12 +42,14 @@ class AuthenticationController extends Controller
             }),
         ]);
     }
+
     public function logout(Request $request)
     {
         $this->logActivity('User logged out');
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }

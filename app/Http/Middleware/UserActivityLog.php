@@ -31,15 +31,15 @@ class UserActivityLog
     {
         $user = Auth::user();
         UserActivity::create([
-            'timestamp'     => now(),
-            'user_id'       => $user?->id,
-            'method'        => $request->method(),
-            'status_code'   => $response->getStatusCode(),
-            'route_name'    => $request->route()?->getName(),
-            'route'         => $request->path(),
-            'ip_address'    => $request->ip(),
-            'user_agent'    => $request->header('User-Agent'),
-            'description'   => $request['activity_description'] ?? '-',
+            'timestamp' => now(),
+            'user_id' => $user?->id,
+            'method' => $request->method(),
+            'status_code' => $response->getStatusCode(),
+            'route_name' => $request->route()?->getName(),
+            'route' => $request->path(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+            'description' => $request['activity_description'] ?? '-',
         ]);
     }
 }

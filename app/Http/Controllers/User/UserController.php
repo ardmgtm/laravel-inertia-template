@@ -22,12 +22,14 @@ class UserController extends Controller
         $data = [
             'roles' => Role::all(),
         ];
+
         return Inertia::render('User/UserManageView', $data);
     }
 
     public function dataTable(Request $request)
     {
         $query = User::query()->with(['roles']);
+
         return DataTableResponse::load($query);
     }
 
@@ -40,39 +42,45 @@ class UserController extends Controller
             $user = User::create($data);
             $user->assignRole($data['roles']);
             DB::commit();
+
             return JsonResponse::success('Success to create user');
         } catch (Throwable $e) {
             DB::rollBack();
+
             return JsonResponse::failed('Failed to create user');
         }
     }
 
     public function update(UpdateUserRequest $request, User $user)
     {
-        $this->logActivity('Update user (id: ' . $user->id . ')');
+        $this->logActivity('Update user (id: '.$user->id.')');
         DB::beginTransaction();
         try {
             $data = $request->validated();
             $user->update($data);
             $user->syncRoles($data['roles']);
             DB::commit();
+
             return JsonResponse::success('Success to update user');
         } catch (Throwable $e) {
             DB::rollBack();
+
             return JsonResponse::failed('Failed to update user');
         }
     }
 
     public function delete(Request $request, User $user)
     {
-        $this->logActivity('Delete user (id: ' . $user->id . ')');
+        $this->logActivity('Delete user (id: '.$user->id.')');
         DB::beginTransaction();
         try {
             $user->delete();
             DB::commit();
+
             return JsonResponse::success('Success to delete user');
         } catch (Throwable $e) {
             DB::rollBack();
+
             return JsonResponse::failed('Failed to delete user');
         }
     }
@@ -82,12 +90,14 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->validated();
-            $this->logActivity('Update user status (ids: ' . json_encode($data['ids']) . ')');
+            $this->logActivity('Update user status (ids: '.json_encode($data['ids']).')');
             User::whereIn('id', $data['ids'])->update(['is_active' => $data['status']]);
             DB::commit();
+
             return JsonResponse::success('Success to update status');
         } catch (Throwable $e) {
             DB::rollBack();
+
             return JsonResponse::failed('Failed to update status');
         }
     }
