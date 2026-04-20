@@ -9,18 +9,22 @@ use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Responses\DataTableResponse;
 use App\Http\Responses\JsonResponse;
 use App\Models\User;
+use App\Services\RoleAndPermissionService;
+use App\Services\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Spatie\Permission\Models\Role;
-use Throwable;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private UserService $userService,
+        private RoleAndPermissionService $roleService
+    ) {}
+
     public function index(Request $request)
     {
         $data = [
-            'roles' => Role::all(),
+            'roles' => $this->roleService->getAllRoles(),
         ];
 
         return Inertia::render('User/UserManageView', $data);
@@ -28,7 +32,7 @@ class UserController extends Controller
 
     public function dataTable(Request $request)
     {
-        $query = User::query()->with(['roles']);
+        $query = $this->userService->getUserQuery();
 
         return DataTableResponse::load($query);
     }
@@ -37,68 +41,42 @@ class UserController extends Controller
     {
         $this->logActivity('Create new user');
         $data = $request->validated();
-        DB::beginTransaction();
-        try {
-            $user = User::create($data);
-            $user->assignRole($data['roles']);
-            DB::commit();
+        $result = $this->userService->createUser($data);
 
-            return JsonResponse::success('Success to create user');
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return JsonResponse::failed('Failed to create user');
-        }
+        return $result['success']
+            ? JsonResponse::success($result['message'])
+            : JsonResponse::failed($result['message']);
     }
 
     public function update(UpdateUserRequest $request, User $user)
     {
         $this->logActivity('Update user (id: '.$user->id.')');
-        DB::beginTransaction();
-        try {
-            $data = $request->validated();
-            $user->update($data);
-            $user->syncRoles($data['roles']);
-            DB::commit();
+        $data = $request->validated();
+        $result = $this->userService->updateUser($user, $data);
 
-            return JsonResponse::success('Success to update user');
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return JsonResponse::failed('Failed to update user');
-        }
+        return $result['success']
+            ? JsonResponse::success($result['message'])
+            : JsonResponse::failed($result['message']);
     }
 
     public function delete(Request $request, User $user)
     {
         $this->logActivity('Delete user (id: '.$user->id.')');
-        DB::beginTransaction();
-        try {
-            $user->delete();
-            DB::commit();
+        $result = $this->userService->deleteUser($user);
 
-            return JsonResponse::success('Success to delete user');
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return JsonResponse::failed('Failed to delete user');
-        }
+        return $result['success']
+            ? JsonResponse::success($result['message'])
+            : JsonResponse::failed($result['message']);
     }
 
     public function switchStatus(SwitchStatusRequest $request)
     {
-        DB::beginTransaction();
-        try {
-            $data = $request->validated();
-            $this->logActivity('Update user status (ids: '.json_encode($data['ids']).')');
-            User::whereIn('id', $data['ids'])->update(['is_active' => $data['status']]);
-            DB::commit();
+        $data = $request->validated();
+        $this->logActivity('Update user status (ids: '.json_encode($data['ids']).')');
+        $result = $this->userService->switchStatus($data['ids'], $data['status']);
 
-            return JsonResponse::success('Success to update status');
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return JsonResponse::failed('Failed to update status');
-        }
+        return $result['success']
+            ? JsonResponse::success($result['message'])
+            : JsonResponse::failed($result['message']);
     }
 }

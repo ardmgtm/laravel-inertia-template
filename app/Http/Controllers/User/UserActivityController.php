@@ -4,12 +4,16 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\DataTableResponse;
-use App\Models\UserActivity;
+use App\Services\UserActivityService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class UserActivityController extends Controller
 {
+    public function __construct(
+        private UserActivityService $userActivityService
+    ) {}
+
     public function index(Request $request)
     {
         return Inertia::render('User/UserActivityView');
@@ -17,7 +21,7 @@ class UserActivityController extends Controller
 
     public function dataTable(Request $request)
     {
-        $query = UserActivity::with(['user']);
+        $query = $this->userActivityService->getUserActivityQuery();
 
         return DataTableResponse::load($query);
     }
