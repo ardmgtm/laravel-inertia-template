@@ -1,126 +1,169 @@
 <template>
-    <div>
-        <Head title="Login" />
-        <Toast />
+    <Head title="Login" />
+    <Toast/>
+    <div class="min-h-screen bg-gradient-to-br from-surface-100 via-surface-200 to-surface-300 dark:from-surface-950 dark:via-surface-900 dark:to-surface-950 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative overflow-hidden">
+        <!-- Decorative background elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary-500/10 dark:bg-primary-400/5 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 dark:bg-blue-400/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
 
-        <div
-            class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900 dark:to-blue-800 px-4 py-8"
-        >
-            <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                <div
-                    class="absolute -top-40 -left-40 w-80 h-80 bg-blue-300 dark:bg-blue-700 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-blob"
-                ></div>
-                <div
-                    class="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 dark:bg-blue-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-blob animation-delay-2000"
-                ></div>
-                <div
-                    class="absolute -bottom-40 left-20 w-80 h-80 bg-blue-200 dark:bg-blue-800 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-blob animation-delay-4000"
-                ></div>
-            </div>
-
-            <div class="w-full max-w-5xl relative z-10">
-                <div
-                    class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-white/20 dark:border-gray-700/50 transform hover:scale-[1.01] transition-all duration-300"
-                >
-                    <div class="flex flex-col lg:flex-row">
-                        <div
-                            class="w-full lg:w-1/2 hidden lg:flex flex-col justify-center items-center p-12 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 relative overflow-hidden"
-                        >
-                            <div class="absolute inset-0 bg-[url('/vite.svg')] bg-contain bg-no-repeat bg-center opacity-20"></div>
-                            <div class="relative z-10 text-white text-center space-y-6">
-                                <div class="animate-float">
-                                    <svg class="w-32 h-32 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="1.5"
-                                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                        />
-                                    </svg>
+        <div class="w-full max-w-6xl mx-auto relative z-10">
+            <div class="bg-surface-0 dark:bg-surface-900 shadow-2xl rounded-2xl overflow-hidden backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 transition-all duration-300 hover:shadow-3xl">
+                <div class="flex flex-col lg:flex-row min-h-[500px] md:min-h-[600px]">
+                    <!-- Left side - Illustration (hidden on mobile) -->
+                    <div class="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-900 p-12 items-center justify-center">
+                        <div class="absolute inset-0 bg-[url('/images/login-illustrration.jpg')] bg-cover bg-center opacity-20"></div>
+                        <div class="relative z-10 text-white text-center space-y-6">
+                            <div class="animate-fade-in">
+                                <i class="pi pi-shield text-8xl mb-6 opacity-90"></i>
+                            </div>
+                            <h2 class="text-4xl font-bold leading-tight animate-slide-up">
+                                Secure Access
+                            </h2>
+                            <p class="text-xl opacity-90 animate-slide-up" style="animation-delay: 0.1s;">
+                                Sign in to continue to your dashboard
+                            </p>
+                            <div class="flex items-center justify-center gap-8 mt-12 animate-slide-up" style="animation-delay: 0.2s;">
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold">99.9%</div>
+                                    <div class="text-sm opacity-75">Uptime</div>
                                 </div>
-                                <h2 class="text-4xl font-bold drop-shadow-lg">Selamat Datang!</h2>
-                                <p class="text-lg opacity-90 max-w-md mx-auto">Silakan login untuk melanjutkan</p>
-                                <div class="flex gap-2 justify-center mt-8">
-                                    <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                                    <div class="w-3 h-3 bg-white rounded-full animate-pulse animation-delay-200"></div>
-                                    <div class="w-3 h-3 bg-white rounded-full animate-pulse animation-delay-400"></div>
+                                <div class="h-12 w-px bg-white/30"></div>
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold">24/7</div>
+                                    <div class="text-sm opacity-75">Support</div>
+                                </div>
+                                <div class="h-12 w-px bg-white/30"></div>
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold">100%</div>
+                                    <div class="text-sm opacity-75">Secure</div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Right side - Login Form -->
+                    <div class="w-full lg:w-1/2 p-6 sm:p-8 md:p-12 flex flex-col justify-center">
+                        <!-- Mobile logo and header -->
+                        <div class="lg:hidden text-center mb-8">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 mb-4 animate-bounce-gentle">
+                                <img src="/vite.svg" class="h-10" alt="App Logo"/>
+                            </div>
+                            <h1 class="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-surface-0 mb-2">
+                                Welcome Back
+                            </h1>
+                            <p class="text-surface-600 dark:text-surface-400">
+                                Sign in to your account
+                            </p>
+                        </div>
 
-                        <div class="w-full lg:w-1/2 p-8 md:p-12">
-                            <div class="text-center mb-8 space-y-4">
-                                <div class="flex items-center justify-center animate-fade-in">
-                                    <div class="relative">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full blur-lg opacity-50"></div>
-                                        <img src="/vite.svg" class="h-20 relative z-10 drop-shadow-xl" alt="App Logo" />
-                                    </div>
+                        <!-- Desktop header -->
+                        <div class="hidden lg:block text-center mb-10 animate-fade-in">
+                            <div class="flex items-center justify-center mb-4">
+                                <div class="p-3 rounded-full bg-primary-100 dark:bg-primary-900/30 inline-flex animate-bounce-gentle">
+                                    <img src="/vite.svg" class="h-12" alt="App Logo"/>
                                 </div>
-                                <h1
-                                    class="text-gray-800 dark:text-white text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
-                                >
-                                    Welcome Back
-                                </h1>
-                                <p class="text-gray-600 dark:text-gray-300 text-base font-medium">Sign in to continue</p>
                             </div>
-
-                            <Form class="flex flex-col gap-5" @submit="loginAction" :resolver="resolver">
-                                <FormField name="username" v-slot="$field">
-                                    <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2" for="username">
-                                        <i class="pi pi-user mr-2 text-blue-500"></i>Username
+                            <h1 class="text-surface-900 dark:text-surface-0 text-3xl md:text-4xl font-bold mb-2">
+                                Welcome Back
+                            </h1>
+                            <p class="text-surface-600 dark:text-surface-400 text-sm md:text-base">
+                                Enter your credentials to access your account
+                            </p>
+                        </div>
+        
+                        <Form class="flex flex-col gap-5 animate-slide-up" @submit="loginAction" :resolver="resolver">
+                            <FormField name="username" v-slot="$field">
+                                <div class="space-y-2">
+                                    <label class="font-semibold text-surface-700 dark:text-surface-300 text-sm" for="username">
+                                        <i class="pi pi-user mr-2"></i>Username
                                     </label>
-                                    <InputText
-                                        id="username"
-                                        placeholder="Masukkan username Anda"
-                                        v-model="formSignIn.username"
-                                        type="text"
-                                        class="w-full transition-all duration-300 hover:border-blue-400 focus:border-blue-500"
-                                        autocomplete="username"
+                                    <InputText 
+                                        id="username" 
+                                        placeholder="Enter your username" 
+                                        v-model="formSignIn.username" 
+                                        type="text" 
+                                        class="w-full transition-all duration-200 hover:border-primary-400 focus:border-primary-500" 
+                                        :class="{ 'border-red-500': $field.error }"
                                         fluid
                                     />
-                                    <Message class="mt-2" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
-                                </FormField>
-
-                                <FormField name="password" v-slot="$field">
-                                    <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2" for="password">
-                                        <i class="pi pi-lock mr-2 text-blue-500"></i>Password
+                                    <Message v-if="$field.error" class="mt-2" severity="error" size="small" variant="simple">
+                                        {{ $field.error?.message }}
+                                    </Message>
+                                </div>
+                            </FormField>
+                            
+                            <FormField name="password" v-slot="$field">
+                                <div class="space-y-2">
+                                    <label class="font-semibold text-surface-700 dark:text-surface-300 text-sm" for="password">
+                                        <i class="pi pi-lock mr-2"></i>Password
                                     </label>
-                                    <Password
-                                        id="password"
-                                        placeholder="Masukkan password Anda"
-                                        v-model="formSignIn.password"
-                                        :feedback="false"
-                                        toggleMask
-                                        fluid
-                                        class="w-full transition-all duration-300"
-                                        autocomplete="current-password"
+                                    <Password 
+                                        id="password" 
+                                        placeholder="Enter your password" 
+                                        v-model="formSignIn.password" 
+                                        :feedback="false" 
+                                        toggleMask 
+                                        class="w-full transition-all duration-200"
+                                        :class="{ 'border-red-500': $field.error }"
+                                        :pt="{
+                                            input: { class: 'w-full' }
+                                        }"
+                                        fluid 
                                     />
-                                    <Message class="mt-2" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
-                                </FormField>
-
-                                <Button
-                                    type="submit"
-                                    label="Masuk"
-                                    icon="pi pi-sign-in"
-                                    class="w-full mt-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-                                    :loading="loading"
-                                    size="large"
-                                />
-                            </Form>
-
-                            <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                                <p>Butuh bantuan? Hubungi administrator sistem</p>
+                                    <Message v-if="$field.error" class="mt-2" severity="error" size="small" variant="simple">
+                                        {{ $field.error?.message }}
+                                    </Message>
+                                </div>
+                            </FormField>
+        
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                                <div class="flex items-center">
+                                    <Checkbox 
+                                        id="remember" 
+                                        name="remember" 
+                                        v-model="formSignIn.remember" 
+                                        :binary="true" 
+                                        class="mr-2" 
+                                    />
+                                    <label for="remember" class="text-sm text-surface-600 dark:text-surface-400 cursor-pointer select-none">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors">
+                                    Forgot password?
+                                </a>
                             </div>
+
+                            <Button 
+                                type="submit" 
+                                label="Sign In" 
+                                icon="pi pi-sign-in" 
+                                class="w-full mt-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" 
+                                :loading="loading"
+                                size="large"
+                            />
+                        </Form>
+
+                        <!-- Additional links -->
+                        <div class="mt-8 text-center text-sm text-surface-600 dark:text-surface-400">
+                            Don't have an account? 
+                            <a href="#" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium ml-1 transition-colors">
+                                Sign up
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-white text-center py-4 shadow-inner">
-            <p class="text-sm">© {{ currentYear }} Your Company. All rights reserved.</p>
-        </footer>
     </div>
+
+    <footer class="bg-surface-900 dark:bg-surface-950 text-surface-300 dark:text-surface-400 text-center py-4 text-xs sm:text-sm border-t border-surface-700 dark:border-surface-800">
+        <div class="container mx-auto px-4">
+            <p>© {{ currentYear }} Your Company. All rights reserved.</p>
+        </div>
+    </footer>
 </template>
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
@@ -147,7 +190,12 @@ const resolver = yupResolver(
     })
 );
 
+const showPassword = ref(false);
 const loading = ref(false);
+
+function togglePassword() {
+    showPassword.value = !showPassword.value;
+}
 
 function loginAction(event: FormSubmitEvent) {
     if(event.valid){
@@ -183,67 +231,3 @@ function loginAction(event: FormSubmitEvent) {
 }
 
 </script>
-
-<style scoped>
-@keyframes blob {
-    0%,
-    100% {
-        transform: translate(0px, 0px) scale(1);
-    }
-    33% {
-        transform: translate(30px, -50px) scale(1.1);
-    }
-    66% {
-        transform: translate(-20px, 20px) scale(0.9);
-    }
-}
-
-@keyframes float {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-20px);
-    }
-}
-
-@keyframes fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-blob {
-    animation: blob 7s infinite;
-}
-
-.animate-float {
-    animation: float 3s ease-in-out infinite;
-}
-
-.animate-fade-in {
-    animation: fade-in 0.8s ease-out;
-}
-
-.animation-delay-2000 {
-    animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-    animation-delay: 4s;
-}
-
-.animation-delay-200 {
-    animation-delay: 0.2s;
-}
-
-.animation-delay-400 {
-    animation-delay: 0.4s;
-}
-</style>
