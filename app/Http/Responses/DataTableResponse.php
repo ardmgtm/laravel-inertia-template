@@ -7,10 +7,10 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class DataTableResponse
 {
-    public static function load(Builder $builder)
+    public static function load(Builder $builder, $request = null)
     {
         try {
-            $request = request();
+            $request = $request ?? request();
             $dataLoad = DataTableAdapter::load($builder, $request);
 
             return response()->json($dataLoad, 200);
