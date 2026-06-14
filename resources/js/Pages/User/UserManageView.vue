@@ -125,7 +125,7 @@ import { FormModalExpose } from '@/Core/Models/form-modal';
 import { User } from '@/Core/Models/user';
 import { UserRole } from '@/Core/Models/user-role';
 import AppColorTag from '@/Components/AppColorTag.vue';
-import { can } from '@/Core/Utiils/permission-check';
+import { can } from '@/Core/Utils/permission-check.js';
 import axios from 'axios';
 import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 

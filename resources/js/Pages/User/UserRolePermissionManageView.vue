@@ -179,7 +179,7 @@ import { computed, ComputedRef, ref, Ref } from 'vue';
 import UserRoleFormModal from './Components/UserRoleFormModal.vue';
 import { FormModalExpose } from '@/Core/Models/form-modal';
 import AppInputSearch from '@/Components/AppInputSearch.vue';
-import { can } from '@/Core/Utiils/permission-check';
+import { can } from '@/Core/Utils/permission-check.js';
 
 const toast = useToast();
 
