@@ -53,7 +53,7 @@ const props = defineProps({
 
 window.Echo.private("App.Models.User." + authStore.user?.id)
     .notification((notification: any) => {
-
+        console.log("Received notification:", notification);
     });
 </script>
 <style scoped>

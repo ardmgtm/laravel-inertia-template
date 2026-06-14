@@ -28,7 +28,7 @@
     </Dialog>
 </template>
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { reactive, Ref, ref } from 'vue';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
@@ -53,7 +53,7 @@ const loading: Ref<boolean> = ref(false);
 
 const roleOptions = ref<UserRole[]>(usePage().props.roles as UserRole[]);
 
-const formData = reactive<UserForm>({
+const formData = useForm<UserForm>({
     id: null,
     name: null,
     email: null,
