@@ -1,15 +1,16 @@
 <template>
     <Toast />
-    <ConfirmDialog/>
+    <ConfirmDialog />
     <div class="flex h-screen overflow-hidden">
         <Sidemenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
         <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" :breadcrumbs="breadcrumbs"/>
+            <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen"
+                :breadcrumbs="breadcrumbs" />
             <main class="grow">
                 <Transition name="page" mode="out-in" appear>
                     <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
                         <div class="flex items-start flex-col flex-1" v-if="props.title">
-                            
+
                             <div class="flex items-end justify-between w-full">
                                 <div class="font-bold text-2xl text-surface-900 dark:text-surface-0">
                                     {{ props.title }}
@@ -20,7 +21,7 @@
                             </div>
                         </div>
                         <hr class="my-4" />
-                        <slot/>
+                        <slot />
                     </div>
                 </Transition>
             </main>
@@ -34,6 +35,9 @@ import Sidemenu from './Components/Sidemenu/Sidemenu.vue';
 import Header from './Components/Header/Header.vue';
 import { MenuItem } from 'primevue/menuitem';
 import { Toast } from 'primevue';
+import { useAuthStore } from '@/Stores/auth-store';
+
+const authStore = useAuthStore()
 
 const sidebarOpen = ref(false);
 const props = defineProps({
@@ -46,15 +50,20 @@ const props = defineProps({
         required: false,
     }
 })
+
+window.Echo.private("App.Models.User." + authStore.user?.id)
+    .notification((notification: any) => {
+
+    });
 </script>
 <style scoped>
-    .page-enter-from,
-    .page-leave-to {
-        opacity: 0;
-    }
+.page-enter-from,
+.page-leave-to {
+    opacity: 0;
+}
 
-    .page-enter-active,
-    .page-leave-active {
-        transition: opacity 0.3s ease-out;
-    }
-</style>    
+.page-enter-active,
+.page-leave-active {
+    transition: opacity 0.3s ease-out;
+}
+</style>
