@@ -7,6 +7,9 @@ use App\Http\Controllers\User\UserActivityController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Broadcast;
+
+Broadcast::routes(['middleware' => ['auth']]);
 
 Route::get('/login', [AuthenticationController::class, 'loginPage'])->name('login_page')->middleware(['guest']);
 Route::post('/login', [AuthenticationController::class, 'login'])->name('login')->middleware(['guest']);

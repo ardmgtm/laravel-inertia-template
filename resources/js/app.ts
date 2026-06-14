@@ -14,6 +14,19 @@ import ConfirmationService from 'primevue/confirmationservice';
 import Tooltip from 'primevue/tooltip';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+import { configureEcho } from '@laravel/echo-vue';
+
+// Configure Echo Vue - ini akan menggunakan window.Echo yang sudah disetup di bootstrap.ts
+configureEcho({
+    broadcaster: 'reverb',
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    cluster: import.meta.env.VITE_REVERB_APP_CLUSTER ?? 'mt1',
+    wsHost: import.meta.env.VITE_REVERB_HOST ?? 'localhost',
+    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
+    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    enabledTransports: ['ws', 'wss'],
+});
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);

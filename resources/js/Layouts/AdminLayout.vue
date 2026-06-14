@@ -30,14 +30,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import Sidemenu from './Components/Sidemenu/Sidemenu.vue';
 import Header from './Components/Header/Header.vue';
 import { MenuItem } from 'primevue/menuitem';
 import { Toast } from 'primevue';
 import { useAuthStore } from '@/Stores/auth-store';
+import { useEchoModel } from '@laravel/echo-vue';
+import { useToast } from 'primevue/usetoast';
 
 const authStore = useAuthStore()
+const toast = useToast();
 
 const sidebarOpen = ref(false);
 const props = defineProps({
@@ -51,10 +54,27 @@ const props = defineProps({
     }
 })
 
-window.Echo.private("App.Models.User." + authStore.user?.id)
-    .notification((notification: any) => {
-        console.log("Received notification:", notification);
-    });
+// Computed property untuk userId yang reactive
+const userId = computed(() => authStore.user?.id);
+let echoChannel: any = null;
+
+// Setup notification listener menggunakan useEchoModel
+onMounted(() => {
+    if (userId.value) {
+        const { channel } = useEchoModel('App.Models.User', userId.value);
+        echoChannel = channel();
+
+        echoChannel.notification((notification: any) => {
+            // Tampilkan toast notification
+            toast.add({
+                severity: 'info',
+                summary: notification.title || 'Notification',
+                detail: notification.message,
+                life: 5000
+            });
+        });
+    }
+});
 </script>
 <style scoped>
 .page-enter-from,
