@@ -11,21 +11,21 @@
             ref="menuItemRef"
             class="flex gap-2 p-2 items-center rounded-lg cursor-pointer group ripple-box hover:bg-surface-100 transition-all duration-300"
             :class="[
-                { 'text-primary font-bold': isActive || submenuExpand || showPopup },
+                { 'text-primary font-bold': isActive || submenuExpand || showPopup || hasActiveChild },
                 props.collapsed ? 'justify-center' : ''
             ]" 
             @click.stop="onclickHandle"
             v-tooltip.right="props.collapsed && !props.items ? props.label : ''">
             <div v-if="props.icon != null"
-                class="rounded-lg border h-8 w-8 flex items-center justify-center group-hover:border-primary transition-colors"
-                :class="{ 'border-primary': isActive || submenuExpand || showPopup, 'border-surface-300': !isActive && !submenuExpand && !showPopup }">
+                class="rounded-lg border h-8 w-8 flex flex-none items-center justify-center group-hover:border-primary transition-colors"
+                :class="{ 'border-primary': isActive || submenuExpand || showPopup || hasActiveChild, 'border-surface-300': !isActive && !submenuExpand && !showPopup && !hasActiveChild }">
                 <i class="group-hover:text-primary transition-colors"
-                    :class="[props.icon, { 'text-primary': isActive || submenuExpand || showPopup, 'text-surface-500': !isActive && !submenuExpand && !showPopup }]" />
+                    :class="[props.icon, { 'text-primary': isActive || submenuExpand || showPopup || hasActiveChild, 'text-surface-500': !isActive && !submenuExpand && !showPopup && !hasActiveChild }]" />
             </div>
             <div v-else>
                 <div class="h-8 w-8 flex items-center justify-center">
                     <div class="rounded-full h-2 w-2 group-hover:bg-primary transition-colors"
-                        :class="{ 'bg-primary': isActive || submenuExpand || showPopup, 'bg-surface-500': !isActive && !submenuExpand && !showPopup }">
+                        :class="{ 'bg-primary': isActive || submenuExpand || showPopup || hasActiveChild, 'bg-surface-500': !isActive && !submenuExpand && !showPopup && !hasActiveChild }">
                     </div>
                 </div>
             </div>
@@ -121,6 +121,24 @@ const menuItemRef = ref<HTMLElement | null>(null);
 const popupRef = ref<HTMLElement | null>(null);
 const popupPosition = ref({});
 
+const hasActiveChild = computed(() => {
+    if (!props.items) return false;
+    
+    const checkActive = (items: SideMenuItem[]): boolean => {
+        return items.some(item => {
+            if (item.url && usePage().url.startsWith(item.url)) {
+                return true;
+            }
+            if (item.items) {
+                return checkActive(item.items);
+            }
+            return false;
+        });
+    };
+    
+    return checkActive(props.items);
+});
+
 function updateActiveState() {
     isActive.value = true
     if (props.items) {
@@ -133,6 +151,12 @@ onMounted(() => {
     if (isActive.value) {
         emit('item-active');
     }
+    
+    // Auto-expand if has active child
+    if (hasActiveChild.value && props.items) {
+        submenuExpand.value = true;
+    }
+    
     document.addEventListener('click', handleClickOutside);
     window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleResize);

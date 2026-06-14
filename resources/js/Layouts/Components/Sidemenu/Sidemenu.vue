@@ -37,7 +37,7 @@
           :href="route('dashboard')" 
           v-if="sidebarExpanded" 
           class="flex items-center gap-3 hover:opacity-80 transition-opacity duration-200">
-          <img src="/vite.svg" alt="app-logo" class="h-7 w-auto" />
+          <img src="/vite.svg" alt="app-logo" class="h-10 w-auto" />
         </Link>
         
         <!-- Logo - Collapsed Mode (Icon only) -->
