@@ -1,13 +1,16 @@
 <template>
     <Head title="Dashboard"/>
     <AdminLayout title="Dashboard" :breadcrumbs="breadcrumbs">
-        <div class="grid grid-cols-2 lg:grid-cols-4 mb-6 gap-4">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8 gap-6">
             <UserCard />
             <UserCard />
             <UserCard />
             <UserCard />
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        
+        <!-- Charts and Tables -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Chart1 />
             <Table1 />
         </div>

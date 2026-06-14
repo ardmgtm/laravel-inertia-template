@@ -1,11 +1,14 @@
 <template>
-    <div class="card p-4 rounded-xl border border-surface-300">
-        <div class="flex items-center justify-between mb-2">
-            <h2 class="text-lg font-semibold">Chart Example</h2>
-            <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded v-tooltip.bottom="'Action'"/>
+    <div class="card p-6 rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-lg transition-shadow duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">Sales Overview</h2>
+                <p class="text-sm text-gray-500 mt-1">Monthly performance comparison</p>
+            </div>
+            <Button variant="text" icon="pi pi-ellipsis-v" severity="secondary" rounded v-tooltip.bottom="'Action'" class="hover:bg-gray-100"/>
         </div>
-        <Divider/>
-        <Chart type="bar" :data="chartData" :options="chartOptions" class="h-[20rem]"  />
+        <Divider class="mb-4"/>
+        <Chart type="bar" :data="chartData" :options="chartOptions" class="h-[22rem]"  />
     </div>
 </template>
 
