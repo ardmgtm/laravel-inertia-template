@@ -11,14 +11,13 @@
       severity="secondary" 
       rounded
       size="small"
-      v-tooltip.right="sidebarExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'"
       class="hidden lg:flex absolute top-[12px] bg-white border-2 border-gray-300 shadow-lg hover:shadow-xl hover:scale-110 hover:border-primary transition-all duration-300 z-[60] -translate-x-1/2"
       :class="sidebarExpanded ? 'left-64' : 'left-20'"
     />
 
     <!-- Sidebar -->
     <div id="sidebar" ref="sidebar" class="flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll 
-      lg:overflow-y-auto no-scrollbar shrink-0 bg-surface-50 px-4 pt-3 pb-4 transition-all duration-300 ease-in-out 
+      lg:overflow-y-auto no-scrollbar shrink-0 bg-surface-50 px-4 pt-1 pb-4 transition-all duration-300 ease-in-out 
       shadow-xs border-r border-gray-200 shadow-lg"
       :class="[
         sidebarOpen ? 'translate-x-0' : '-translate-x-64',
@@ -26,7 +25,7 @@
       ]">
 
       <!-- Sidebar header with Logo -->
-      <div class="flex items-center mb-6 min-h-[10px] transition-all duration-300"
+      <div class="flex items-center mb-6 transition-all duration-300"
         :class="sidebarExpanded ? 'justify-between pr-3 sm:px-2' : 'justify-center'">
         <!-- Close button (mobile) -->
         <Button v-if="sidebarExpanded" class="lg:hidden" severity="secondary" icon="pi pi-arrow-left" variant="text" rounded
