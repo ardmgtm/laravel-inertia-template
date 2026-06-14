@@ -27,8 +27,8 @@ class AssignUserRoleCommand extends Command
      */
     public function handle()
     {
-        $username = $this->ask('Masukkan username');
-        $roleName = $this->ask('Masukkan nama role');
+        $username = $this->ask('Enter username');
+        $roleName = $this->ask('Enter role name');
 
         $user = User::where('username', $username)->first();
         if (! $user) {
