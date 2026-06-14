@@ -1,5 +1,9 @@
 <template>
-    <Toast />
+    <!-- Minimalist Notification Toast -->
+    <Toast position="bottom-right" group="app-notifications"/>
+    
+    <!-- Default Toast untuk toast.add() biasa -->
+    <Toast/>
     <ConfirmDialog />
     <div class="flex h-screen overflow-hidden">
         <Sidemenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
@@ -61,18 +65,27 @@ let echoChannel: any = null;
 // Setup notification listener menggunakan useEchoModel
 onMounted(() => {
     if (userId.value) {
+        console.log('🔔 Setting up notification listener for user:', userId.value);
+        
         const { channel } = useEchoModel('App.Models.User', userId.value);
         echoChannel = channel();
 
         echoChannel.notification((notification: any) => {
-            // Tampilkan toast notification
+            console.log('✅ Received notification:', notification);
+            
+            // Tampilkan minimalist toast notification
             toast.add({
                 severity: 'info',
-                summary: notification.title || 'Notification',
-                detail: notification.message,
-                life: 5000
+                summary: notification.title || 'New Notification',
+                detail: notification.message || 'You have a new notification',
+                group: 'app-notifications',
+                life: 6000, // Durasi tampil (6 detik)
             });
         });
+
+        console.log('✅ Notification listener setup complete');
+    } else {
+        console.warn('⚠️ User ID tidak tersedia');
     }
 });
 </script>
