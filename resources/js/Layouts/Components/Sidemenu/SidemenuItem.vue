@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <span v-if="!props.collapsed" class="flex-1">{{ props.label }}</span>
+            <span v-if="!props.collapsed" class="flex-1 text-ellipsis overflow-hidden whitespace-nowrap">{{ props.label }}</span>
             <div class="flex-none" v-if="props.items != null && !props.collapsed">
                 <i class="pi pi-chevron-down transition duration-300 text-gray-400"
                     :class="{ '-rotate-180': submenuExpand, 'rotate-0': !submenuExpand }"></i>
