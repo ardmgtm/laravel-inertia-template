@@ -1,6 +1,6 @@
 <template>
     <!-- Minimalist Notification Toast -->
-    <Toast position="bottom-right" group="app-notifications"/>
+    <AppNotificationToast />
     
     <!-- Default Toast untuk toast.add() biasa -->
     <Toast/>
@@ -39,12 +39,7 @@ import Sidemenu from './Components/Sidemenu/Sidemenu.vue';
 import Header from './Components/Header/Header.vue';
 import { MenuItem } from 'primevue/menuitem';
 import { Toast } from 'primevue';
-import { useAuthStore } from '@/Stores/auth-store';
-import { useEchoModel } from '@laravel/echo-vue';
-import { useToast } from 'primevue/usetoast';
-
-const authStore = useAuthStore()
-const toast = useToast();
+import AppNotificationToast from '@/Components/AppNotificationToast.vue';
 
 const sidebarOpen = ref(false);
 const props = defineProps({
@@ -58,36 +53,6 @@ const props = defineProps({
     }
 })
 
-// Computed property untuk userId yang reactive
-const userId = computed(() => authStore.user?.id);
-let echoChannel: any = null;
-
-// Setup notification listener menggunakan useEchoModel
-onMounted(() => {
-    if (userId.value) {
-        console.log('🔔 Setting up notification listener for user:', userId.value);
-        
-        const { channel } = useEchoModel('App.Models.User', userId.value);
-        echoChannel = channel();
-
-        echoChannel.notification((notification: any) => {
-            console.log('✅ Received notification:', notification);
-            
-            // Tampilkan minimalist toast notification
-            toast.add({
-                severity: 'info',
-                summary: notification.title || 'New Notification',
-                detail: notification.message || 'You have a new notification',
-                group: 'app-notifications',
-                life: 6000, // Durasi tampil (6 detik)
-            });
-        });
-
-        console.log('✅ Notification listener setup complete');
-    } else {
-        console.warn('⚠️ User ID tidak tersedia');
-    }
-});
 </script>
 <style scoped>
 .page-enter-from,

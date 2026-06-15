@@ -16,7 +16,6 @@ window.Pusher = Pusher;
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
-    cluster: import.meta.env.VITE_REVERB_APP_CLUSTER ?? 'mt1',
     wsHost: import.meta.env.VITE_REVERB_HOST ?? 'localhost',
     wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
     wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
