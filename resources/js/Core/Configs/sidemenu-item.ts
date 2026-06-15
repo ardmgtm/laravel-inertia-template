@@ -19,7 +19,7 @@ export const sideMenuItemData: SideMenuItem[] = [
     },
     {
         label: 'User Management',
-        icon: 'pi pi-box',
+        icon: 'pi pi-users',
         permissions: ['user.browse', 'role.browse', 'user_activity.browse'],
         items: [
             {
