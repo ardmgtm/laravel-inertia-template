@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\User\RoleAndPermissionController;
 use App\Http\Controllers\User\UserActivityController;
 use App\Http\Controllers\User\UserController;
@@ -46,5 +47,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/account', 'index')->name('account.browse');
         Route::post('/account/update-information', 'updateInformation')->name('account.update_information');
         Route::post('/account/change-password', 'changePassword')->name('account.change_password');
+    });
+    Route::controller(NotificationController::class)->group(function(){
+        Route::get('/notification','getNotificationList')->name('notification.all');
+        Route::get('/notification/unread','getUnreadNotificationList')->name('notification.unread');
     });
 });
