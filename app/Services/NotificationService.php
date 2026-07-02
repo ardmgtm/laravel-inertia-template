@@ -26,36 +26,23 @@ class NotificationService
             ->toArray();
     }
 
-    public function getUnreadNotificationCount(int $userId): array
+    public function getUnreadNotificationCount(int $userId): int
     {
-        $count = Notification::where('user_id', $userId)
-                    ->where('read_at', null)
-                    ->count();
-        return [
-            'success' => true, 
-            'message' => 'Unread notification count retrieved successfully', 
-            'data' => $count
-        ];
+        return Notification::where('user_id', $userId)
+            ->where('read_at', null)
+            ->count();
     }
 
-    public function markAsRead(int $notificationId): array
+    public function markAsRead(int $notificationId): void
     {
         Notification::where('id', $notificationId)
             ->update(['read_at' => now()]);
-        return [
-            'success' => true, 
-            'message' => 'Notification marked as read successfully'
-        ];
     }
 
-    public function markAllAsRead(int $userId): array
+    public function markAllAsRead(int $userId): void
     {
         Notification::where('user_id', $userId)
             ->where('read_at', null)
             ->update(['read_at' => now()]);
-        return [
-            'success' => true, 
-            'message' => 'All notifications marked as read successfully'
-        ];
     }
 }

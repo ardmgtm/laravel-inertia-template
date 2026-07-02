@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
-use Throwable;
 
 class UserService
 {
@@ -14,65 +13,37 @@ class UserService
         return User::query()->with(['roles']);
     }
 
-    public function createUser(array $data): array
+    public function createUser(array $data): User
     {
         DB::beginTransaction();
-        try {
-            $user = User::create($data);
-            $user->assignRole($data['roles']);
-            DB::commit();
+        $user = User::create($data);
+        $user->assignRole($data['roles']);
+        DB::commit();
 
-            return ['success' => true, 'message' => 'Success to create user'];
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return ['success' => false, 'message' => 'Failed to create user'];
-        }
+        return $user->fresh(['roles']);
     }
 
-    public function updateUser(User $user, array $data): array
+    public function updateUser(User $user, array $data): User
     {
         DB::beginTransaction();
-        try {
-            $user->update($data);
-            $user->syncRoles($data['roles']);
-            DB::commit();
+        $user->update($data);
+        $user->syncRoles($data['roles']);
+        DB::commit();
 
-            return ['success' => true, 'message' => 'Success to update user'];
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return ['success' => false, 'message' => 'Failed to update user'];
-        }
+        return $user->fresh(['roles']);
     }
 
-    public function deleteUser(User $user): array
+    public function deleteUser(User $user): void
     {
         DB::beginTransaction();
-        try {
-            $user->delete();
-            DB::commit();
-
-            return ['success' => true, 'message' => 'Success to delete user'];
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return ['success' => false, 'message' => 'Failed to delete user'];
-        }
+        $user->delete();
+        DB::commit();
     }
 
-    public function switchStatus(array $ids, bool $status): array
+    public function switchStatus(array $ids, bool $status): void
     {
         DB::beginTransaction();
-        try {
-            User::whereIn('id', $ids)->update(['is_active' => $status]);
-            DB::commit();
-
-            return ['success' => true, 'message' => 'Success to update status'];
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return ['success' => false, 'message' => 'Failed to update status'];
-        }
+        User::whereIn('id', $ids)->update(['is_active' => $status]);
+        DB::commit();
     }
 }

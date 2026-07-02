@@ -5,42 +5,32 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Throwable;
+use Illuminate\Validation\ValidationException;
 
 class AccountService
 {
-    public function updateInformation(User $user, array $data, ?UploadedFile $profilePicture = null): array
+    public function updateInformation(User $user, array $data, ?UploadedFile $profilePicture = null): User
     {
         DB::beginTransaction();
-        try {
-            $user->update($data);
-            if ($profilePicture && $profilePicture->isValid()) {
-                $user->addMedia($profilePicture)
-                    ->toMediaCollection('profile_picture');
-            }
-            DB::commit();
-
-            return ['success' => true, 'message' => 'Success to update your information', 'user' => $user];
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return ['success' => false, 'message' => 'Failed to update your information'];
+        $user->update($data);
+        if ($profilePicture && $profilePicture->isValid()) {
+            $user->addMedia($profilePicture)
+                ->toMediaCollection('profile_picture');
         }
+        DB::commit();
+
+        return $user->fresh();
     }
 
-    public function changePassword(User $user, string $oldPassword, string $newPassword): array
+    public function changePassword(User $user, string $oldPassword, string $newPassword): void
     {
-        try {
-            if (! password_verify($oldPassword, $user->password)) {
-                return ['success' => false, 'message' => 'The provided password does not match your current password'];
-            }
-
-            $user->password = bcrypt($newPassword);
-            $user->save();
-
-            return ['success' => true, 'message' => 'Successfully changed your password'];
-        } catch (Throwable $e) {
-            return ['success' => false, 'message' => 'Failed to change your password'];
+        if (! password_verify($oldPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'old_password' => 'The provided password does not match your current password',
+            ]);
         }
+
+        $user->password = bcrypt($newPassword);
+        $user->save();
     }
 }

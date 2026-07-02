@@ -12,7 +12,9 @@ use App\Models\User;
 use App\Services\RoleAndPermissionService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -40,43 +42,63 @@ class UserController extends Controller
     public function create(CreateUserRequest $request)
     {
         $this->logActivity('Create new user');
-        $data = $request->validated();
-        $result = $this->userService->createUser($data);
 
-        return $result['success']
-            ? JsonResponse::success($result['message'])
-            : JsonResponse::failed($result['message']);
+        try {
+            $data = $request->validated();
+            $this->userService->createUser($data);
+
+            return JsonResponse::success('Success to create user');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return JsonResponse::failed('Failed to create user');
+        }
     }
 
     public function update(UpdateUserRequest $request, User $user)
     {
         $this->logActivity('Update user (id: '.$user->id.')');
-        $data = $request->validated();
-        $result = $this->userService->updateUser($user, $data);
 
-        return $result['success']
-            ? JsonResponse::success($result['message'])
-            : JsonResponse::failed($result['message']);
+        try {
+            $data = $request->validated();
+            $this->userService->updateUser($user, $data);
+
+            return JsonResponse::success('Success to update user');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return JsonResponse::failed('Failed to update user');
+        }
     }
 
     public function delete(Request $request, User $user)
     {
         $this->logActivity('Delete user (id: '.$user->id.')');
-        $result = $this->userService->deleteUser($user);
 
-        return $result['success']
-            ? JsonResponse::success($result['message'])
-            : JsonResponse::failed($result['message']);
+        try {
+            $this->userService->deleteUser($user);
+
+            return JsonResponse::success('Success to delete user');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return JsonResponse::failed('Failed to delete user');
+        }
     }
 
     public function switchStatus(SwitchStatusRequest $request)
     {
         $data = $request->validated();
         $this->logActivity('Update user status (ids: '.json_encode($data['ids']).')');
-        $result = $this->userService->switchStatus($data['ids'], $data['status']);
 
-        return $result['success']
-            ? JsonResponse::success($result['message'])
-            : JsonResponse::failed($result['message']);
+        try {
+            $this->userService->switchStatus($data['ids'], $data['status']);
+
+            return JsonResponse::success('Success to update status');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return JsonResponse::failed('Failed to update status');
+        }
     }
 }
