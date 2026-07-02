@@ -162,7 +162,7 @@ const deleteUserAction = () => {
 const switchStatusAction = (users: User[], status: boolean) => {
     const userIds = users.map(user => user.id);
 
-    axios.post(route('user.switch_status'), {
+    axios.post(route('api.user.switch_status'), {
         ids: userIds,
         status: status,
     })
@@ -187,7 +187,7 @@ const switchStatusAction = (users: User[], status: boolean) => {
 
 // Datatable
 const selectedData = ref();
-const dtHandler = createDataTableHandler(route('user.data_table'));
+const dtHandler = createDataTableHandler(route('api.user.data_table'));
 
 const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
     '__global': { value: null, matchMode: FilterMatchMode.CONTAINS },

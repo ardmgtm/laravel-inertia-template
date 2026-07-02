@@ -90,7 +90,7 @@ function addSubmitAction(event: FormSubmitEvent) {
     formErrors.value = {};
     if (event.valid) {
         loading.value = true;
-        axios.post(route('user.create'), formData)
+        axios.post(route('api.user.create'), formData)
             .then((response) => {
                 toast.add({
                     severity: 'success',
@@ -129,7 +129,7 @@ function editAction(data: User) {
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
-        axios.put(route('user.update', { id: formData.id }), formData)
+        axios.put(route('api.user.update', { id: formData.id }), formData)
             .then((response) => {
                 toast.add({
                     severity: 'success',
@@ -173,7 +173,7 @@ function deleteAction(data: User) {
         },
         accept: () => {
             loading.value = true;
-            axios.delete(route('user.delete', { id: data.id }))
+            axios.delete(route('api.user.delete', { id: data.id }))
                 .then((response) => {
                     toast.add({
                         severity: 'success',

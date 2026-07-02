@@ -130,7 +130,7 @@ const removeImage = () => {
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
-        axios.post(route('account.update_information'), formData, {
+        axios.post(route('api.account.update_information'), formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

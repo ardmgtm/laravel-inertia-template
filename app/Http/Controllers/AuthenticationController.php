@@ -33,7 +33,6 @@ class AuthenticationController extends Controller
 
     public function logout(Request $request)
     {
-        $this->logActivity('User logged out');
         $this->authService->logout();
 
         return redirect()->route('login');

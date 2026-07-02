@@ -92,7 +92,7 @@ const breadcrumbs: Ref<MenuItem[]> = ref([
 ]);
 
 const selectedData = ref();
-const dtHandler = createDataTableHandler(route('user_activity.data_table'));
+const dtHandler = createDataTableHandler(route('api.user_activity.data_table'));
 
 const severityMethod: {[key: string]: string} = {
     "GET": "success",

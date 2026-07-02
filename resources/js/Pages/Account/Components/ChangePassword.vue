@@ -46,7 +46,7 @@ function submitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
         formErrors.value = null;
-        axios.post(route('account.change_password'), {
+        axios.post(route('api.account.change_password'), {
             old_password: formData.old_password,
             new_password: formData.new_password,
             confirm_password: formData.confirm_password,

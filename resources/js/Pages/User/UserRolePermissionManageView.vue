@@ -229,7 +229,7 @@ function selectingRole(dataRole: UserRole) {
     permissionLoading.value = true;
     userPage.value = 1;
     activeTab.value = 'permission';
-    axios.get(route('role.permission_list', dataRole.id))
+    axios.get(route('api.role.permission_list', dataRole.id))
         .then((response) => {
             let responseData = response.data;
             rolePermissions.value = responseData.data.permissions;
@@ -249,7 +249,7 @@ function selectingRole(dataRole: UserRole) {
                 permissionLoading.value = false;
             }, 500)
         });
-    axios.get(route('role.user_list', dataRole.id))
+    axios.get(route('api.role.user_list', dataRole.id))
         .then((response) => {
             let responseData = response.data;
             roleUsers.value = responseData.data.users;
@@ -284,7 +284,7 @@ function onSwitchChange(idRole: number, permissionData: PermissionItem, newValue
         value: newValue,
     };
     return new Promise((resolve, reject) => {
-        return axios.put(route('role.switch_permission', idRole), formData)
+        return axios.put(route('api.role.switch_permission', idRole), formData)
             .then((response) => {
                 let responseData = response.data;
                 totalPermissionGranted.value = !newValue ? totalPermissionGranted.value - 1 : totalPermissionGranted.value + 1;
