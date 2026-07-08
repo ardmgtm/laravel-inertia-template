@@ -22,7 +22,7 @@
             <SearchModal id="search-modal" searchId="search" :modalOpen="searchModalOpen"
               @open-modal="searchModalOpen = true" @close-modal="searchModalOpen = false" />
           </div>
-          <Notifications align="right" />
+          <Notifications ref="notificationsRef" align="right" @open-drawer="$emit('open-notification-drawer')" />
           <!-- Divider -->
           <hr class="w-px h-6 bg-gray-200 dark:bg-gray-700/60 border-none" />
           <HeaderAccount />
@@ -57,5 +57,13 @@ const home = ref({
 });
 const showBreadcrumbs = computed(() => props.breadcrumbs != null && props.breadcrumbs.length > 0);
 
-const searchModalOpen = ref(false)
+const searchModalOpen = ref(false);
+const notificationsRef = ref();
+
+// Expose method to refresh notifications
+defineExpose({
+  refreshNotifications: () => {
+    notificationsRef.value?.loadUnreadCount();
+  }
+});
 </script>

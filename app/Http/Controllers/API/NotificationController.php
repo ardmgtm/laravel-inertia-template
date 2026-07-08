@@ -40,4 +40,26 @@ class NotificationController extends Controller
             return JsonResponse::failed('Failed to get notifications');
         }
     }
+
+    public function markAsRead(Request $request, string $id)
+    {
+        try {
+            $this->notificationService->markAsRead($id);
+
+            return JsonResponse::success('Notification marked as read');
+        } catch (\Throwable $th) {
+            return JsonResponse::failed('Failed to mark notification as read');
+        }
+    }
+
+    public function markAllAsRead(Request $request)
+    {
+        try {
+            $this->notificationService->markAllAsRead($this->user()->id);
+
+            return JsonResponse::success('All notifications marked as read');
+        } catch (\Throwable $th) {
+            return JsonResponse::failed('Failed to mark all notifications as read');
+        }
+    }
 }

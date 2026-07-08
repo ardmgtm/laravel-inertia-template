@@ -38,6 +38,10 @@ import { useEchoModel } from '@laravel/echo-vue';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted } from 'vue';
 
+const emit = defineEmits<{
+  'notification-received': [];
+}>();
+
 const authStore = useAuthStore()
 const toast = useToast();
 
@@ -57,6 +61,9 @@ onMounted(() => {
                 group: 'app-notifications',
                 life: 10000,
             } as any);
+            
+            // Emit event to parent to refresh notification count
+            emit('notification-received');
         });
     }
 });

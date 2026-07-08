@@ -1,15 +1,20 @@
 <template>
     <!-- Minimalist Notification Toast -->
-    <AppNotificationToast />
+    <AppNotificationToast @notification-received="handleNotificationReceived" />
     
     <!-- Default Toast untuk toast.add() biasa -->
     <Toast/>
     <ConfirmDialog />
+    
+    <!-- Notification Drawer -->
+    <NotificationDrawer ref="notificationDrawerRef" v-model="notificationDrawerOpen"
+      @notification-read="handleNotificationRead" />
+    
     <div class="flex h-screen overflow-hidden">
         <Sidemenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
         <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen"
-                :breadcrumbs="breadcrumbs" />
+            <Header ref="headerRef" :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen"
+                :breadcrumbs="breadcrumbs" @open-notification-drawer="notificationDrawerOpen = true" />
             <main class="grow">
                 <Transition name="page" mode="out-in" appear>
                     <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
@@ -40,8 +45,13 @@ import Header from './Components/Header/Header.vue';
 import { MenuItem } from 'primevue/menuitem';
 import { Toast } from 'primevue';
 import AppNotificationToast from '@/Components/AppNotificationToast.vue';
+import NotificationDrawer from '@/Components/NotificationDrawer.vue';
 
 const sidebarOpen = ref(false);
+const notificationDrawerOpen = ref(false);
+const headerRef = ref();
+const notificationDrawerRef = ref();
+
 const props = defineProps({
     title: {
         type: String,
@@ -51,8 +61,22 @@ const props = defineProps({
         type: Array as () => MenuItem[],
         required: false,
     }
-})
+});
 
+function handleNotificationReceived() {
+    // Refresh notification count in header
+    headerRef.value?.refreshNotifications();
+    
+    // Refresh notification list in drawer if it's open
+    if (notificationDrawerOpen.value) {
+        notificationDrawerRef.value?.loadNotifications();
+    }
+}
+
+function handleNotificationRead() {
+    // Refresh notification count in header
+    headerRef.value?.refreshNotifications();
+}
 </script>
 <style scoped>
 .page-enter-from,
