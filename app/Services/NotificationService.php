@@ -36,14 +36,10 @@ class NotificationService
 
     public function markAsRead(string $notificationId): array
     {
-        $notification = Notification::find($notificationId);
-        if($notification){
-            $notification->read_at = now();
-            $notification->save();
-            
-            return $notification->toArray();
-        }
-        return [];
+        $notification = Notification::findOrFail($notificationId);
+        $notification->update(['read_at' => now()]);
+        
+        return $notification->fresh()->toArray();
     }
 
     public function markAllAsRead(int $userId): void
