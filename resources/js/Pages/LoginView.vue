@@ -168,7 +168,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { useToast } from "primevue/usetoast";
+import { useToast } from 'primevue';
 import { Form, FormSubmitEvent } from '@primevue/forms';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';

@@ -8,7 +8,7 @@
                     <li v-for="item in menu" :key="item.url">
                         <Button fluid :label="(item.label as string)"
                             :variant="activeMenu == item.key ? undefined : 'text'"
-                            :severity="activeMenu == item.key ? undefined : 'secondary'" :icon="item.icon"
+                            :severity="activeMenu == item.key ? undefined : 'secondary'" :icon="(item.icon as string)"
                             class="flex items-start justify-start" @click="() => activeMenu = (item.key as string)" />
                     </li>
                 </ul>

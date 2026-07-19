@@ -19,16 +19,19 @@
 
     <!-- Tabs -->
     <div v-else class="flex flex-col h-full">
-      <TabView v-model:value="activeTab" class="flex flex-col flex-1">
+      <Tabs v-model:value="activeTab" class="flex flex-col flex-1">
+        <TabList>
+          <Tab value="0" class="flex items-center gap-2">
+            <span>Unread</span>
+            <Badge v-if="notificationStore.unreadCount > 0" :value="notificationStore.unreadCount" severity="danger" />
+              </Tab>
+          <Tab value="1" class="flex items-center gap-2">
+            <span>All</span>
+            <Badge :value="notificationStore.allNotifications.length" severity="primary" />
+          </Tab>
+        </TabList>
         <!-- Tab Belum Dibaca -->
         <TabPanel value="0" class="flex flex-col h-full">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <span>Unread</span>
-              <Badge v-if="notificationStore.unreadCount > 0" :value="notificationStore.unreadCount" severity="danger" />
-            </div>
-          </template>
-
           <div class="overflow-y-auto no-scrollbar" style="max-height: calc(100vh - 250px);">
             <!-- Empty State -->
             <div v-if="notificationStore.unreadNotifications.length === 0" class="flex flex-col items-center justify-center py-12">
@@ -51,13 +54,6 @@
 
         <!-- Tab Semua -->
         <TabPanel value="1" class="flex flex-col h-full">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <span>All</span>
-              <Badge :value="notificationStore.allNotifications.length" severity="primary" />
-            </div>
-          </template>
-
           <div class="overflow-y-auto no-scrollbar" style="max-height: calc(100vh - 250px);">
             <!-- Empty State -->
             <div v-if="notificationStore.allNotifications.length === 0" class="flex flex-col items-center justify-center py-12">
@@ -77,7 +73,7 @@
             </div>
           </div>
         </TabPanel>
-      </TabView>
+      </Tabs>
 
       <!-- Load More -->
       <div v-if="notificationStore.hasMore && !notificationStore.loading" class="mt-4 flex-shrink-0">

@@ -1,5 +1,13 @@
 <template>
     <div class="custom-table-wrapper">
+        <div class="flex items-center h-10 mb-4">
+            <slot name="header-start"></slot>
+            <div class="flex-grow"></div>
+            <slot name="header-end">
+                <Button class="py-3" severity="contrast" variant="text" icon="pi pi-sync" rounded
+                    @click="handler.loadData" />
+            </slot>
+        </div>
         <DataTable paginator removableSort lazy scrollable v-model:selection="selection"
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink JumpToPageInput CurrentPageReport NextPageLink LastPageLink"
             :rowsPerPageOptions="[5, 10, 20, 50]" :value="handler?.loadedData?.value.data"
@@ -7,7 +15,7 @@
             :rows="handler.size" @filter="handler?.onFilter" @sort="handler?.onSort" @page="handler?.onPage"
             v-bind="$attrs" v-on="$attrs">
             <template #empty>
-                <div class="py-4 flex justify-center" v-if="!handler?.error.value"> 
+                <div class="py-4 flex justify-center" v-if="!handler?.error.value">
                     {{ emptyMessage }}
                 </div>
                 <div v-else>
@@ -17,20 +25,10 @@
                     </div>
                 </div>
             </template>
-            <template #header>
-                <div class="flex items-center h-10">
-                    <slot name="header-start"></slot>
-                    <div class="flex-grow"></div>
-                    <slot name="header-end">
-                        <Button class="py-3" severity="contrast" variant="text" icon="pi pi-sync" rounded
-                            @click="handler.loadData" />
-                    </slot>
-                </div>
-            </template>
             <slot></slot>
         </DataTable>
         <div v-if="handler?.loading.value" class="table-loading-overlay">
-            <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="5" />
+            <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="5" />
         </div>
     </div>
 </template>
