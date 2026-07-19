@@ -42,7 +42,7 @@ class RoleAndPermissionController extends Controller
 
     public function update(RoleRequest $request, Role $role)
     {
-        $this->logActivity('Update role (id: '.$role->id.')');
+        $this->logActivity('Update role (id: '.$role->id.', name: '.$role->name.')');
 
         try {
             $validated = $request->validated();
@@ -58,7 +58,7 @@ class RoleAndPermissionController extends Controller
 
     public function delete(Request $request, Role $role)
     {
-        $this->logActivity('Delete role (id: '.$role->id.')');
+        $this->logActivity('Delete role (id: '.$role->id.', name: '.$role->name.')');
 
         try {
             $this->roleService->deleteRole($role);
