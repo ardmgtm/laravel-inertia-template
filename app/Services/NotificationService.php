@@ -34,10 +34,16 @@ class NotificationService
             ->count();
     }
 
-    public function markAsRead(string $notificationId): void
+    public function markAsRead(string $notificationId): array
     {
-        Notification::where('id', $notificationId)
-            ->update(['read_at' => now()]);
+        $notification = Notification::find($notificationId);
+        if($notification){
+            $notification->read_at = now();
+            $notification->save();
+            
+            return $notification->toArray();
+        }
+        return [];
     }
 
     public function markAllAsRead(int $userId): void

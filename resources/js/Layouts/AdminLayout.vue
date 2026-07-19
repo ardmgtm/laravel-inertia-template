@@ -1,14 +1,13 @@
 <template>
     <!-- Minimalist Notification Toast -->
-    <AppNotificationToast @notification-received="handleNotificationReceived" />
+    <AppNotificationToast />
     
     <!-- Default Toast untuk toast.add() biasa -->
     <Toast/>
     <ConfirmDialog />
     
     <!-- Notification Drawer -->
-    <NotificationDrawer ref="notificationDrawerRef" v-model="notificationDrawerOpen"
-      @notification-read="handleNotificationRead" />
+    <AppNotificationDrawer v-model="notificationDrawerOpen" />
     
     <div class="flex h-screen overflow-hidden">
         <Sidemenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
@@ -44,13 +43,11 @@ import Sidemenu from './Components/Sidemenu/Sidemenu.vue';
 import Header from './Components/Header/Header.vue';
 import { MenuItem } from 'primevue/menuitem';
 import { Toast } from 'primevue';
-import AppNotificationToast from '@/Components/AppNotificationToast.vue';
-import NotificationDrawer from '@/Components/NotificationDrawer.vue';
+import AppNotificationToast from '@/Components/AppNotification/AppNotificationToast.vue';
+import AppNotificationDrawer from '@/Components/AppNotification/AppNotificationDrawer.vue';
 
 const sidebarOpen = ref(false);
 const notificationDrawerOpen = ref(false);
-const headerRef = ref();
-const notificationDrawerRef = ref();
 
 const props = defineProps({
     title: {
@@ -62,21 +59,6 @@ const props = defineProps({
         required: false,
     }
 });
-
-function handleNotificationReceived() {
-    // Refresh notification count in header
-    headerRef.value?.refreshNotifications();
-    
-    // Refresh notification list in drawer if it's open
-    if (notificationDrawerOpen.value) {
-        notificationDrawerRef.value?.loadNotifications();
-    }
-}
-
-function handleNotificationRead() {
-    // Refresh notification count in header
-    headerRef.value?.refreshNotifications();
-}
 </script>
 <style scoped>
 .page-enter-from,

@@ -13,8 +13,7 @@
               </svg>
             </div>
             <div>
-              <h3 class="font-bold text-gray-800">Notifikasi Baru</h3>
-              <span class="text-xs text-gray-500">10 menit yang lalu</span>
+              <h4 class="font-bold text-gray-800">{{ message.summary }}</h4>
             </div>
           </div>
     
@@ -26,14 +25,16 @@
         </div>
     
         <div class="mt-2">
-          <Button label="Buka" severity="primary" class="w-full" as="a" href="#"/>
+          <Button label="Open" severity="primary" class="w-full" as="a" href="#"/>
         </div>
       </div>
     </template>
   </Toast>
 </template>
 <script setup lang="ts">
+import Notification from '@/Core/Models/notification';
 import { useAuthStore } from '@/Stores/auth-store';
+import { useNotificationStore } from '@/Stores/notification-store';
 import { useEchoModel } from '@laravel/echo-vue';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted } from 'vue';
@@ -42,7 +43,8 @@ const emit = defineEmits<{
   'notification-received': [];
 }>();
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 const toast = useToast();
 
 const userId = computed(() => authStore.user?.id);
@@ -53,11 +55,15 @@ onMounted(() => {
         const { channel } = useEchoModel('App.Models.User', userId.value);
         echoChannel = channel();
 
-        echoChannel.notification((notification: any) => {
+        echoChannel.notification((notification: Notification) => {
+            // Add notification to store
+            notificationStore.addNotification(notification);
+            
+            // Show toast notification
             toast.add({
                 severity: 'custom',
-                summary: notification.title || 'New Notification',
-                detail: notification.message || 'You have a new notification',
+                summary: notification.data.title || 'New Notification',
+                detail: notification.data.message || 'You have a new notification',
                 group: 'app-notifications',
                 life: 10000,
             } as any);

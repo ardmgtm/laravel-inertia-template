@@ -1,30 +1,29 @@
 <template>
-  <OverlayBadge :value="unreadCount > 0 ? unreadCount : undefined" severity="danger">
+  <OverlayBadge :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined" severity="danger">
     <Button icon="pi pi-bell" severity="secondary" variant="text" rounded @click="openNotification" />
   </OverlayBadge>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
+import { useNotificationStore } from '@/Stores/notification-store';
 
 const emit = defineEmits<{
   'open-drawer': [];
 }>();
 
-const unreadCount = ref(0);
+const notificationStore = useNotificationStore();
 
 onMounted(() => {
+  // Load notifications on mount to get unread count
   loadUnreadCount();
 });
 
 async function loadUnreadCount() {
   try {
-    const response = await window.axios.get('/api/notification/unread');
-    if (response.data.success) {
-      unreadCount.value = response.data.data.length;
-    }
+    await notificationStore.loadNotifications();
   } catch (error) {
-    console.error('Failed to load unread notification count:', error);
+    console.error('Failed to load unread count:', error);
   }
 }
 
@@ -32,7 +31,7 @@ function openNotification() {
   emit('open-drawer');
 }
 
-// Expose method to refresh count from parent
+// Expose method for external refresh
 defineExpose({
   loadUnreadCount
 });

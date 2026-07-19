@@ -44,9 +44,9 @@ class NotificationController extends Controller
     public function markAsRead(Request $request, string $id)
     {
         try {
-            $this->notificationService->markAsRead($id);
+            $notification = $this->notificationService->markAsRead($id);
 
-            return JsonResponse::success('Notification marked as read');
+            return JsonResponse::success('Notification marked as read', $notification);
         } catch (\Throwable $th) {
             return JsonResponse::failed('Failed to mark notification as read');
         }

@@ -58,9 +58,12 @@ class Notification extends NotificationTrait
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'title' => $this->title,
-            'message' => $this->message,
-            'url' => $this->url,
+            'data'=>[
+                'title' => $this->title,
+                'message' => $this->message,
+                'url' => $this->url,
+            ],
+            'created_at' => now(),
         ]);
     }
 }
