@@ -7,7 +7,6 @@ use App\Http\Requests\Account\UpdateInformationRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Responses\JsonResponse;
 use App\Services\AccountService;
-use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class AccountController extends Controller
@@ -27,8 +26,6 @@ class AccountController extends Controller
 
             return JsonResponse::success('Success to update your information', ['user' => $user]);
         } catch (Throwable $e) {
-            DB::rollBack();
-
             return JsonResponse::failed('Failed to update your information');
         }
     }

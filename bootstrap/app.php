@@ -26,7 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Apply web middleware group to API routes for same-origin SPA
-        $middleware->api(prepend: [
+        $middleware->api(append:[
+            UserActivityLog::class,
+        ],
+        prepend: [
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
