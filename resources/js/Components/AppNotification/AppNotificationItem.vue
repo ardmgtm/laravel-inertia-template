@@ -25,13 +25,6 @@
         <p class="text-sm text-gray-600 mb-2">{{ notification.data.message }}</p>
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400">{{ formatDate(notification.created_at) }}</span>
-          <Button
-            v-if="!notification.read_at"
-            label="Mark as Read"
-            text
-            size="small"
-            @click.stop="$emit('mark-read')"
-          />
         </div>
       </div>
     </div>

@@ -3,8 +3,6 @@
     <template #header>
       <div class="flex items-center justify-between w-full">
         <h2 class="text-lg font-semibold">Notifications</h2>
-        <Button v-if="notificationStore.unreadCount > 0" label="Mark All as Read" text size="small" @click="handleMarkAllAsRead"
-          :loading="notificationStore.markingAllAsRead" />
       </div>
     </template>
 
@@ -23,8 +21,8 @@
         <TabList>
           <Tab value="0" class="flex items-center gap-2">
             <span>Unread</span>
-            <Badge v-if="notificationStore.unreadCount > 0" :value="notificationStore.unreadCount" severity="danger" />
-              </Tab>
+            <Badge :value="notificationStore.unreadCount" severity="primary" />
+          </Tab>
           <Tab value="1" class="flex items-center gap-2">
             <span>All</span>
             <Badge :value="notificationStore.allNotifications.length" severity="primary" />
@@ -32,44 +30,38 @@
         </TabList>
         <!-- Tab Belum Dibaca -->
         <TabPanel value="0" class="flex flex-col h-full">
-          <div class="overflow-y-auto no-scrollbar" style="max-height: calc(100vh - 250px);">
+          <div class="overflow-y-auto no-scrollbar" style="max-height: calc(100vh - 200px);">
             <!-- Empty State -->
-            <div v-if="notificationStore.unreadNotifications.length === 0" class="flex flex-col items-center justify-center py-12">
+            <div v-if="notificationStore.unreadNotifications.length === 0"
+              class="flex flex-col items-center justify-center py-12">
               <i class="pi pi-check-circle text-6xl text-gray-300 mb-4"></i>
               <p class="text-gray-500 text-center">No unread notifications</p>
             </div>
 
             <!-- Notification List -->
             <div v-else class="space-y-2 pr-2">
-              <AppNotificationItem
-                v-for="notification in notificationStore.unreadNotifications"
-                :key="notification.id"
-                :notification="notification"
-                @click="handleNotificationClick(notification)"
-                @mark-read="handleMarkAsRead(notification.id)"
-              />
+              <AppNotificationItem v-for="notification in notificationStore.unreadNotifications" :key="notification.id"
+                :notification="notification" @click="handleNotificationClick(notification)"
+                @mark-read="handleMarkAsRead(notification.id)" />
             </div>
           </div>
         </TabPanel>
 
         <!-- Tab Semua -->
         <TabPanel value="1" class="flex flex-col h-full">
-          <div class="overflow-y-auto no-scrollbar" style="max-height: calc(100vh - 250px);">
+          <div class="overflow-y-auto no-scrollbar" style="max-height: calc(100vh - 200px);">
             <!-- Empty State -->
-            <div v-if="notificationStore.allNotifications.length === 0" class="flex flex-col items-center justify-center py-12">
+            <div v-if="notificationStore.allNotifications.length === 0"
+              class="flex flex-col items-center justify-center py-12">
               <i class="pi pi-bell text-6xl text-gray-300 mb-4"></i>
               <p class="text-gray-500 text-center">No notifications</p>
             </div>
 
             <!-- Notification List -->
             <div v-else class="space-y-2 pr-2">
-              <AppNotificationItem
-                v-for="notification in notificationStore.allNotifications"
-                :key="notification.id"
-                :notification="notification"
-                @click="handleNotificationClick(notification)"
-                @mark-read="handleMarkAsRead(notification.id)"
-              />
+              <AppNotificationItem v-for="notification in notificationStore.allNotifications" :key="notification.id"
+                :notification="notification" @click="handleNotificationClick(notification)"
+                @mark-read="handleMarkAsRead(notification.id)" />
             </div>
           </div>
         </TabPanel>
@@ -126,13 +118,13 @@ watch(visible, (isVisible) => {
 async function loadNotifications() {
   try {
     await notificationStore.loadNotifications();
-  } catch (error) {}
+  } catch (error) { }
 }
 
 async function handleLoadMore() {
   try {
     await notificationStore.loadMore();
-  } catch (error) {}
+  } catch (error) { }
 }
 
 async function handleMarkAsRead(notificationId: string) {
@@ -141,16 +133,7 @@ async function handleMarkAsRead(notificationId: string) {
     if (success) {
       emit('notificationRead');
     }
-  } catch (_) {}
-}
-
-async function handleMarkAllAsRead() {
-  try {
-    const success = await notificationStore.markAllAsRead();
-    if (success) {
-      emit('notificationRead');
-    }
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function handleNotificationClick(notification: Notification) {
