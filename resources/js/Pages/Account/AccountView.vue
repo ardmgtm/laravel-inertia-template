@@ -1,5 +1,4 @@
 <template>
-
     <Head title="Account" />
     <AdminLayout title="Account" :breadcrumbs>
         <div class="flex flex-row mt-4">
@@ -24,9 +23,6 @@
                     <div v-else-if="activeMenu == 'change_password'">
                         <ChangePassword />
                     </div>
-                    <div v-else-if="activeMenu == 'preference'">
-                        <Preferences />
-                    </div>
                 </Transition>
             </div>
         </div>
@@ -46,7 +42,6 @@ const activeMenu = ref<string>('basic_information');
 const menu = ref<MenuItem[]>([
     { key: "basic_information", label: 'Basic Information', icon: 'pi pi-user' },
     { key: "change_password", label: 'Change Password', icon: 'pi pi-key' },
-    { key: "preference", label: 'Preference', icon: 'pi pi-cog' },
 ]);
 
 const breadcrumbs = computed<MenuItem[]>(()=>[
