@@ -88,8 +88,8 @@
                                         :class="{ 'border-red-500': $field.error }"
                                         fluid
                                     />
-                                    <Message v-if="$field.error" class="mt-2" severity="error" size="small" variant="simple">
-                                        {{ $field.error?.message }}
+                                    <Message class="mt-2 h-1" severity="error" size="small" variant="simple">
+                                        {{ $field.error?.message ?? ' ' }}
                                     </Message>
                                 </div>
                             </FormField>
@@ -112,8 +112,8 @@
                                         }"
                                         fluid 
                                     />
-                                    <Message v-if="$field.error" class="mt-2" severity="error" size="small" variant="simple">
-                                        {{ $field.error?.message }}
+                                    <Message class="mt-2 h-1" severity="error" size="small" variant="simple">
+                                        {{ $field.error?.message ?? '' }}
                                     </Message>
                                 </div>
                             </FormField>
