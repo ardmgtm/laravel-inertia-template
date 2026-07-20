@@ -1,9 +1,10 @@
 <template>
-  <Button severity="secondary" variant="text" @click="openNotification">
-    <OverlayBadge :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined" severity="danger">
+  <OverlayBadge :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined"
+    severity="danger">
+    <Button severity="secondary" variant="text" @click="openNotification">
       <i class="pi pi-bell"></i>
-    </OverlayBadge>
-  </Button>
+    </Button>
+  </OverlayBadge>
 </template>
 
 <script setup lang="ts">

@@ -28,7 +28,7 @@
             <slot></slot>
         </DataTable>
         <div v-if="handler?.loading.value" class="table-loading-overlay">
-            <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="5" />
+            <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="5" />
         </div>
     </div>
 </template>

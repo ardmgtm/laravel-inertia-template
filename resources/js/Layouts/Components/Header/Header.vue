@@ -11,7 +11,7 @@
             @click.stop="$emit('toggle-sidebar')">
             <i class="pi pi-bars text-2xl"></i>
           </Button>
-          <Breadcrumb :home="home" :model="breadcrumbs" class="hidden md:block" v-if="showBreadcrumbs" />
+          <Breadcrumb :home="home" :model="breadcrumbs" class="hidden md:block bg-transparent text-white" v-if="showBreadcrumbs" />
         </div>
 
         <div class="flex items-center space-x-3">
