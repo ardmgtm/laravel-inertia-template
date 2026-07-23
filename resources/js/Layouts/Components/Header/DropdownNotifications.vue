@@ -1,15 +1,16 @@
 <template>
-  <OverlayBadge :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined"
+  <Component :is="notificationStore.unreadCount > 0 ? OverlayBadge : 'div'" :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined"
     severity="danger">
     <Button severity="secondary" variant="text" @click="openNotification">
       <i class="pi pi-bell"></i>
     </Button>
-  </OverlayBadge>
+  </Component>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useNotificationStore } from '@/Stores/notification-store';
+import { OverlayBadge } from 'primevue';
 
 const emit = defineEmits<{
   'open-drawer': [];
