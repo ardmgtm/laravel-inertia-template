@@ -18,10 +18,10 @@
             <div class="flex-1">
                 <Transition name="fadetransition" mode="out-in" appear>
                     <div v-if="activeMenu == 'basic_information'">
-                        <BasicInformation />
+                        <BasicInformation @change-password="activeMenu = 'change_password'" />
                     </div>
                     <div v-else-if="activeMenu == 'change_password'">
-                        <ChangePassword />
+                        <ChangePassword @password-changed="activeMenu = 'basic_information'" />
                     </div>
                 </Transition>
             </div>

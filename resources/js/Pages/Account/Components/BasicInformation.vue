@@ -1,6 +1,7 @@
 <template>
-    <div class="col-span-12 lg:col-span-4 p-4 flex-1 border border-gray-200 rounded-md">
-        <h2 class="text-2xl font-bold">Basic Information</h2>
+    <div class="col-span-12 lg:col-span-4 p-6 flex-1 border border-gray-200 rounded-lg shadow-sm bg-white">
+        <h2 class="text-2xl font-bold text-gray-800 mb-1">Basic Information</h2>
+        <p class="text-sm text-gray-500 mb-4">Manage your personal information and profile picture</p>
         <Divider />
         <div class="flex flex-row gap-8 w-full">
             <div class="flex-none">
@@ -38,25 +39,27 @@
                     </AppFormField>
                 </AppForm>
                 <div v-else>
-                    <table class="table-auto w-full text-left text-lg">
-                        <tbody>
-                            <tr>
-                                <th class="font-semibold w-32">Name</th>
-                                <td>: {{ user?.name }}</td>
-                            </tr>
-                            <tr>
-                                <th class="font-semibold w-32">Email</th>
-                                <td>: {{ user?.email }}</td>
-                            </tr>
-                            <tr>
-                                <th class="font-semibold w-32">Username</th>
-                                <td>: {{ user?.username }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="flex justify-first mt-4">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-32 font-semibold text-gray-700">Name</div>
+                            <div class="flex-1 text-gray-900">{{ user?.name }}</div>
+                        </div>
+                        <Divider class="my-2" />
+                        <div class="flex items-start">
+                            <div class="w-32 font-semibold text-gray-700">Email</div>
+                            <div class="flex-1 text-gray-900">{{ user?.email }}</div>
+                        </div>
+                        <Divider class="my-2" />
+                        <div class="flex items-start">
+                            <div class="w-32 font-semibold text-gray-700">Username</div>
+                            <div class="flex-1 text-gray-900">{{ user?.username }}</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mt-6">
                         <Button label="Edit Information" icon="pi pi-pencil" @click="editMode = true"
                             variant="outlined" />
+                        <Button label="Change Password" icon="pi pi-key" @click="goToChangePassword"
+                            variant="outlined" severity="secondary" />
                     </div>
                 </div>
             </div>
@@ -75,6 +78,10 @@ import { computed, onBeforeMount, reactive, ref } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/Stores/auth-store';
 import { useForm } from '@inertiajs/vue3';
+
+const emit = defineEmits<{
+    changePassword: []
+}>();
 
 const toast = useToast();
 const editMode = ref<boolean>(false);
@@ -125,6 +132,10 @@ const removeImage = () => {
     profilePicture.value = currentProfilePicture.value;
     formData.profile_picture = null;
     fileInput.value.value = '';
+};
+
+const goToChangePassword = () => {
+    emit('changePassword');
 };
 
 function editSubmitAction(event: FormSubmitEvent) {
