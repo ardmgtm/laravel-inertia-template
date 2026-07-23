@@ -11,6 +11,13 @@ use Inertia\Inertia;
 
 Broadcast::routes(['middleware' => ['auth']]);
 
+// Captcha API endpoint for refreshing
+Route::get('/api/captcha/refresh', function () {
+    return response()->json([
+        'captcha' => '/captcha/default?' . time()
+    ]);
+})->name('captcha.refresh');
+
 Route::get('/login', [AuthenticationController::class, 'loginPage'])->name('login_page')->middleware(['guest']);
 Route::post('/login', [AuthenticationController::class, 'login'])->name('login')->middleware(['guest']);
 

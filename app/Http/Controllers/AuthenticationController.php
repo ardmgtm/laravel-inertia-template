@@ -15,7 +15,9 @@ class AuthenticationController extends Controller
 
     public function loginPage(Request $request)
     {
-        return Inertia::render('LoginView');
+        return Inertia::render('LoginView', [
+            'captchaSrc' => '/captcha/default?' . time()
+        ]);
     }
 
     public function login(LoginRequest $request)

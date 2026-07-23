@@ -117,6 +117,49 @@
                                     </Message>
                                 </div>
                             </FormField>
+
+                            <FormField name="captcha" v-slot="$field">
+                                <div class="space-y-2">
+                                    <label class="font-semibold text-surface-700 dark:text-surface-300 text-sm" for="captcha">
+                                        <i class="pi pi-shield mr-2"></i>Captcha
+                                    </label>
+                                    <div class="flex gap-2">
+                                        <div class="flex-1">
+                                            <InputText 
+                                                id="captcha" 
+                                                placeholder="Enter captcha code" 
+                                                v-model="formSignIn.captcha" 
+                                                type="text" 
+                                                class="w-full transition-all duration-200 hover:border-primary-400 focus:border-primary-500" 
+                                                :class="{ 'border-red-500': $field.error }"
+                                                fluid
+                                            />
+                                        </div>
+                                        <div class="relative bg-surface-100 dark:bg-surface-800 rounded-lg overflow-hidden border border-surface-300 dark:border-surface-600 flex items-center justify-center" style="min-width: 180px; height: 46px;">
+                                            <img 
+                                                :src="captchaSrc" 
+                                                alt="Captcha" 
+                                                class="h-full w-full object-contain"
+                                                :class="{ 'opacity-50': captchaLoading }"
+                                            />
+                                            <Button 
+                                                type="button"
+                                                icon="pi pi-refresh" 
+                                                class="absolute top-1 right-1" 
+                                                size="small"
+                                                severity="secondary"
+                                                text
+                                                rounded
+                                                @click="refreshCaptcha"
+                                                :loading="captchaLoading"
+                                            />
+                                        </div>
+                                    </div>
+                                    <Message class="mt-2 h-1" severity="error" size="small" variant="simple">
+                                        {{ $field.error?.message ?? ' ' }}
+                                    </Message>
+                                </div>
+                            </FormField>
         
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                                 <div class="flex items-center">
@@ -173,20 +216,30 @@ import { Form, FormSubmitEvent } from '@primevue/forms';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
 import { useAuthStore } from '@/Stores/auth-store';
+import axios from 'axios';
+
+const props = defineProps<{
+    captchaSrc: string;
+}>();
 
 const toast = useToast();
 const authStore = useAuthStore();
 
 const currentYear = new Date().getFullYear();
+const captchaSrc = ref(props.captchaSrc);
+const captchaLoading = ref(false);
+
 const formSignIn = useForm({
     username : null,
     password : null,
+    captcha : null,
     remember : false,
 })
 const resolver = yupResolver(
     yup.object().shape({
         username: yup.string().required('Username is required'),
-        password: yup.string().required('Password is required')
+        password: yup.string().required('Password is required'),
+        captcha: yup.string().required('Captcha is required')
     })
 );
 
@@ -195,6 +248,24 @@ const loading = ref(false);
 
 function togglePassword() {
     showPassword.value = !showPassword.value;
+}
+
+async function refreshCaptcha() {
+    captchaLoading.value = true;
+    try {
+        const response = await axios.get('/api/captcha/refresh');
+        captchaSrc.value = response.data.captcha;
+        formSignIn.captcha = null;
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to refresh captcha',
+            life: 3000,
+        });
+    } finally {
+        captchaLoading.value = false;
+    }
 }
 
 function loginAction(event: FormSubmitEvent) {
@@ -214,11 +285,23 @@ function loginAction(event: FormSubmitEvent) {
                 authStore.setPermissions(response.props.flash.permissions);
             },
             onError: (errors) => {
+                // Refresh captcha on any error
+                refreshCaptcha();
+                
                 if(errors.message){
                     toast.add({ 
                         severity: 'error', 
                         summary: 'Not Authenticated', 
                         detail: errors.message,
+                        life: 3000,
+                    });
+                }
+                
+                if(errors.captcha){
+                    toast.add({ 
+                        severity: 'error', 
+                        summary: 'Captcha Error', 
+                        detail: errors.captcha,
                         life: 3000,
                     });
                 }

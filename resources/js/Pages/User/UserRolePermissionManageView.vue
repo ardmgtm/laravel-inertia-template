@@ -52,7 +52,7 @@
                         <Transition name="fadetransition" mode="out-in" appear>
                             <div class="h-[500px] w-full flex items-center justify-center flex-col"
                                 v-if="permissionLoading">
-                                <ProgressSpinner :stroke-width="4" />
+                                <ProgressSpinner stroke-width="4" />
                             </div>
                             <div v-else class="flex flex-col">
                                 <div class="flex flex-row justify-between items-center mb-4">

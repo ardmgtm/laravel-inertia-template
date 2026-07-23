@@ -30,7 +30,21 @@ class LoginRequest extends FormRequest
         return [
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
+            'captcha' => ['required', 'string', 'captcha'],
             'remember' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'captcha.required' => 'Please enter the captcha code.',
+            'captcha.captcha' => 'The captcha code is incorrect. Please try again.',
         ];
     }
 
