@@ -7,7 +7,9 @@ trait UserActivityTrait
     public function logActivity(string $description): void
     {
         $request = request();
-        $request['record_activity'] = true;
-        $request['activity_description'] = $description;
+        $request->merge([
+            'record_activity' => true,
+            'activity_description' => $description,
+        ]);
     }
 }

@@ -109,7 +109,7 @@
     </Dialog>
 </template>
 <script setup lang="ts">
-import { useForm, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { reactive, Ref, ref, computed } from 'vue';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
@@ -134,14 +134,14 @@ const loading: Ref<boolean> = ref(false);
 
 const roleOptions = ref<UserRole[]>(usePage().props.roles as UserRole[]);
 
-const formData = useForm<UserForm>({
+const formData = reactive<UserForm>({
     id: null,
     name: null,
     email: null,
     username: null,
     password: null,
     roles: null,
-})
+});
 const formErrors = ref();
 
 // Password strength validation checks

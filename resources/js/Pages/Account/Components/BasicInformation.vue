@@ -77,7 +77,6 @@ import { useToast } from 'primevue';
 import { computed, onBeforeMount, reactive, ref } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/Stores/auth-store';
-import { useForm } from '@inertiajs/vue3';
 
 const emit = defineEmits<{
     changePassword: []
@@ -90,7 +89,7 @@ const loading = ref<boolean>(false);
 const authStore = useAuthStore();
 const user = computed<User | null>(() => authStore.user);
 
-const formData = useForm<UserForm>({
+const formData = reactive<UserForm>({
     name: null,
     username: null,
     email: null,

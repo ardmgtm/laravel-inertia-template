@@ -97,10 +97,9 @@
 <script setup lang="ts">
 import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
-import { useForm } from '@inertiajs/vue3';
 import { FormSubmitEvent } from '@primevue/forms';
 import { useToast } from 'primevue';
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import axios from 'axios';
 
 const emit = defineEmits<{
@@ -110,7 +109,7 @@ const emit = defineEmits<{
 const toast = useToast();
 
 const loading = ref<boolean>(false);
-const formData = useForm({
+const formData = reactive({
     old_password: '',
     new_password: '',
     confirm_password: '',

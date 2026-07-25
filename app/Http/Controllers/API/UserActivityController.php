@@ -15,7 +15,7 @@ class UserActivityController extends Controller
 
     public function dataTable(Request $request)
     {
-        $query = $this->userActivityService->getUserActivityQuery();
+        $query = $this->userActivityService->getUserActivityQuery()->orderBy('timestamp', 'desc');
 
         return DataTableResponse::load($query);
     }
