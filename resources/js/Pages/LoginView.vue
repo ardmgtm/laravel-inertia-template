@@ -202,7 +202,7 @@
         </div>
     </div>
 
-    <footer class="bg-surface-900 dark:bg-surface-950 text-surface-300 dark:text-surface-400 text-center py-4 text-xs sm:text-sm border-t border-surface-700 dark:border-surface-800 absolute bottom-0 w-full">
+    <footer class="bg-surface-900 dark:bg-surface-950 text-surface-300 dark:text-surface-400 text-center py-4 text-xs sm:text-sm border-t border-surface-700 dark:border-surface-800">
         <div class="container mx-auto px-4">
             <p>© {{ currentYear }} Your Company. All rights reserved.</p>
         </div>
