@@ -135,7 +135,7 @@
                                                 fluid
                                             />
                                         </div>
-                                        <div class="relative bg-surface-100 dark:bg-surface-800 rounded-lg overflow-hidden border border-surface-300 dark:border-surface-600 flex items-center justify-center" style="min-width: 180px; height: 46px;">
+                                        <div class="relative bg-surface-100 dark:bg-surface-800 rounded-lg overflow-hidden border border-surface-300 dark:border-surface-600 flex items-center justify-center" style="min-width: 180px;">
                                             <img 
                                                 :src="captchaSrc" 
                                                 alt="Captcha" 
@@ -145,7 +145,7 @@
                                             <Button 
                                                 type="button"
                                                 icon="pi pi-refresh" 
-                                                class="absolute top-1 right-1" 
+                                                class="absolute right-1" 
                                                 size="small"
                                                 severity="secondary"
                                                 text
@@ -202,7 +202,7 @@
         </div>
     </div>
 
-    <footer class="bg-surface-900 dark:bg-surface-950 text-surface-300 dark:text-surface-400 text-center py-4 text-xs sm:text-sm border-t border-surface-700 dark:border-surface-800">
+    <footer class="bg-surface-900 dark:bg-surface-950 text-surface-300 dark:text-surface-400 text-center py-4 text-xs sm:text-sm border-t border-surface-700 dark:border-surface-800 absolute bottom-0 w-full">
         <div class="container mx-auto px-4">
             <p>© {{ currentYear }} Your Company. All rights reserved.</p>
         </div>
