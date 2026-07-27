@@ -109,8 +109,8 @@
     </Dialog>
 </template>
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
-import { reactive, Ref, ref, computed } from 'vue';
+import { usePage, router, useForm } from '@inertiajs/vue3';
+import { Ref, ref, computed } from 'vue';
 import { yupResolver } from '@primevue/forms/resolvers/yup';
 import * as yup from 'yup';
 import { FormSubmitEvent } from '@primevue/forms';
@@ -121,7 +121,6 @@ import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
 import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 import { UserRole } from '@/Core/Models/user-role';
-import axios from 'axios';
 
 const toast = useToast();
 const confirm = useConfirm();
@@ -134,7 +133,7 @@ const loading: Ref<boolean> = ref(false);
 
 const roleOptions = ref<UserRole[]>(usePage().props.roles as UserRole[]);
 
-const formData = reactive<UserForm>({
+const formData = useForm<UserForm>({
     id: null,
     name: null,
     email: null,
@@ -257,29 +256,35 @@ function addSubmitAction(event: FormSubmitEvent) {
     formErrors.value = {};
     if (event.valid) {
         loading.value = true;
-        axios.post(route('api.user.create'), formData)
-            .then((response) => {
-                toast.add({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: response.data.message,
-                    life: 3000,
-                });
+        formData.post(route('user.create'), {
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const message = (page.props as any).flash?.message;
+                if (message) {
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: message,
+                        life: 3000,
+                    });
+                }
                 closeDialog();
                 emit('data-created');
-            })
-            .catch((error) => {
-                formErrors.value = error.response.data.errors;
+            },
+            onError: (errors) => {
+                formErrors.value = errors;
+                const message = (errors as any).message || 'Failed to create user!';
                 toast.add({
                     severity: 'error',
                     summary: 'Failed',
-                    detail: error.response.data.message ?? 'Failed to create user!',
+                    detail: message,
                     life: 3000,
                 });
-            })
-            .finally(() => {
+            },
+            onFinish: () => {
                 loading.value = false;
-            });
+            },
+        });
     }
 }
 function editAction(data: User) {
@@ -296,31 +301,35 @@ function editAction(data: User) {
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
-        axios.put(route('api.user.update', { id: formData.id }), formData)
-            .then((response) => {
-                toast.add({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: response.data.message,
-                    life: 3000,
-                });
-                closeDialog();
-                emit('data-updated');
-            })
-            .catch((error) => {
-                formErrors.value = error.response.data.errors;
-                if (error.response.data.message) {
+        formData.put(route('user.update', { user: formData.id }), {
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const message = (page.props as any).flash?.message;
+                if (message) {
                     toast.add({
-                        severity: 'error',
-                        summary: 'Failed',
-                        detail: error.response.data.message,
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: message,
                         life: 3000,
                     });
                 }
-            })
-            .finally(() => {
+                closeDialog();
+                emit('data-updated');
+            },
+            onError: (errors) => {
+                formErrors.value = errors;
+                const message = (errors as any).message || 'Failed to update user!';
+                toast.add({
+                    severity: 'error',
+                    summary: 'Failed',
+                    detail: message,
+                    life: 3000,
+                });
+            },
+            onFinish: () => {
                 loading.value = false;
-            });
+            },
+        });
     }
 }
 function deleteAction(data: User) {
@@ -340,29 +349,33 @@ function deleteAction(data: User) {
         },
         accept: () => {
             loading.value = true;
-            axios.delete(route('api.user.delete', { id: data.id }))
-                .then((response) => {
-                    toast.add({
-                        severity: 'success',
-                        summary: 'Success',
-                        detail: response.data.message,
-                        life: 3000,
-                    });
-                    emit('data-deleted');
-                })
-                .catch((error) => {
-                    if (error.response.data.message) {
+            router.delete(route('user.delete', { user: data.id }), {
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    const message = (page.props as any).flash?.message;
+                    if (message) {
                         toast.add({
-                            severity: 'error',
-                            summary: 'Failed',
-                            detail: error.response.data.message,
+                            severity: 'success',
+                            summary: 'Success',
+                            detail: message,
                             life: 3000,
                         });
                     }
-                })
-                .finally(() => {
+                    emit('data-deleted');
+                },
+                onError: (errors) => {
+                    const message = (errors as any).message || 'Failed to delete user!';
+                    toast.add({
+                        severity: 'error',
+                        summary: 'Failed',
+                        detail: message,
+                        life: 3000,
+                    });
+                },
+                onFinish: () => {
                     loading.value = false;
-                });
+                },
+            });
         },
         reject: () => {
             toast.add({

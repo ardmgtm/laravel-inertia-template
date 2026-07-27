@@ -70,4 +70,58 @@ class RoleAndPermissionController extends Controller
             return redirect()->back()->withErrors(['message' => 'Failed to delete role']);
         }
     }
+
+    public function getRolePermission(Request $request, Role $role)
+    {
+        try {
+            $data = $this->roleService->getRolePermissions($role);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Success to get permission list',
+                'data' => $data,
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get permission list',
+            ], 500);
+        }
+    }
+
+    public function getRoleUser(Request $request, Role $role)
+    {
+        try {
+            $data = $this->roleService->getRoleUsers($role);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Success to get user list',
+                'data' => $data,
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get user list',
+            ], 500);
+        }
+    }
+
+    public function switchPermission(Request $request, Role $role)
+    {
+        try {
+            $validated = $request->validate([
+                'id_permission' => 'required|integer|exists:permissions,id',
+                'value' => 'required|boolean',
+            ]);
+
+            $this->roleService->switchPermission($role, $validated['id_permission'], $validated['value']);
+
+            return redirect()->back()->with('message', 'Success to update role permissions');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
+        } catch (Throwable $e) {
+            return redirect()->back()->withErrors(['message' => 'Failed to update role permissions']);
+        }
+    }
 }

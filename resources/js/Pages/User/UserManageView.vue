@@ -112,7 +112,7 @@
         @data-deleted="refreshData" />
 </template>
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, usePage, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { ref, Ref } from 'vue';
@@ -126,7 +126,6 @@ import { User } from '@/Core/Models/user';
 import { UserRole } from '@/Core/Models/user-role';
 import AppColorTag from '@/Components/AppColorTag.vue';
 import { can } from '@/Core/Utils/permission-check.js';
-import axios from 'axios';
 import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 
 const toast = useToast();
@@ -162,32 +161,38 @@ const deleteUserAction = () => {
 const switchStatusAction = (users: User[], status: boolean) => {
     const userIds = users.map(user => user.id);
 
-    axios.post(route('api.user.switch_status'), {
+    router.post(route('user.switch_status'), {
         ids: userIds,
         status: status,
-    })
-        .then((response) => {
-            toast.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: response.data.message,
-                life: 3000,
-            });
+    }, {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            const message = (page.props as any).flash?.message;
+            if (message) {
+                toast.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: message,
+                    life: 3000,
+                });
+            }
             refreshData();
-        })
-        .catch((error) => {
+        },
+        onError: (errors) => {
+            const message = (errors as any).message || 'Failed to update status';
             toast.add({
                 severity: 'error',
                 summary: 'Failed',
-                detail: error.response.data.message,
+                detail: message,
                 life: 3000,
             });
-        });
+        },
+    });
 }
 
 // Datatable
 const selectedData = ref();
-const dtHandler = createDataTableHandler(route('api.user.data_table'));
+const dtHandler = createDataTableHandler(route('user.data_table'));
 
 const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
     '__global': { value: null, matchMode: FilterMatchMode.CONTAINS },

@@ -74,8 +74,8 @@ import AppFormInput from '@/Components/AppForm/AppFormInput.vue';
 import { User, UserForm } from '@/Core/Models/user';
 import { FormSubmitEvent } from '@primevue/forms';
 import { useToast } from 'primevue';
-import { computed, onBeforeMount, reactive, ref } from 'vue';
-import axios from 'axios';
+import { computed, onBeforeMount, ref } from 'vue';
+import { router, usePage, useForm } from '@inertiajs/vue3';
 import { useAuthStore } from '@/Stores/auth-store';
 
 const emit = defineEmits<{
@@ -89,7 +89,7 @@ const loading = ref<boolean>(false);
 const authStore = useAuthStore();
 const user = computed<User | null>(() => authStore.user);
 
-const formData = reactive<UserForm>({
+const formData = useForm<UserForm>({
     name: null,
     username: null,
     email: null,
@@ -140,28 +140,35 @@ const goToChangePassword = () => {
 function editSubmitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
-        axios.post(route('api.account.update_information'), formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        }).then(response => {
-            toast.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: response.data.message,
-                life: 3000
-            });
-            authStore.setUser(response.data.data.user);
-            editMode.value = false;
-        }).catch(error => {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: error.response?.data?.message || 'An error occurred',
-                life: 3000
-            });
-        }).finally(() => {
-            loading.value = false;
+        formData.post(route('account.update_information'), {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const message = (page.props as any).flash?.message;
+                if (message) {
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: message,
+                        life: 3000
+                    });
+                }
+                // Reload page to get updated user data
+                router.reload();
+                editMode.value = false;
+            },
+            onError: (errors) => {
+                const message = (errors as any).message || 'An error occurred';
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: message,
+                    life: 3000
+                });
+            },
+            onFinish: () => {
+                loading.value = false;
+            },
         });
     }
 }

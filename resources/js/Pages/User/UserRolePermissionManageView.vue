@@ -171,7 +171,7 @@ import AppProfilePicture from '@/Components/AppProfilePicture.vue';
 import { User } from '@/Core/Models/user';
 import { PermissionGroups, PermissionItem, UserRole } from '@/Core/Models/user-role';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, usePage, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { useToast } from 'primevue';
 import { MenuItem } from 'primevue/menuitem';
@@ -229,7 +229,7 @@ function selectingRole(dataRole: UserRole) {
     permissionLoading.value = true;
     userPage.value = 1;
     activeTab.value = 'permission';
-    axios.get(route('api.role.permission_list', dataRole.id))
+    axios.get(route('role.permission_list', dataRole.id))
         .then((response) => {
             let responseData = response.data;
             rolePermissions.value = responseData.data.permissions;
@@ -249,7 +249,7 @@ function selectingRole(dataRole: UserRole) {
                 permissionLoading.value = false;
             }, 500)
         });
-    axios.get(route('api.role.user_list', dataRole.id))
+    axios.get(route('role.user_list', dataRole.id))
         .then((response) => {
             let responseData = response.data;
             roleUsers.value = responseData.data.users;
@@ -284,29 +284,33 @@ function onSwitchChange(idRole: number, permissionData: PermissionItem, newValue
         value: newValue,
     };
     return new Promise((resolve, reject) => {
-        return axios.put(route('api.role.switch_permission', idRole), formData)
-            .then((response) => {
-                let responseData = response.data;
+        router.post(route('role.switch_permission', idRole), formData, {
+            preserveScroll: true,
+            onSuccess: (page) => {
                 totalPermissionGranted.value = !newValue ? totalPermissionGranted.value - 1 : totalPermissionGranted.value + 1;
-                toast.add({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: responseData.message,
-                    life: 1000
-                });
+                const message = (page.props as any).flash?.message;
+                if (message) {
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: message,
+                        life: 1000
+                    });
+                }
                 return resolve(true);
-            })
-            .catch((error) => {
-                let errorResponseData = error.response.data;
-                permissionData.role_has_permission = newValue;
+            },
+            onError: (errors) => {
+                permissionData.role_has_permission = !newValue;
+                const message = (errors as any).message || 'An error occurred';
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: errorResponseData.message,
+                    detail: message,
                     life: 3000
                 });
                 return reject(new Error('error'));
-            });
+            },
+        });
     });
 }
 

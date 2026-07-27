@@ -33,8 +33,8 @@ class UserActivityLog
     protected function recordActivity(Request $request, Response $response): void
     {
         $user = Auth::user();
-        $durationMs = isset($this->startTime) 
-            ? round((microtime(true) - $this->startTime) * 1000) 
+        $durationMs = isset($this->startTime)
+            ? round((microtime(true) - $this->startTime) * 1000)
             : null;
 
         // Get response content
@@ -47,16 +47,10 @@ class UserActivityLog
         }
 
         // Get request payload (exclude sensitive data)
-        $requestPayload = $this->sanitizeRequestPayload($request->except([
+        $requestPayload = $request->except([
             'record_activity',
             'activity_description',
-            'password',
-            'password_confirmation',
-            'current_password',
-            'token',
-            'api_key',
-            'secret',
-        ]));
+        ]);
 
         UserActivity::create([
             'timestamp' => now(),
@@ -68,50 +62,46 @@ class UserActivityLog
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
             'description' => $request['activity_description'] ?? '-',
-            'request_payload' => json_encode($requestPayload),
-            'response' =>   json_encode($responseContent),
+            'request_payload' => $this->maskingSensitiveData($requestPayload),
+            'response' => $responseContent,
             'duration_ms' => $durationMs,
         ]);
     }
 
-    protected function sanitizeRequestPayload(array $payload): ?array
+    protected function maskingSensitiveData(array $data): array
     {
-        if (empty($payload)) {
-            return null;
+        $sensitiveKeys = config('sensitive-data.keys', []);
+        $maskValue = config('sensitive-data.mask_value', '<information hidden>');
+        $caseSensitive = config('sensitive-data.case_sensitive', false);
+
+        return $this->maskRecursive($data, $sensitiveKeys, $maskValue, $caseSensitive);
+    }
+
+    /**
+     * Recursively mask sensitive data in nested arrays
+     */
+    protected function maskRecursive(array $data, array $sensitiveKeys, string $maskValue, bool $caseSensitive): array
+    {
+        foreach ($data as $key => $value) {
+            // Check if current key is sensitive
+            $isSensitive = $caseSensitive
+                ? in_array($key, $sensitiveKeys, true)
+                : in_array(strtolower($key), array_map('strtolower', $sensitiveKeys), true);
+
+            if ($isSensitive) {
+                $data[$key] = $maskValue;
+            } elseif (is_array($value)) {
+                // Recursively mask nested arrays
+                $data[$key] = $this->maskRecursive($value, $sensitiveKeys, $maskValue, $caseSensitive);
+            }
         }
 
-        // Limit payload size to prevent database bloat
-        $jsonPayload = json_encode($payload);
-        if (strlen($jsonPayload) > 65535) { // 64KB limit
-            return ['_truncated' => 'Payload too large'];
-        }
-
-        return $payload;
+        return $data;
     }
 
     protected function isJson(string $content): bool
     {
         json_decode($content);
         return json_last_error() === JSON_ERROR_NONE;
-    }
-
-    protected function getErrorMessage(Response $response): ?string
-    {
-        $statusCode = $response->getStatusCode();
-        
-        // Only capture error messages for 4xx and 5xx responses
-        if ($statusCode < 400) {
-            return null;
-        }
-
-        if (method_exists($response, 'getContent')) {
-            $content = $response->getContent();
-            if ($this->isJson($content)) {
-                $data = json_decode($content, true);
-                return $data['message'] ?? $data['error'] ?? null;
-            }
-        }
-
-        return null;
     }
 }

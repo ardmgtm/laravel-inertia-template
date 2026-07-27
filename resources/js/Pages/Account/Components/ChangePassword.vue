@@ -99,8 +99,8 @@ import AppForm from '@/Components/AppForm/AppForm.vue';
 import AppFormField from '@/Components/AppForm/AppFormField.vue';
 import { FormSubmitEvent } from '@primevue/forms';
 import { useToast } from 'primevue';
-import { ref, computed, reactive } from 'vue';
-import axios from 'axios';
+import { ref, computed } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
 
 const emit = defineEmits<{
     passwordChanged: []
@@ -109,7 +109,7 @@ const emit = defineEmits<{
 const toast = useToast();
 
 const loading = ref<boolean>(false);
-const formData = reactive({
+const formData = useForm({
     old_password: '',
     new_password: '',
     confirm_password: '',
@@ -173,37 +173,35 @@ function submitAction(event: FormSubmitEvent) {
     if (event.valid) {
         loading.value = true;
         formErrors.value = null;
-        axios.post(route('api.account.change_password'), {
-            old_password: formData.old_password,
-            new_password: formData.new_password,
-            confirm_password: formData.confirm_password,
-        })
-            .then(response => {
-                toast.add({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: response.data?.message || 'Password changed successfully',
-                    life: 3000
-                });
-                formData.old_password = '';
-                formData.new_password = '';
-                formData.confirm_password = '';
-                emit('passwordChanged');
-            })
-            .catch(error => {
-                if (error.response && error.response.data && error.response.data.errors) {
-                    formErrors.value = error.response.data.errors;
+        formData.post(route('account.change_password'), {
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const message = (page.props as any).flash?.message;
+                if (message) {
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: message,
+                        life: 3000
+                    });
                 }
+                formData.reset();
+                emit('passwordChanged');
+            },
+            onError: (errors) => {
+                formErrors.value = errors;
+                const message = (errors as any).message || 'An error occurred';
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: error.response?.data?.message || 'An error occurred',
+                    detail: message,
                     life: 3000
                 });
-            })
-            .finally(() => {
+            },
+            onFinish: () => {
                 loading.value = false;
-            });
+            },
+        });
     }
 }
 

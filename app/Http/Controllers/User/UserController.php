@@ -3,14 +3,23 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SwitchStatusRequest;
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Responses\DataTableResponse;
+use App\Models\User;
 use App\Services\RoleAndPermissionService;
+use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Throwable;
 
 class UserController extends Controller
 {
     public function __construct(
-        private RoleAndPermissionService $roleService
+        private RoleAndPermissionService $roleService,
+        private UserService $userService
     ) {}
 
     public function index(Request $request)
@@ -20,5 +29,75 @@ class UserController extends Controller
         ];
 
         return Inertia::render('User/UserManageView', $data);
+    }
+
+    public function dataTable(Request $request)
+    {
+        $query = $this->userService->getUserQuery();
+
+        return DataTableResponse::load($query);
+    }
+
+    public function create(CreateUserRequest $request)
+    {
+        $this->logActivity('Create new user');
+
+        try {
+            $data = $request->validated();
+            $this->userService->createUser($data);
+
+            return redirect()->back()->with('message', 'Success to create user');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return redirect()->back()->withErrors(['message' => 'Failed to create user']);
+        }
+    }
+
+    public function update(UpdateUserRequest $request, User $user)
+    {
+        $this->logActivity('Update user (id: '.$user->id.')');
+
+        try {
+            $data = $request->validated();
+            $this->userService->updateUser($user, $data);
+
+            return redirect()->back()->with('message', 'Success to update user');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return redirect()->back()->withErrors(['message' => 'Failed to update user']);
+        }
+    }
+
+    public function delete(Request $request, User $user)
+    {
+        $this->logActivity('Delete user (id: '.$user->id.')');
+
+        try {
+            $this->userService->deleteUser($user);
+
+            return redirect()->back()->with('message', 'Success to delete user');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return redirect()->back()->withErrors(['message' => 'Failed to delete user']);
+        }
+    }
+
+    public function switchStatus(SwitchStatusRequest $request)
+    {
+        $data = $request->validated();
+        $this->logActivity('Update user status (ids: '.json_encode($data['ids']).')');
+
+        try {
+            $this->userService->switchStatus($data['ids'], $data['status']);
+
+            return redirect()->back()->with('message', 'Success to update status');
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return redirect()->back()->withErrors(['message' => 'Failed to update status']);
+        }
     }
 }
