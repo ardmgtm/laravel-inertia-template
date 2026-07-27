@@ -49,7 +49,7 @@ export const useNotificationStore = defineStore('notification', {
             this.loading = true;
             try {
                 const response = await axios.get(route('notification.all'));
-                if (response.data.status) {
+                if (response.data.success) {
                     this.notifications = response.data.data;
                     this.hasMore = false; // Update when pagination is implemented
                     this.page = 1;
@@ -76,7 +76,7 @@ export const useNotificationStore = defineStore('notification', {
                     params: { page: this.page }
                 });
                 
-                if (response.data.status) {
+                if (response.data.success) {
                     this.notifications.push(...response.data.data);
                     // Update hasMore based on pagination metadata
                     this.hasMore = response.data.hasMore || false;
@@ -94,7 +94,7 @@ export const useNotificationStore = defineStore('notification', {
             try {
                 const response = await axios.put(route('notification.mark_as_read', notificationId));
                 
-                if (response.data.status) {
+                if (response.data.success) {
                     // Update notification with data from response
                     const index = this.notifications.findIndex(n => n.id === notificationId);
                     if (index !== -1 && response.data.data) {
@@ -114,7 +114,7 @@ export const useNotificationStore = defineStore('notification', {
             try {
                 const response = await axios.put(route('notification.mark_all_as_read'));
                 
-                if (response.data.status) {
+                if (response.data.success) {
                     // Mark all notifications as read with current timestamp
                     const currentTime = new Date().toISOString();
                     this.notifications.forEach(notification => {
