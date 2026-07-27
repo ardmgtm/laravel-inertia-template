@@ -7,7 +7,7 @@ class JsonResponse
     public static function success(string $message, array $data = [], int $status = 200)
     {
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => $message,
             'data' => $data,
         ], $status);
@@ -16,7 +16,7 @@ class JsonResponse
     public static function failed(string $message, array $errors = [], int $status = 500)
     {
         return response()->json([
-            'status' => false,
+            'success' => false,
             'message' => $message,
             'errors' => $errors,
         ], $status);

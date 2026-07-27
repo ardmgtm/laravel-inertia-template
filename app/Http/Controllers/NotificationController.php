@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Responses\JsonResponse;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
@@ -16,16 +17,9 @@ class NotificationController extends Controller
         try {
             $notifications = $this->notificationService->getNotificationList($this->user()->id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Success to get notifications',
-                'data' => $notifications,
-            ]);
+            return JsonResponse::success('Success to get notifications', $notifications);
         } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get notifications',
-            ], 500);
+            return JsonResponse::failed('Failed to get notifications');
         }
     }
 
@@ -34,16 +28,9 @@ class NotificationController extends Controller
         try {
             $notifications = $this->notificationService->getUnreadNotificationList($this->user()->id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Success to get notifications',
-                'data' => $notifications,
-            ]);
+            return JsonResponse::success('Success to get notifications', $notifications);
         } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get notifications',
-            ], 500);
+            return JsonResponse::failed('Failed to get notifications');
         }
     }
 
@@ -52,16 +39,9 @@ class NotificationController extends Controller
         try {
             $notification = $this->notificationService->markAsRead($id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Notification marked as read',
-                'data' => $notification,
-            ]);
+            return JsonResponse::success('Notification marked as read', $notification);
         } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to mark notification as read',
-            ], 500);
+            return JsonResponse::failed('Failed to mark notification as read');
         }
     }
 
@@ -70,15 +50,9 @@ class NotificationController extends Controller
         try {
             $this->notificationService->markAllAsRead($this->user()->id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'All notifications marked as read',
-            ]);
+            return JsonResponse::success('All notifications marked as read');
         } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to mark all notifications as read',
-            ], 500);
+            return JsonResponse::failed('Failed to mark all notifications as read');
         }
     }
 }
