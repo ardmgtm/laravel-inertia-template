@@ -33,7 +33,19 @@
                         :hide-on-range-selection="true" :max-date="new Date()" iconDisplay="input" class="w-40"/>
                 </template>
             </Column>
-            <Column field="status_code" header="Status" class="w-24 min-w-24" :show-filter-menu="false"
+            <Column field="status" header="Status" class="w-28 min-w-28" :show-filter-menu="false"
+                :show-clear-button="false">
+                <template #body="slotProps">
+                    <Tag v-if="slotProps.data.status === true" severity="success" value="Success" />
+                    <Tag v-else-if="slotProps.data.status === false" severity="danger" value="Failed" />
+                    <Tag v-else severity="secondary" value="Unknown" />
+                </template>
+                <template #filter="{ filterModel, filterCallback }">
+                    <Select v-model="filterModel.value" :options="statusOptions" option-value="value"
+                        option-label="label" @change="filterCallback()" />
+                </template>
+            </Column>
+            <Column field="status_code" header="Code" class="w-24 min-w-24" :show-filter-menu="false"
                 :show-clear-button="false">
                 <template #body="slotProps">
                     <Tag :severity="getSeverityByStatusCode(slotProps.data.status_code)"
@@ -101,6 +113,12 @@
                 <div class="border rounded-lg p-4">
                     <div class="text-sm font-semibold text-primary mb-2">Request Information</div>
                     <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="text-gray-600">Status:</div>
+                        <div>
+                            <Tag v-if="selectedActivity.status === true" severity="success" value="Success" />
+                            <Tag v-else-if="selectedActivity.status === false" severity="danger" value="Failed" />
+                            <Tag v-else severity="secondary" value="Unknown" />
+                        </div>
                         <div class="text-gray-600">Method:</div>
                         <div><Tag :severity="getSeverityByMethod(selectedActivity.method)" :value="selectedActivity.method" /></div>
                         <div class="text-gray-600">Status Code:</div>
@@ -221,11 +239,18 @@ const getSeverityByStatusCode = (statusCode: number): string => {
     return "info";
 };
 
+const statusOptions = [
+    { value: null, label: 'All' },
+    { value: '1', label: 'Success' },
+    { value: '0', label: 'Failed' },
+];
+
 const filters: Ref<{ [key: string]: DataTableFilterMetaData }> = ref({
     '__global': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'user.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'ip_address': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'timestamp': { value: null, matchMode: FilterMatchMode.DATE_IS },
+    'status': { value: null, matchMode: FilterMatchMode.EQUALS },
     'status_code': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'method': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'route': { value: null, matchMode: FilterMatchMode.CONTAINS },

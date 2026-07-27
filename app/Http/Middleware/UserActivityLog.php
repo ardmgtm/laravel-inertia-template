@@ -62,11 +62,20 @@ class UserActivityLog
             'error_message',
         ]);
 
+        // Determine status: true = success, false = failed
+        $statusCode = $response->getStatusCode();
+        $status = null;
+        if ($errorMessage || $statusCode >= 400) {
+            $status = false; // Failed: has error message or 4xx/5xx status
+        } elseif ($statusCode < 400) {
+            $status = true; // Success: 2xx or 3xx status without error
+        }
+
         UserActivity::create([
             'timestamp' => now(),
             'user_id' => $user?->id,
             'method' => $request->method(),
-            'status_code' => $response->getStatusCode(),
+            'status_code' => $statusCode,
             'route_name' => $request->route()?->getName(),
             'route' => $request->path(),
             'ip_address' => $request->ip(),
@@ -76,6 +85,7 @@ class UserActivityLog
             'response' => $responseContent,
             'duration_ms' => $durationMs,
             'error_message' => $errorMessage,
+            'status' => $status,
         ]);
     }
 

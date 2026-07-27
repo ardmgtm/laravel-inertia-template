@@ -17,6 +17,7 @@ class UserActivity extends Model
         'request_payload' => 'array',
         'response' => 'array',
         'timestamp' => 'datetime',
+        'status' => 'boolean',
     ];
 
     public function user(): BelongsTo
