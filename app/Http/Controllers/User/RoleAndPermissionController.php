@@ -4,8 +4,9 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Role\RoleRequest;
+use App\Http\Responses\InertiaFailedResponse;
+use App\Http\Responses\InertiaSuccessResponse;
 use App\Services\RoleAndPermissionService;
-use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -34,9 +35,9 @@ class RoleAndPermissionController extends Controller
             $validated = $request->validated();
             $this->roleService->createRole($validated);
 
-            return redirect()->back()->with('message', 'Success to create role');
+            return InertiaSuccessResponse::redirectBack('Success to create role');
         } catch (Throwable $e) {
-            return redirect()->back()->withErrors(['message' => 'Failed to create role']);
+            return InertiaFailedResponse::redirectBack('Failed to create role', $e);
         }
     }
 
@@ -48,11 +49,9 @@ class RoleAndPermissionController extends Controller
             $validated = $request->validated();
             $this->roleService->updateRole($role, $validated);
 
-            return redirect()->back()->with('message', 'Success to update role');
-        } catch (Exception $e) {
-            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
+            return InertiaSuccessResponse::redirectBack('Success to update role');
         } catch (Throwable $e) {
-            return redirect()->back()->withErrors(['message' => 'Failed to update role']);
+            return InertiaFailedResponse::redirectBack('Failed to update role', $e);
         }
     }
 
@@ -63,11 +62,9 @@ class RoleAndPermissionController extends Controller
         try {
             $this->roleService->deleteRole($role);
 
-            return redirect()->back()->with('message', 'Success to delete role');
-        } catch (Exception $e) {
-            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
+            return InertiaSuccessResponse::redirectBack('Success to delete role');
         } catch (Throwable $e) {
-            return redirect()->back()->withErrors(['message' => 'Failed to delete role']);
+            return InertiaFailedResponse::redirectBack('Failed to delete role', $e);
         }
     }
 
@@ -117,11 +114,9 @@ class RoleAndPermissionController extends Controller
 
             $this->roleService->switchPermission($role, $validated['id_permission'], $validated['value']);
 
-            return redirect()->back()->with('message', 'Success to update role permissions');
-        } catch (Exception $e) {
-            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
+            return InertiaSuccessResponse::redirectBack('Success to update role permissions');
         } catch (Throwable $e) {
-            return redirect()->back()->withErrors(['message' => 'Failed to update role permissions']);
+            return InertiaFailedResponse::redirectBack('Failed to update role permissions', $e);
         }
     }
 }

@@ -7,6 +7,8 @@ use App\Http\Requests\SwitchStatusRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Responses\DataTableResponse;
+use App\Http\Responses\InertiaFailedResponse;
+use App\Http\Responses\InertiaSuccessResponse;
 use App\Models\User;
 use App\Services\RoleAndPermissionService;
 use App\Services\UserService;
@@ -46,11 +48,11 @@ class UserController extends Controller
             $data = $request->validated();
             $this->userService->createUser($data);
 
-            return redirect()->back()->with('message', 'Success to create user');
+            return InertiaSuccessResponse::redirectBack('Success to create user');
         } catch (Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['message' => 'Failed to create user']);
+            return InertiaFailedResponse::redirectBack('Failed to create user', $e);
         }
     }
 
@@ -62,11 +64,11 @@ class UserController extends Controller
             $data = $request->validated();
             $this->userService->updateUser($user, $data);
 
-            return redirect()->back()->with('message', 'Success to update user');
+            return InertiaSuccessResponse::redirectBack('Success to update user');
         } catch (Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['message' => 'Failed to update user']);
+            return InertiaFailedResponse::redirectBack('Failed to update user', $e);
         }
     }
 
@@ -77,11 +79,11 @@ class UserController extends Controller
         try {
             $this->userService->deleteUser($user);
 
-            return redirect()->back()->with('message', 'Success to delete user');
+            return InertiaSuccessResponse::redirectBack('Success to delete user');
         } catch (Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['message' => 'Failed to delete user']);
+            return InertiaFailedResponse::redirectBack('Failed to delete user', $e);
         }
     }
 
@@ -93,11 +95,11 @@ class UserController extends Controller
         try {
             $this->userService->switchStatus($data['ids'], $data['status']);
 
-            return redirect()->back()->with('message', 'Success to update status');
+            return InertiaSuccessResponse::redirectBack('Success to update status');
         } catch (Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['message' => 'Failed to update status']);
+            return InertiaFailedResponse::redirectBack('Failed to update status', $e);
         }
     }
 }

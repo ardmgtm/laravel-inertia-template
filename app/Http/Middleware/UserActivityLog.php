@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\UserActivity;
+use App\Services\SensitiveDataMasker;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,9 +13,14 @@ class UserActivityLog
 {
     protected float $startTime;
 
+    public function __construct(
+        protected SensitiveDataMasker $masker
+    ) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         $this->startTime = microtime(true);
+
         return $next($request);
     }
 
@@ -46,10 +52,14 @@ class UserActivityLog
             }
         }
 
+        // Get error message from session flash or request
+        $errorMessage = session('error_message') ?? $request->input('error_message');
+
         // Get request payload (exclude sensitive data)
         $requestPayload = $request->except([
             'record_activity',
             'activity_description',
+            'error_message',
         ]);
 
         UserActivity::create([
@@ -62,46 +72,17 @@ class UserActivityLog
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
             'description' => $request['activity_description'] ?? '-',
-            'request_payload' => $this->maskingSensitiveData($requestPayload),
+            'request_payload' => $this->masker->mask($requestPayload),
             'response' => $responseContent,
             'duration_ms' => $durationMs,
+            'error_message' => $errorMessage,
         ]);
-    }
-
-    protected function maskingSensitiveData(array $data): array
-    {
-        $sensitiveKeys = config('sensitive-data.keys', []);
-        $maskValue = config('sensitive-data.mask_value', '<information hidden>');
-        $caseSensitive = config('sensitive-data.case_sensitive', false);
-
-        return $this->maskRecursive($data, $sensitiveKeys, $maskValue, $caseSensitive);
-    }
-
-    /**
-     * Recursively mask sensitive data in nested arrays
-     */
-    protected function maskRecursive(array $data, array $sensitiveKeys, string $maskValue, bool $caseSensitive): array
-    {
-        foreach ($data as $key => $value) {
-            // Check if current key is sensitive
-            $isSensitive = $caseSensitive
-                ? in_array($key, $sensitiveKeys, true)
-                : in_array(strtolower($key), array_map('strtolower', $sensitiveKeys), true);
-
-            if ($isSensitive) {
-                $data[$key] = $maskValue;
-            } elseif (is_array($value)) {
-                // Recursively mask nested arrays
-                $data[$key] = $this->maskRecursive($value, $sensitiveKeys, $maskValue, $caseSensitive);
-            }
-        }
-
-        return $data;
     }
 
     protected function isJson(string $content): bool
     {
         json_decode($content);
+
         return json_last_error() === JSON_ERROR_NONE;
     }
 }

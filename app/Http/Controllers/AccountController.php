@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Account\UpdateInformationRequest;
 use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Responses\InertiaFailedResponse;
+use App\Http\Responses\InertiaSuccessResponse;
 use App\Services\AccountService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,9 +31,9 @@ class AccountController extends Controller
             $profilePicture = $request->hasFile('profile_picture') ? $request->file('profile_picture') : null;
             $user = $this->accountService->updateInformation($this->user(), $data, $profilePicture);
 
-            return redirect()->back()->with('message', 'Success to update your information');
+            return InertiaSuccessResponse::redirectBack('Success to update your information');
         } catch (Throwable $e) {
-            return redirect()->back()->withErrors(['message' => 'Failed to update your information']);
+            return InertiaFailedResponse::redirectBack('Failed to update your information', $e);
         }
     }
 
@@ -43,9 +45,9 @@ class AccountController extends Controller
             $data = $request->validated();
             $this->accountService->changePassword($this->user(), $data['old_password'], $data['new_password']);
 
-            return redirect()->back()->with('message', 'Successfully changed your password');
+            return InertiaSuccessResponse::redirectBack('Successfully changed your password');
         } catch (Throwable $e) {
-            return redirect()->back()->withErrors(['message' => 'Failed to change your password']);
+            return InertiaFailedResponse::redirectBack('Failed to change your password', $e);
         }
     }
 }
