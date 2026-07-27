@@ -20,8 +20,18 @@ class RoleAndPermissionController extends Controller
 
     public function index(Request $request)
     {
+        $selectedRoleId = $request->query('role_id') ? (int) $request->query('role_id') : null;
+        $selectedRole = $selectedRoleId ? Role::find($selectedRoleId) : null;
+
         $data = [
             'roles' => fn () => $this->roleService->getAllRoles(),
+            'selectedRoleId' => $selectedRoleId,
+            'rolePermissions' => $selectedRole
+                ? fn () => $this->roleService->getRolePermissions($selectedRole)
+                : null,
+            'roleUsers' => $selectedRole
+                ? fn () => $this->roleService->getRoleUsers($selectedRole)
+                : null,
         ];
 
         return Inertia::render('User/UserRolePermissionManageView', $data);
@@ -68,42 +78,6 @@ class RoleAndPermissionController extends Controller
         }
     }
 
-    public function getRolePermission(Request $request, Role $role)
-    {
-        try {
-            $data = $this->roleService->getRolePermissions($role);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Success to get permission list',
-                'data' => $data,
-            ]);
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get permission list',
-            ], 500);
-        }
-    }
-
-    public function getRoleUser(Request $request, Role $role)
-    {
-        try {
-            $data = $this->roleService->getRoleUsers($role);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Success to get user list',
-                'data' => $data,
-            ]);
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get user list',
-            ], 500);
-        }
-    }
-
     public function switchPermission(Request $request, Role $role)
     {
         try {
@@ -115,6 +89,31 @@ class RoleAndPermissionController extends Controller
             $this->roleService->switchPermission($role, $validated['id_permission'], $validated['value']);
 
             return InertiaSuccessResponse::redirectBack('Success to update role permissions');
+        } catch (Throwable $e) {
+            return InertiaFailedResponse::redirectBack('Failed to update role permissions', $e);
+        }
+    }
+
+    public function batchSwitchPermission(Request $request, Role $role)
+    {
+        $this->logActivity('Batch update role permissions (id: '.$role->id.', name: '.$role->name.')');
+
+        try {
+            $validated = $request->validate([
+                'permissions' => 'required|array|min:1',
+                'permissions.*.id_permission' => 'required|integer|exists:permissions,id',
+                'permissions.*.value' => 'required|boolean',
+            ]);
+
+            $result = $this->roleService->batchSwitchPermissions($role, $validated['permissions']);
+
+            if ($result['failed_count'] > 0) {
+                $message = "Updated {$result['success_count']} permissions, {$result['failed_count']} failed";
+
+                return InertiaSuccessResponse::redirectBack($message);
+            }
+
+            return InertiaSuccessResponse::redirectBack("Successfully updated {$result['success_count']} permissions");
         } catch (Throwable $e) {
             return InertiaFailedResponse::redirectBack('Failed to update role permissions', $e);
         }

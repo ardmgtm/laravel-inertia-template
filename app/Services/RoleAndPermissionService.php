@@ -98,4 +98,45 @@ class RoleAndPermissionService
             $role->revokePermissionTo($permission);
         }
     }
+
+    public function batchSwitchPermissions(Role $role, array $permissions): array
+    {
+        if ($role->id == self::SUPERADMIN_ROLE_ID) {
+            throw new Exception('Superadmin cannot be changed', 403);
+        }
+
+        $successCount = 0;
+        $failedCount = 0;
+        $errors = [];
+
+        foreach ($permissions as $permissionData) {
+            try {
+                $permission = Permission::find($permissionData['id_permission']);
+
+                if (! $permission) {
+                    $failedCount++;
+                    $errors[] = "Permission ID {$permissionData['id_permission']} not found";
+
+                    continue;
+                }
+
+                if ($permissionData['value']) {
+                    $role->givePermissionTo($permission);
+                } else {
+                    $role->revokePermissionTo($permission);
+                }
+
+                $successCount++;
+            } catch (Exception $e) {
+                $failedCount++;
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        return [
+            'success_count' => $successCount,
+            'failed_count' => $failedCount,
+            'errors' => $errors,
+        ];
+    }
 }

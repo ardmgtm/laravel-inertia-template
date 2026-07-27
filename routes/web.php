@@ -41,9 +41,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', 'create')->name('role.create')->can('role.create');
         Route::put('/{role}', 'update')->name('role.update')->can('role.update');
         Route::delete('/{role}', 'delete')->name('role.delete')->can('role.delete');
-        Route::get('/{role}/permissions', 'getRolePermission')->name('role.permission_list')->can('role.browse');
-        Route::get('/{role}/users', 'getRoleUser')->name('role.user_list')->can('role.browse');
         Route::post('/{role}/switch-permission', 'switchPermission')->name('role.switch_permission')->can('role.assign_permission');
+        Route::post('/{role}/batch-switch-permission', 'batchSwitchPermission')->name('role.batch_switch_permission')->can('role.assign_permission');
     });
 
     Route::controller(UserActivityController::class)->prefix('user-activity')->group(function () {
