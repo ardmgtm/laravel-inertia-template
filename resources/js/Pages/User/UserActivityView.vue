@@ -17,12 +17,6 @@
                     <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column field="ip_address" header="IP Address" class="w-36 min-w-36" :show-filter-menu="false"
-                :show-clear-button="false">
-                <template #filter="{ filterModel, filterCallback }">
-                    <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
-                </template>
-            </Column>
             <Column field="timestamp" header="Timestamp" class="w-40 min-w-40" :show-filter-menu="false"
                 data-type="date" :show-clear-button="false">
                 <template #body="slotProps">
@@ -43,16 +37,6 @@
                 <template #filter="{ filterModel, filterCallback }">
                     <Select v-model="filterModel.value" :options="statusOptions" option-value="value"
                         option-label="label" @change="filterCallback()" />
-                </template>
-            </Column>
-            <Column field="status_code" header="Code" class="w-24 min-w-24" :show-filter-menu="false"
-                :show-clear-button="false">
-                <template #body="slotProps">
-                    <Tag :severity="getSeverityByStatusCode(slotProps.data.status_code)"
-                        :value="slotProps.data.status_code" />
-                </template>
-                <template #filter="{ filterModel, filterCallback }">
-                    <InputText size="small" v-model="filterModel.value" type="text" @change="filterCallback()" fluid />
                 </template>
             </Column>
             <Column field="method" header="Method" class="w-24" :show-filter-menu="false" :show-clear-button="false">
@@ -80,10 +64,10 @@
                     <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
                 </template>
             </Column>
-            <Column header="Action" class="w-20 min-w-20" frozen alignFrozen="right">
+            <Column class="w-20 min-w-20" alignFrozen="right">
                 <template #body="slotProps">
                     <Button icon="pi pi-info-circle" severity="info" text rounded size="small" 
-                        @click="showDetail(slotProps.data)" v-tooltip.left="'View Detail'" />
+                        @click="showDetail(slotProps.data)" v-tooltip.bottom="'View Detail'" />
                 </template>
             </Column>
         </AppDataTableServer>
