@@ -68,7 +68,83 @@
                     <InputText size="small" v-model="filterModel.value" @change="filterCallback()" fluid />
                 </template>
             </Column>
+            <Column header="Action" class="w-20 min-w-20" frozen alignFrozen="right">
+                <template #body="slotProps">
+                    <Button icon="pi pi-info-circle" severity="info" text rounded size="small" 
+                        @click="showDetail(slotProps.data)" v-tooltip.left="'View Detail'" />
+                </template>
+            </Column>
         </AppDataTableServer>
+
+        <!-- Detail Drawer -->
+        <Drawer v-model:visible="detailDrawer" header="Activity Detail" position="right" class="w-full md:w-[600px]">
+            <div v-if="selectedActivity" class="flex flex-col gap-4">
+                <!-- User Info -->
+                <div class="border rounded-lg p-4">
+                    <div class="text-sm font-semibold text-primary mb-2">User Information</div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <AppProfilePicture :user="selectedActivity.user" />
+                        <div>
+                            <div class="font-bold">{{ selectedActivity.user?.name ?? 'Guest' }}</div>
+                            <div class="text-sm text-gray-600">{{ selectedActivity.user?.username ?? '-' }}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="text-gray-600">IP Address:</div>
+                        <div class="font-medium">{{ selectedActivity.ip_address }}</div>
+                        <div class="text-gray-600">Timestamp:</div>
+                        <div class="font-medium">{{ formatDateTime(selectedActivity.timestamp) }}</div>
+                    </div>
+                </div>
+
+                <!-- Request Info -->
+                <div class="border rounded-lg p-4">
+                    <div class="text-sm font-semibold text-primary mb-2">Request Information</div>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="text-gray-600">Method:</div>
+                        <div><Tag :severity="getSeverityByMethod(selectedActivity.method)" :value="selectedActivity.method" /></div>
+                        <div class="text-gray-600">Status Code:</div>
+                        <div><Tag :severity="getSeverityByStatusCode(selectedActivity.status_code)" :value="selectedActivity.status_code" /></div>
+                        <div class="text-gray-600">Route Name:</div>
+                        <div class="font-medium">{{ selectedActivity.route_name ?? '-' }}</div>
+                        <div class="text-gray-600">Path:</div>
+                        <div class="font-medium">{{ selectedActivity.route }}</div>
+                        <div class="text-gray-600">Duration:</div>
+                        <div class="font-medium">{{ selectedActivity.duration_ms ? `${selectedActivity.duration_ms} ms` : '-' }}</div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="border rounded-lg p-4">
+                    <div class="text-sm font-semibold text-primary mb-2">Description</div>
+                    <div class="text-sm">{{ selectedActivity.description ?? '-' }}</div>
+                </div>
+
+                <!-- Request Payload -->
+                <div v-if="selectedActivity.request_payload" class="border rounded-lg p-4">
+                    <div class="text-sm font-semibold text-primary mb-2">Request Payload</div>
+                    <pre class="text-xs bg-gray-50 p-3 rounded overflow-x-auto">{{ JSON.stringify(selectedActivity.request_payload, null, 2) }}</pre>
+                </div>
+
+                <!-- Response -->
+                <div v-if="selectedActivity.response" class="border rounded-lg p-4">
+                    <div class="text-sm font-semibold text-primary mb-2">Response</div>
+                    <pre class="text-xs bg-gray-50 p-3 rounded overflow-x-auto">{{ JSON.stringify(selectedActivity.response, null, 2) }}</pre>
+                </div>
+
+                <!-- Error Message -->
+                <div v-if="selectedActivity.error_message" class="border border-red-300 bg-red-50 rounded-lg p-4">
+                    <div class="text-sm font-semibold text-red-600 mb-2">Error Message</div>
+                    <div class="text-sm text-red-700">{{ selectedActivity.error_message }}</div>
+                </div>
+
+                <!-- User Agent -->
+                <div class="border rounded-lg p-4">
+                    <div class="text-sm font-semibold text-primary mb-2">User Agent</div>
+                    <div class="text-xs text-gray-700 break-words">{{ selectedActivity.user_agent }}</div>
+                </div>
+            </div>
+        </Drawer>
     </AdminLayout>
 </template>
 <script setup lang="ts">
@@ -83,6 +159,14 @@ import { MenuItem } from 'primevue/menuitem';
 import { ref, Ref } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { DataTableFilterMetaData } from 'primevue';
+
+const detailDrawer = ref(false);
+const selectedActivity = ref<any>(null);
+
+const showDetail = (activity: any) => {
+    selectedActivity.value = activity;
+    detailDrawer.value = true;
+};
 
 const breadcrumbs: Ref<MenuItem[]> = ref([
     {

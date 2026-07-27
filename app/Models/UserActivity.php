@@ -13,6 +13,12 @@ class UserActivity extends Model
 
     public $timestamps = false;
 
+    protected $casts = [
+        'request_payload' => 'array',
+        'response' => 'array',
+        'timestamp' => 'datetime',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
