@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\RestrictActionException;
 use App\Models\User;
 use Exception;
 use Spatie\Permission\Models\Permission;
@@ -24,7 +25,7 @@ class RoleAndPermissionService
     public function updateRole(Role $role, array $data): Role
     {
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
-            throw new Exception('Superadmin cannot be changed');
+            throw new RestrictActionException('Superadmin cannot be changed');
         }
 
         $role->update($data);
@@ -35,11 +36,11 @@ class RoleAndPermissionService
     public function deleteRole(Role $role): void
     {
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
-            throw new Exception('Superadmin cannot be deleted');
+            throw new RestrictActionException('Superadmin cannot be deleted');
         }
 
         if ($role->users()->count() > 0) {
-            throw new Exception('Role cannot be deleted because it has users');
+            throw new RestrictActionException('Role cannot be deleted because it has users');
         }
 
         $role->delete();
@@ -88,7 +89,7 @@ class RoleAndPermissionService
     public function switchPermission(Role $role, int $permissionId, bool $value): void
     {
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
-            throw new Exception('Superadmin cannot be changed', 403);
+            throw new RestrictActionException('Superadmin cannot be changed', 403);
         }
 
         $permission = Permission::find($permissionId);
@@ -102,7 +103,7 @@ class RoleAndPermissionService
     public function batchSwitchPermissions(Role $role, array $permissions): array
     {
         if ($role->id == self::SUPERADMIN_ROLE_ID) {
-            throw new Exception('Superadmin cannot be changed', 403);
+            throw new RestrictActionException('Superadmin cannot be changed', 403);
         }
 
         $successCount = 0;
@@ -127,6 +128,9 @@ class RoleAndPermissionService
                 }
 
                 $successCount++;
+            } catch (RestrictActionException $e) {
+                $failedCount++;
+                $errors[] = $e->getMessage();
             } catch (Exception $e) {
                 $failedCount++;
                 $errors[] = $e->getMessage();

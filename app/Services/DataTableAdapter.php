@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,19 +10,51 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * DataTableAdapter - Handles server-side data table operations
+ *
+ * Provides filtering, sorting, and pagination for Eloquent queries
+ * with support for nested relations and various data types.
+ */
 class DataTableAdapter
 {
     protected Builder|QueryBuilder $query;
 
     protected Request $request;
 
+    /** @var array<string> Cache for joined tables */
+    protected array $joinedTables = [];
+
+    /** @var int Maximum records per page */
+    protected int $maxPageSize = 100;
+
+    /** @var int Default records per page */
+    protected int $defaultPageSize = 10;
+
     public function __construct(Builder|QueryBuilder $query, Request $request)
     {
         $this->query = $query;
         $this->request = $request ?? request();
+        $this->initializeJoinedTables();
     }
 
+    /**
+     * Initialize cache of already joined tables
+     */
+    protected function initializeJoinedTables(): void
+    {
+        $joins = $this->query->getQuery()->joins ?? [];
+        $this->joinedTables = collect($joins)->pluck('table')->toArray();
+    }
+
+    /**
+     * Static factory method to process data table request
+     *
+     * @return array{data: Collection, totalRecords: int}
+     */
     public static function load(Builder|QueryBuilder $query, Request $request): array
     {
         $instance = new self($query, $request);
@@ -29,62 +62,63 @@ class DataTableAdapter
         return $instance->process();
     }
 
+    /**
+     * Process the data table request
+     *
+     * @return array{data: Collection, totalRecords: int}
+     */
     public function process(): array
     {
-        $this->applySorting();
-        $this->applyFiltering();
+        try {
+            $this->applySorting();
+            $this->applyFiltering();
 
-        $totalRecords = $this->getTotalRecords();
-        $this->applyPagination();
+            // Clone query before counting to avoid counting issues with pagination
+            $totalRecords = $this->getTotalRecords();
+            $this->applyPagination();
 
-        return [
-            'data' => $this->query->get(),
-            'totalRecords' => $totalRecords,
-        ];
+            return [
+                'data' => $this->query->get(),
+                'totalRecords' => $totalRecords,
+            ];
+        } catch (\Exception $e) {
+            Log::error('DataTableAdapter process error', [
+                'message' => $e->getMessage(),
+                'request' => $this->request->all(),
+            ]);
+            throw $e;
+        }
     }
 
+    /**
+     * Apply sorting to the query
+     */
     protected function applySorting(): self
     {
         if ($this->request->has('sorts') && is_array($this->request->sorts)) {
             $sorts = $this->request->get('sorts');
-            if (is_string($sorts[0])) {
+            if (isset($sorts[0]) && is_string($sorts[0])) {
                 $sorts = [$sorts];
             }
             collect($sorts)->each(function ($value) {
+                if (! is_array($value) || count($value) !== 2) {
+                    return;
+                }
+
                 [$field, $direction] = $value;
-                if (in_array($direction, ['asc', 'desc'])) {
-                    if (strpos($field, '.') !== false) {
-                        $relation = explode('.', $field);
-                        $fieldName = array_pop($relation);
-                        $relationName = implode('.', $relation);
 
-                        $model = $this->query->getModel();
+                // Validate direction
+                if (! in_array($direction, ['asc', 'desc'], true)) {
+                    return;
+                }
 
-                        if (method_exists($model, $relationName)) {
-                            $relationInstance = $model->{$relationName}();
-                            $relationTable = $relationInstance->getRelated()->getTable();
+                // Sanitize field name
+                $field = $this->sanitizeFieldName($field);
 
-                            if ($relationInstance instanceof BelongsTo) {
-                                $foreignKey = $relationInstance->getQualifiedForeignKeyName();
-                                $ownerKey = $relationInstance->getQualifiedOwnerKeyName();
-                            } elseif (
-                                $relationInstance instanceof HasOne ||
-                                $relationInstance instanceof HasMany ||
-                                $relationInstance instanceof HasManyThrough
-                            ) {
-                                $foreignKey = $relationInstance->getQualifiedForeignKeyName();
-                                $localKey = $relationInstance->getQualifiedParentKeyName();
-                            }
-
-                            if (! collect($this->query->getQuery()->joins)->pluck('table')->contains($relationTable)) {
-                                $this->query->join($relationTable, $foreignKey, '=', $ownerKey ?? $localKey);
-                            }
-
-                            $this->query->orderBy("{$relationTable}.{$fieldName}", $direction);
-                        }
-                    } else {
-                        $this->query->orderBy($field, $direction);
-                    }
+                if (strpos($field, '.') !== false) {
+                    $this->applyRelationSorting($field, $direction);
+                } else {
+                    $this->query->orderBy($field, $direction);
                 }
             });
         }
@@ -92,6 +126,67 @@ class DataTableAdapter
         return $this;
     }
 
+    /**
+     * Apply sorting for relation fields
+     */
+    protected function applyRelationSorting(string $field, string $direction): void
+    {
+        $relation = explode('.', $field);
+        $fieldName = array_pop($relation);
+        $relationName = implode('.', $relation);
+
+        $model = $this->query->getModel();
+
+        if (! method_exists($model, $relationName)) {
+            return;
+        }
+
+        try {
+            $relationInstance = $model->{$relationName}();
+            $relationTable = $relationInstance->getRelated()->getTable();
+
+            $foreignKey = null;
+            $ownerKey = null;
+
+            if ($relationInstance instanceof BelongsTo) {
+                $foreignKey = $relationInstance->getQualifiedForeignKeyName();
+                $ownerKey = $relationInstance->getQualifiedOwnerKeyName();
+            } elseif (
+                $relationInstance instanceof HasOne ||
+                $relationInstance instanceof HasMany ||
+                $relationInstance instanceof HasManyThrough
+            ) {
+                $foreignKey = $relationInstance->getQualifiedForeignKeyName();
+                $ownerKey = $relationInstance->getQualifiedParentKeyName();
+            }
+
+            // Only join if we have valid keys and table not already joined
+            if ($foreignKey && $ownerKey && ! in_array($relationTable, $this->joinedTables, true)) {
+                $this->query->join($relationTable, $foreignKey, '=', $ownerKey);
+                $this->joinedTables[] = $relationTable;
+            }
+
+            $this->query->orderBy("{$relationTable}.{$fieldName}", $direction);
+        } catch (\Exception $e) {
+            Log::warning('DataTableAdapter relation sorting error', [
+                'field' => $field,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Sanitize field name to prevent SQL injection
+     */
+    protected function sanitizeFieldName(string $field): string
+    {
+        // Remove potentially dangerous characters, keep only alphanumeric, underscore, dot
+        return preg_replace('/[^a-zA-Z0-9_.]/', '', $field);
+    }
+
+    /**
+     * Apply filters to the query
+     */
     protected function applyFiltering(): self
     {
         if (! $this->hasValidFilters()) {
@@ -99,14 +194,18 @@ class DataTableAdapter
         }
 
         foreach ($this->request->filters as $filter) {
-            if (count($filter) !== 3) {
+            if (! is_array($filter) || count($filter) !== 3) {
                 continue;
             }
             [$field, $matchMode, $value] = $filter;
+
+            // Sanitize field name
+            $field = $this->sanitizeFieldName($field);
+
             if (strpos($field, '.') !== false) {
-                $this->applyRelationFilter($filter);
+                $this->applyRelationFilter([$field, $matchMode, $value]);
             } else {
-                $this->applyFilter($filter);
+                $this->applyFilter([$field, $matchMode, $value]);
             }
         }
 
@@ -164,13 +263,19 @@ class DataTableAdapter
         return false;
     }
 
+    /**
+     * Apply string filter with escaped LIKE wildcards
+     */
     protected function applyStringFilter(string $field, string $matchMode, $value): void
     {
+        // Escape LIKE wildcards in user input
+        $escapedValue = $this->escapeLikeWildcards((string) $value);
+
         $conditions = [
-            'contains' => fn () => $this->query->where($field, 'LIKE', "%{$value}%"),
-            'notContains' => fn () => $this->query->where($field, 'NOT LIKE', "%{$value}%"),
-            'startsWith' => fn () => $this->query->where($field, 'LIKE', "{$value}%"),
-            'endsWith' => fn () => $this->query->where($field, 'LIKE', "%{$value}"),
+            'contains' => fn () => $this->query->where($field, 'LIKE', "%{$escapedValue}%"),
+            'notContains' => fn () => $this->query->where($field, 'NOT LIKE', "%{$escapedValue}%"),
+            'startsWith' => fn () => $this->query->where($field, 'LIKE', "{$escapedValue}%"),
+            'endsWith' => fn () => $this->query->where($field, 'LIKE', "%{$escapedValue}"),
             'equals' => fn () => $this->query->where($field, '=', $value),
             'notEquals' => fn () => $this->query->where($field, '!=', $value),
         ];
@@ -180,6 +285,14 @@ class DataTableAdapter
         } else {
             throw new \InvalidArgumentException("Invalid match mode: {$matchMode}");
         }
+    }
+
+    /**
+     * Escape LIKE wildcards in user input
+     */
+    protected function escapeLikeWildcards(string $value): string
+    {
+        return str_replace(['%', '_'], ['\\%', '\\_'], $value);
     }
 
     protected function applyNumericFilter(string $field, string $matchMode, $value): void
@@ -200,21 +313,30 @@ class DataTableAdapter
         }
     }
 
+    /**
+     * Apply date filter using Carbon for reliable parsing
+     */
     protected function applyDateFilter(string $field, string $matchMode, $value): void
     {
-        $value = date('Y-m-d', strtotime($value));
+        try {
+            $date = Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            Log::warning('Invalid date format', ['value' => $value, 'error' => $e->getMessage()]);
+
+            return;
+        }
 
         $conditions = [
-            'equals' => fn () => $this->query->whereDate($field, '=', $value),
-            'notEquals' => fn () => $this->query->whereDate($field, '!=', $value),
-            'lt' => fn () => $this->query->whereDate($field, '<', $value),
-            'lte' => fn () => $this->query->whereDate($field, '<=', $value),
-            'gt' => fn () => $this->query->whereDate($field, '>', $value),
-            'gte' => fn () => $this->query->whereDate($field, '>=', $value),
-            'dateIs' => fn () => $this->query->whereDate($field, '=', $value),
-            'dateIsNot' => fn () => $this->query->whereDate($field, '!=', $value),
-            'dateBefore' => fn () => $this->query->whereDate($field, '<', $value),
-            'dateAfter' => fn () => $this->query->whereDate($field, '>', $value),
+            'equals' => fn () => $this->query->whereDate($field, '=', $date),
+            'notEquals' => fn () => $this->query->whereDate($field, '!=', $date),
+            'lt' => fn () => $this->query->whereDate($field, '<', $date),
+            'lte' => fn () => $this->query->whereDate($field, '<=', $date),
+            'gt' => fn () => $this->query->whereDate($field, '>', $date),
+            'gte' => fn () => $this->query->whereDate($field, '>=', $date),
+            'dateIs' => fn () => $this->query->whereDate($field, '=', $date),
+            'dateIsNot' => fn () => $this->query->whereDate($field, '!=', $date),
+            'dateBefore' => fn () => $this->query->whereDate($field, '<', $date),
+            'dateAfter' => fn () => $this->query->whereDate($field, '>', $date),
         ];
 
         if (isset($conditions[$matchMode])) {
@@ -248,6 +370,9 @@ class DataTableAdapter
         }
     }
 
+    /**
+     * Apply relation filter - refactored to reduce code duplication
+     */
     protected function applyRelationFilter(array $filter): void
     {
         if (count($filter) !== 3) {
@@ -256,162 +381,128 @@ class DataTableAdapter
 
         [$field, $matchMode, $value] = $filter;
 
+        $relation = explode('.', $field);
+        $fieldName = array_pop($relation);
+        $relationName = implode('.', $relation);
+
         if (is_array($value)) {
-            $this->applyArrayRelationFilter($field, $matchMode, $value);
+            $this->applyWhereHasFilter($relationName, $fieldName, $matchMode, $value, 'array');
         } elseif (is_numeric($value)) {
-            $this->applyNumericRelationFilter($field, $matchMode, $value);
+            $this->applyWhereHasFilter($relationName, $fieldName, $matchMode, $value, 'numeric');
         } elseif (is_bool($value)) {
-            $this->applyBooleanRelationFilter($field, $matchMode, $value);
+            $this->applyWhereHasFilter($relationName, $fieldName, $matchMode, $value, 'boolean');
         } elseif ($this->isDateFormat($value)) {
-            $this->applyDateRelationFilter($field, $matchMode, $value);
+            $this->applyWhereHasFilter($relationName, $fieldName, $matchMode, $value, 'date');
         } else {
-            $this->applyStringRelationFilter($field, $matchMode, $value);
+            $this->applyWhereHasFilter($relationName, $fieldName, $matchMode, $value, 'string');
         }
     }
 
-    protected function applyStringRelationFilter(string $field, string $matchMode, $value): void
+    /**
+     * Unified whereHas filter application to reduce code duplication
+     */
+    protected function applyWhereHasFilter(string $relation, string $field, string $matchMode, $value, string $type): void
     {
-        $relation = explode('.', $field);
-        $fieldName = array_pop($relation);
-        $has = implode('.', $relation);
-        $conditions = [
-            'contains' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, 'LIKE', "%{$value}%");
-            }),
-            'notContains' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, 'NOT LIKE', "%{$value}%");
-            }),
-            'startsWith' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, 'LIKE', "{$value}%");
-            }),
-            'endsWith' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, 'LIKE', "%{$value}");
-            }),
-            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '=', $value);
-            }),
-            'notEquals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '!=', $value);
-            }),
-        ];
-
-        if (isset($conditions[$matchMode])) {
-            $conditions[$matchMode]();
-        }
-    }
-
-    protected function applyNumericRelationFilter(string $field, string $matchMode, $value): void
-    {
-        $relation = explode('.', $field);
-        $fieldName = array_pop($relation);
-        $has = implode('.', $relation);
-
-        $conditions = [
-            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '=', $value);
-            }),
-            'notEquals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '!=', $value);
-            }),
-            'lt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '<', $value);
-            }),
-            'lte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '<=', $value);
-            }),
-            'gt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '>', $value);
-            }),
-            'gte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->where($fieldName, '>=', $value);
-            }),
-        ];
-
-        if (isset($conditions[$matchMode])) {
-            $conditions[$matchMode]();
-        } else {
-            $this->applyStringRelationFilter($field, $matchMode, $value);
-        }
-    }
-
-    protected function applyBooleanRelationFilter(string $field, string $matchMode, $value): void
-    {
-        $relation = explode('.', $field);
-        $fieldName = array_pop($relation);
-        $has = implode('.', $relation);
-
-        $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-            $query->where($fieldName, '=', $value ? 1 : 0);
+        $this->query->whereHas($relation, function ($query) use ($field, $matchMode, $value, $type) {
+            switch ($type) {
+                case 'string':
+                    $escapedValue = $this->escapeLikeWildcards((string) $value);
+                    $this->applyStringCondition($query, $field, $matchMode, $value, $escapedValue);
+                    break;
+                case 'numeric':
+                    $this->applyNumericCondition($query, $field, $matchMode, $value);
+                    break;
+                case 'boolean':
+                    $query->where($field, '=', $value ? 1 : 0);
+                    break;
+                case 'date':
+                    try {
+                        $date = Carbon::parse($value)->format('Y-m-d');
+                        $this->applyDateCondition($query, $field, $matchMode, $date);
+                    } catch (\Exception $e) {
+                        Log::warning('Invalid date in relation filter', ['value' => $value]);
+                    }
+                    break;
+                case 'array':
+                    $this->applyArrayCondition($query, $field, $matchMode, $value);
+                    break;
+            }
         });
     }
 
-    protected function applyDateRelationFilter(string $field, string $matchMode, $value): void
+    /**
+     * Apply string condition to query
+     */
+    protected function applyStringCondition($query, string $field, string $matchMode, $value, string $escapedValue): void
     {
-        $relation = explode('.', $field);
-        $fieldName = array_pop($relation);
-        $has = implode('.', $relation);
-
-        $value = date('Y-m-d', strtotime($value));
-
         $conditions = [
-            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '=', $value);
-            }),
-            'notEquals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '!=', $value);
-            }),
-            'lt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '<', $value);
-            }),
-            'lte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '<=', $value);
-            }),
-            'gt' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '>', $value);
-            }),
-            'gte' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '>=', $value);
-            }),
-            'dateIs' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '=', $value);
-            }),
-            'dateIsNot' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '!=', $value);
-            }),
-            'dateBefore' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '<', $value);
-            }),
-            'dateAfter' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereDate($fieldName, '>', $value);
-            }),
+            'contains' => fn () => $query->where($field, 'LIKE', "%{$escapedValue}%"),
+            'notContains' => fn () => $query->where($field, 'NOT LIKE', "%{$escapedValue}%"),
+            'startsWith' => fn () => $query->where($field, 'LIKE', "{$escapedValue}%"),
+            'endsWith' => fn () => $query->where($field, 'LIKE', "%{$escapedValue}"),
+            'equals' => fn () => $query->where($field, '=', $value),
+            'notEquals' => fn () => $query->where($field, '!=', $value),
         ];
 
         if (isset($conditions[$matchMode])) {
             $conditions[$matchMode]();
-        } else {
-            $this->applyStringRelationFilter($field, $matchMode, $value);
         }
     }
 
-    protected function applyArrayRelationFilter(string $field, string $matchMode, array $value): void
+    /**
+     * Apply numeric condition to query
+     */
+    protected function applyNumericCondition($query, string $field, string $matchMode, $value): void
     {
-        $relation = explode('.', $field);
-        $fieldName = array_pop($relation);
-        $has = implode('.', $relation);
-
         $conditions = [
-            'equals' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereIn($fieldName, $value);
-            }),
-            'between' => fn () => $this->query->whereHas($has, function ($query) use ($fieldName, $value) {
-                $query->whereBetween($fieldName, $value);
-            }),
+            'equals' => fn () => $query->where($field, '=', $value),
+            'notEquals' => fn () => $query->where($field, '!=', $value),
+            'lt' => fn () => $query->where($field, '<', $value),
+            'lte' => fn () => $query->where($field, '<=', $value),
+            'gt' => fn () => $query->where($field, '>', $value),
+            'gte' => fn () => $query->where($field, '>=', $value),
         ];
 
         if (isset($conditions[$matchMode])) {
             $conditions[$matchMode]();
-        } else {
-            throw new \InvalidArgumentException("Invalid match mode: {$matchMode}");
+        }
+    }
+
+    /**
+     * Apply date condition to query
+     */
+    protected function applyDateCondition($query, string $field, string $matchMode, string $date): void
+    {
+        $conditions = [
+            'equals' => fn () => $query->whereDate($field, '=', $date),
+            'notEquals' => fn () => $query->whereDate($field, '!=', $date),
+            'lt' => fn () => $query->whereDate($field, '<', $date),
+            'lte' => fn () => $query->whereDate($field, '<=', $date),
+            'gt' => fn () => $query->whereDate($field, '>', $date),
+            'gte' => fn () => $query->whereDate($field, '>=', $date),
+            'dateIs' => fn () => $query->whereDate($field, '=', $date),
+            'dateIsNot' => fn () => $query->whereDate($field, '!=', $date),
+            'dateBefore' => fn () => $query->whereDate($field, '<', $date),
+            'dateAfter' => fn () => $query->whereDate($field, '>', $date),
+        ];
+
+        if (isset($conditions[$matchMode])) {
+            $conditions[$matchMode]();
+        }
+    }
+
+    /**
+     * Apply array condition to query
+     */
+    protected function applyArrayCondition($query, string $field, string $matchMode, array $value): void
+    {
+        $conditions = [
+            'equals' => fn () => $query->whereIn($field, $value),
+            'between' => fn () => $query->whereBetween($field, $value),
+        ];
+
+        if (isset($conditions[$matchMode])) {
+            $conditions[$matchMode]();
         }
     }
 
@@ -420,18 +511,27 @@ class DataTableAdapter
         return $this->request->has('filters') && is_array($this->request->filters);
     }
 
+    /**
+     * Apply pagination with validation
+     */
     protected function applyPagination(): self
     {
-        $page = $this->request->input('page', 1);
-        $size = $this->request->input('size', 10);
+        $page = max(1, (int) $this->request->input('page', 1));
+        $size = min(
+            $this->maxPageSize,
+            max(1, (int) $this->request->input('size', $this->defaultPageSize))
+        );
 
         $this->query->skip(($page - 1) * $size)->take($size);
 
         return $this;
     }
 
+    /**
+     * Get total records by cloning query to avoid pagination interference
+     */
     protected function getTotalRecords(): int
     {
-        return $this->query->count();
+        return (clone $this->query)->count();
     }
 }

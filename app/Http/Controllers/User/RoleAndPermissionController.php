@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Exceptions\RestrictActionException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Role\RoleRequest;
 use App\Http\Responses\InertiaFailedResponse;
@@ -16,7 +17,8 @@ class RoleAndPermissionController extends Controller
 {
     public function __construct(
         private RoleAndPermissionService $roleService
-    ) {}
+    ) {
+    }
 
     public function index(Request $request)
     {
@@ -24,13 +26,13 @@ class RoleAndPermissionController extends Controller
         $selectedRole = $selectedRoleId ? Role::find($selectedRoleId) : null;
 
         $data = [
-            'roles' => fn () => $this->roleService->getAllRoles(),
+            'roles' => fn() => $this->roleService->getAllRoles(),
             'selectedRoleId' => $selectedRoleId,
             'rolePermissions' => $selectedRole
-                ? fn () => $this->roleService->getRolePermissions($selectedRole)
+                ? fn() => $this->roleService->getRolePermissions($selectedRole)
                 : null,
             'roleUsers' => $selectedRole
-                ? fn () => $this->roleService->getRoleUsers($selectedRole)
+                ? fn() => $this->roleService->getRoleUsers($selectedRole)
                 : null,
         ];
 
@@ -53,7 +55,7 @@ class RoleAndPermissionController extends Controller
 
     public function update(RoleRequest $request, Role $role)
     {
-        $this->logActivity('Update role (id: '.$role->id.', name: '.$role->name.')');
+        $this->logActivity('Update role (id: ' . $role->id . ', name: ' . $role->name . ')');
 
         try {
             $validated = $request->validated();
@@ -67,12 +69,14 @@ class RoleAndPermissionController extends Controller
 
     public function delete(Request $request, Role $role)
     {
-        $this->logActivity('Delete role (id: '.$role->id.', name: '.$role->name.')');
+        $this->logActivity('Delete role (id: ' . $role->id . ', name: ' . $role->name . ')');
 
         try {
             $this->roleService->deleteRole($role);
 
             return InertiaSuccessResponse::redirectBack('Success to delete role');
+        } catch (RestrictActionException $e) {
+            return InertiaFailedResponse::redirectBack($e->getMessage(), $e);
         } catch (Throwable $e) {
             return InertiaFailedResponse::redirectBack('Failed to delete role', $e);
         }
@@ -96,7 +100,7 @@ class RoleAndPermissionController extends Controller
 
     public function batchSwitchPermission(Request $request, Role $role)
     {
-        $this->logActivity('Batch update role permissions (id: '.$role->id.', name: '.$role->name.')');
+        $this->logActivity('Batch update role permissions (id: ' . $role->id . ', name: ' . $role->name . ')');
 
         try {
             $validated = $request->validate([

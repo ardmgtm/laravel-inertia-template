@@ -11,15 +11,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserActivityLog
 {
-    protected float $startTime;
-
     public function __construct(
         protected SensitiveDataMasker $masker
     ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
-        $this->startTime = microtime(true);
+        // Store start time in request attributes (persists across middleware lifecycle)
+        $request->attributes->set('activity_start_time', microtime(true));
 
         return $next($request);
     }
@@ -39,8 +38,11 @@ class UserActivityLog
     protected function recordActivity(Request $request, Response $response): void
     {
         $user = Auth::user();
-        $durationMs = isset($this->startTime)
-            ? round((microtime(true) - $this->startTime) * 1000)
+        
+        // Calculate duration from request attribute
+        $startTime = $request->attributes->get('activity_start_time');
+        $durationMs = $startTime
+            ? round((microtime(true) - $startTime) * 1000)
             : null;
 
         // Get response content
