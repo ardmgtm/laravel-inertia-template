@@ -98,14 +98,29 @@
                                     </TabList>
                                     <TabPanels class="pt-4">
                                         <TabPanel value="permission">
-                                            <div class="h-[calc(100vh-450px)] overflow-y-auto pr-2">
+                                            <div class="mb-4">
+                                                <IconField>
+                                                    <InputIcon>
+                                                        <i class="pi pi-search" />
+                                                    </InputIcon>
+                                                    <InputText placeholder="Search permissions..." v-model="searchPermission" fluid />
+                                                </IconField>
+                                            </div>
+                                            <div class="h-[calc(100vh-500px)] overflow-y-auto pr-2">
                                                 <div v-if="Object.keys(permissions).length === 0" 
                                                     class="h-full flex items-center justify-center text-gray-500 italic">
                                                     No permissions available
                                                 </div>
-                                                <div v-else class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                                <div v-else-if="Object.keys(filteredPermissions).length === 0"
+                                                    class="h-full flex items-center justify-center text-gray-500 italic">
+                                                    <div class="text-center">
+                                                        <i class="pi pi-shield text-4xl text-gray-300 mb-2"></i>
+                                                        <p>No permissions found matching "{{ searchPermission }}"</p>
+                                                    </div>
+                                                </div>
+                                                <div v-else class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
                                                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-200"
-                                                        v-for="(permissionList, permissionGroupName) in permissions" 
+                                                        v-for="(permissionList, permissionGroupName) in filteredPermissions" 
                                                         :key="permissionGroupName as string">
                                                         <div class="flex items-center justify-between mb-3">
                                                             <h5 class="text-lg font-semibold text-gray-900">
@@ -281,6 +296,8 @@ function selectRole(role: UserRole) {
     isLoading.value = true;
     activeTab.value = 'permission';
     userPage.value = 0;
+    searchPermission.value = '';
+    searchUser.value = '';
     
     router.get(
         route('role.browse', { role_id: role.id }),
@@ -410,6 +427,41 @@ function onSwitchChange(idRole: number, permissionData: PermissionItem, newValue
         });
     });
 }
+
+// Permission search
+const searchPermission: Ref<string> = ref('');
+
+const filteredPermissions: ComputedRef<PermissionGroups> = computed(() => {
+    if (!searchPermission.value) {
+        return permissions.value;
+    }
+    
+    const searchLower = searchPermission.value.toLowerCase();
+    const filtered: PermissionGroups = {};
+    
+    Object.entries(permissions.value).forEach(([groupName, permissionList]) => {
+        const groupNameLower = groupName.toLowerCase();
+        const parsedGroupName = parsePermissionName(groupName).toLowerCase();
+        
+        // Filter permissions in this group
+        const filteredList = permissionList.filter((perm: PermissionItem) => {
+            const permNameLower = perm.name.toLowerCase();
+            const parsedPermName = parsePermissionName(perm.name).toLowerCase();
+            
+            return groupNameLower.includes(searchLower) ||
+                   parsedGroupName.includes(searchLower) ||
+                   permNameLower.includes(searchLower) ||
+                   parsedPermName.includes(searchLower);
+        });
+        
+        // Include group if it has matching permissions or matching group name
+        if (filteredList.length > 0 || groupNameLower.includes(searchLower) || parsedGroupName.includes(searchLower)) {
+            filtered[groupName] = filteredList.length > 0 ? filteredList : permissionList;
+        }
+    });
+    
+    return filtered;
+});
 
 // User pagination
 const userPage: Ref<number> = ref(0);
