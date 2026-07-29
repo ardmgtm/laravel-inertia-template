@@ -24,7 +24,7 @@
                 </template>
                 <template #filter="{ filterModel, filterCallback }">
                     <DatePicker v-model="filterModel.value" :manualInput="false" showIcon fluid @date-select="filterCallback" date-format="dd M yy"
-                        :hide-on-range-selection="true" :max-date="new Date()" iconDisplay="input" class="w-40"/>
+                        :hide-on-range-selection="true" :max-date="new Date()" iconDisplay="input" class="w-40" :show-button-bar="true" @clear-click="filterCallback"/>
                 </template>
             </Column>
             <Column field="status" header="Status" class="w-28 min-w-28" :show-filter-menu="false"
