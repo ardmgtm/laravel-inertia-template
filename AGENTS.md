@@ -26,30 +26,13 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - phpunit/phpunit (PHPUNIT) - v12
 - vue (VUE) - v3
 - @inertiajs/vue3 (INERTIA_VUE) - v2
+- @laravel/echo-vue (ECHO_VUE) - v2
 - laravel-echo (ECHO) - v2
 - tailwindcss (TAILWINDCSS) - v3
-
-## Project Documentation
-
-**IMPORTANT:** Before working on backend or frontend tasks, always refer to the comprehensive guidelines:
-
-- **[BACKEND.md](BACKEND.md)** - Complete backend development guidelines including:
-  - Service Layer Pattern (Controllers → Services → Models)
-  - Naming conventions, file structure, and architecture patterns
-  - Database migrations, Eloquent models, and relationships
-  - Form request validation, testing with Pest, security best practices
-  - Performance optimization, deployment checklist
-
-- **[FRONTEND.md](FRONTEND.md)** - Complete frontend development guidelines including:
-  - Vue 3 Composition API, TypeScript, and Inertia.js patterns
-  - Component structure, naming conventions, and file organization
-  - PrimeVue components, Tailwind CSS utilities
-  - State management, form handling, and routing patterns
 
 ## Conventions
 
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
-- Follow the architecture patterns defined in BACKEND.md and FRONTEND.md.
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
 
@@ -59,8 +42,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 ## Application Structure & Architecture
 
-- **Backend:** Follow the Service Layer Pattern - Controllers must NOT access Models directly. All business logic goes through Services. Refer to BACKEND.md for details.
-- **Frontend:** Pages in `resources/js/Pages/`, reusable components in `resources/js/Components/`. Use TypeScript for type safety. Refer to FRONTEND.md for details.
 - Stick to existing directory structure; don't create new base folders without approval.
 - Do not change the application's dependencies without approval.
 
@@ -85,7 +66,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - Run Artisan commands directly via the command line (e.g., `php artisan route:list`). Use `php artisan list` to discover available commands and `php artisan [command] --help` to check parameters.
 - Inspect routes with `php artisan route:list`. Filter with: `--method=GET`, `--name=users`, `--path=api`, `--except-vendor`, `--only-vendor`.
 - Read configuration values using dot notation: `php artisan config:show app.name`, `php artisan config:show database.default`. Or read config files directly from the `config/` directory.
-- To check environment variables, read the `.env` file directly.
 
 ## Tinker
 
@@ -103,13 +83,19 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - Use TitleCase for Enum keys: `FavoritePerson`, `BestLake`, `Monthly`.
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
-- **See BACKEND.md for comprehensive PHP and Laravel coding standards, service layer architecture, and best practices.**
 
 === deployments rules ===
 
 # Deployment
 
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
+
+=== herd rules ===
+
+# Laravel Herd
+
+- The application is served by Laravel Herd at `https?://[kebab-case-project-dir].test`. Use the `get-absolute-url` tool to generate valid URLs. Never run commands to serve the site. It is always available.
+- Use the `herd` CLI to manage services, PHP versions, and sites (e.g. `herd sites`, `herd services:start <service>`, `herd php:list`). Run `herd list` to discover all available commands.
 
 === inertia-laravel/core rules ===
 
@@ -130,7 +116,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 # Do Things the Laravel Way
 
-- **CRITICAL: Controllers must use Service Layer Pattern. Never access Models directly from Controllers. See BACKEND.md for architecture details.**
 - Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using `php artisan list` and check their parameters with `php artisan [command] --help`.
 - If you're creating a generic PHP class, use `php artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
@@ -169,6 +154,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 ## Pest
 
 - This project uses Pest for testing. Create tests: `php artisan make:test --pest {name}`.
+- The `{name}` argument should not include the test suite directory. Use `php artisan make:test --pest SomeFeatureTest` instead of `php artisan make:test --pest Feature/SomeFeatureTest`.
 - Run tests: `php artisan test --compact` or filter: `php artisan test --compact --filter=testName`.
 - Do NOT delete tests without approval.
 
@@ -178,6 +164,5 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 Vue components must have a single root element.
 - IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
-- **See FRONTEND.md for comprehensive Vue 3, TypeScript, Inertia.js patterns, PrimeVue components, and frontend architecture guidelines.**
 
 </laravel-boost-guidelines>

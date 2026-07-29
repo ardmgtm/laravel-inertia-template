@@ -61,7 +61,8 @@
               <li v-for="menuItem in sideMenuItemData">
                 <SidemenuItem 
                   :label="menuItem.label" 
-                  :sparator="menuItem.separator" 
+                  :separator="menuItem.separator" 
+                  :counter="menuItem.counter"
                   :icon="menuItem.icon"
                   :url="menuItem.url" 
                   :items="menuItem.items" 

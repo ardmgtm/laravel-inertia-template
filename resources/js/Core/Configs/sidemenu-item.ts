@@ -5,6 +5,7 @@ const basicRoute = (routeName: string, params = {}) => route(routeName, params, 
 export interface SideMenuItem extends MenuItem {
     permissions?: string | string[];
     items?: SideMenuItem[];
+    counter?: number;
 }
 
 export const sideMenuItemData: SideMenuItem[] = [
@@ -16,6 +17,31 @@ export const sideMenuItemData: SideMenuItem[] = [
         label: 'Dashboard',
         icon: 'pi pi-home',
         url: basicRoute('dashboard'),
+    },
+    {
+        label: 'Inbox',
+        icon: 'pi pi-inbox',
+        counter: 5,
+    },
+    {
+        label: 'Projects',
+        icon: 'pi pi-briefcase',
+        items: [
+            {
+                label: 'Project A',
+            },
+            {
+                label: 'Project B',
+            }
+        ] 
+    },
+    {
+        label: 'Administrator',
+        separator: true,
+    },
+    {
+        label: 'System Settings',
+        icon: 'pi pi-cog',
     },
     {
         label: 'User Management',
