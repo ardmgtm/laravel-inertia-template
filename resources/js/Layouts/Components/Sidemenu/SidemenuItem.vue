@@ -5,25 +5,16 @@
     </div>
     <div v-else class="relative">
         <component :is="url ? Link : 'div'" v-ripple :href="props.url ?? ''" ref="menuItemRef"
-            class="flex gap-2 p-2 items-center rounded-lg cursor-pointer group ripple-box hover:bg-surface-100 transition-all duration-300"
-            :class="[
-                { 'text-primary font-bold': isActive || submenuExpand || showPopup || hasActiveChild },
-                props.collapsed ? 'justify-center' : ''
-            ]" @click.stop="onclickHandle" v-tooltip.right="props.collapsed && !props.items ? props.label : ''">
+            :class="menuItemClass" @click.stop="onclickHandle" v-tooltip.right="tooltipText">
             <component :is="(props.counter != null && props.collapsed) ? OverlayBadge : 'div'" severity="danger"
                 class="flex items-center">
 
-                <div v-if="props.icon != null"
-                    class="rounded-lg border h-8 w-8 flex flex-none items-center justify-center group-hover:border-primary transition-colors"
-                    :class="{ 'border-primary': isActive || submenuExpand || showPopup || hasActiveChild, 'border-surface-300': !isActive && !submenuExpand && !showPopup && !hasActiveChild }">
-                    <i class="group-hover:text-primary transition-colors"
-                        :class="[props.icon, { 'text-primary': isActive || submenuExpand || showPopup || hasActiveChild, 'text-surface-500': !isActive && !submenuExpand && !showPopup && !hasActiveChild }]" />
+                <div v-if="props.icon != null" :class="iconBoxClass">
+                    <i class="group-hover:text-primary transition-colors" :class="iconClass" />
                 </div>
                 <div v-else>
                     <div class="h-8 w-8 flex items-center justify-center">
-                        <div class="rounded-full h-2 w-2 group-hover:bg-primary transition-colors"
-                            :class="{ 'bg-primary': isActive || submenuExpand || showPopup || hasActiveChild, 'bg-surface-500': !isActive && !submenuExpand && !showPopup && !hasActiveChild }">
-                        </div>
+                        <div :class="dotClass"></div>
                     </div>
                 </div>
             </component>
@@ -32,10 +23,10 @@
             </span>
             <div class="flex-none" v-if="props.items != null && !props.collapsed">
                 <i class="pi pi-chevron-down transition duration-300 text-gray-400"
-                    :class="{ '-rotate-180': submenuExpand, 'rotate-0': !submenuExpand }"></i>
+                    :class="{ '-rotate-180': submenuExpand }"></i>
             </div>
             <div v-else-if="props.counter != null && !props.collapsed" class="flex-none">
-                <Badge v-if="props.counter != null" :value="props.counter" severity="danger" class="ml-2" />
+                <Badge :value="props.counter" severity="danger" class="ml-2" />
             </div>
         </component>
 
@@ -67,7 +58,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { MenuItem } from "primevue/menuitem";
 import { Link, usePage } from "@inertiajs/vue3";
 import { can } from "@/Core/Utils/permission-check";
@@ -75,38 +66,21 @@ import { SideMenuItem } from "@/Core/Configs/sidemenu-item";
 import SidemenuPopupItem from "./SidemenuPopupItem.vue";
 import { OverlayBadge } from "primevue";
 
-const emit = defineEmits(["item-active"]);
+const emit = defineEmits<{
+    "item-active": []
+}>();
 
-const props = defineProps({
-    label: {
-        type: [String, Function],
-        required: false
-    },
-    separator: {
-        type: Boolean,
-        required: false
-    },
-    counter: {
-        type: Number,
-        required: false
-    },
-    icon: {
-        type: String,
-        required: false
-    },
-    url: {
-        type: String,
-        required: false,
-    },
-    items: {
-        type: Array as () => SideMenuItem[],
-        required: false,
-    },
-    collapsed: {
-        type: Boolean,
-        default: false
-    }
-})
+const props = withDefaults(defineProps<{
+    label?: string | Function;
+    separator?: boolean;
+    counter?: number;
+    icon?: string;
+    url?: string;
+    items?: SideMenuItem[];
+    collapsed?: boolean;
+}>(), {
+    collapsed: false
+});
 
 const submenuExpand = ref(false);
 const isActive = ref(false);
@@ -114,24 +88,49 @@ const showPopup = ref(false);
 const menuItemRef = ref<HTMLElement | null>(null);
 const popupRef = ref<HTMLElement | null>(null);
 const popupPosition = ref({});
+const currentUrl = computed(() => usePage().url);
 
 const hasActiveChild = computed(() => {
     if (!props.items) return false;
 
     const checkActive = (items: SideMenuItem[]): boolean => {
         return items.some(item => {
-            if (item.url && usePage().url.startsWith(item.url)) {
-                return true;
-            }
-            if (item.items) {
-                return checkActive(item.items);
-            }
-            return false;
+            if (item.url && currentUrl.value.startsWith(item.url)) return true;
+            return item.items ? checkActive(item.items) : false;
         });
     };
 
     return checkActive(props.items);
 });
+
+const isHighlighted = computed(() => 
+    isActive.value || submenuExpand.value || showPopup.value || hasActiveChild.value
+);
+
+const menuItemClass = computed(() => [
+    "flex gap-2 p-2 items-center rounded-lg cursor-pointer group ripple-box hover:bg-surface-100 transition-all duration-300",
+    { "text-primary font-bold": isHighlighted.value },
+    { "justify-center": props.collapsed }
+]);
+
+const iconBoxClass = computed(() => [
+    "rounded-lg border h-8 w-8 flex flex-none items-center justify-center group-hover:border-primary transition-colors",
+    isHighlighted.value ? "border-primary" : "border-surface-300"
+]);
+
+const iconClass = computed(() => [
+    props.icon,
+    isHighlighted.value ? "text-primary" : "text-surface-500"
+]);
+
+const dotClass = computed(() => [
+    "rounded-full h-2 w-2 group-hover:bg-primary transition-colors",
+    isHighlighted.value ? "bg-primary" : "bg-surface-500"
+]);
+
+const tooltipText = computed(() => 
+    props.collapsed && !props.items ? props.label : ''
+);
 
 function updateActiveState() {
     isActive.value = true
@@ -140,8 +139,21 @@ function updateActiveState() {
     }
 };
 
+// Watch popup state to manage event listeners
+watch(showPopup, (newValue) => {
+    if (newValue) {
+        document.addEventListener('click', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true);
+        window.addEventListener('resize', handleResize);
+    } else {
+        document.removeEventListener('click', handleClickOutside);
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleResize);
+    }
+});
+
 onMounted(() => {
-    isActive.value = props.url ? usePage().url.startsWith(props.url) : false;
+    isActive.value = props.url ? currentUrl.value.startsWith(props.url) : false;
     if (isActive.value) {
         emit('item-active');
     }
@@ -150,16 +162,15 @@ onMounted(() => {
     if (hasActiveChild.value && props.items) {
         submenuExpand.value = true;
     }
-
-    document.addEventListener('click', handleClickOutside);
-    window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-    window.removeEventListener('scroll', handleScroll, true);
-    window.removeEventListener('resize', handleResize);
+    // Cleanup if popup is still showing
+    if (showPopup.value) {
+        document.removeEventListener('click', handleClickOutside);
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleResize);
+    }
 });
 
 function handleClickOutside(event: MouseEvent) {
@@ -185,20 +196,20 @@ function handleResize() {
     }
 }
 
-function calculatedHeight(items: MenuItem[]): number {
-    const baseHeight = 48;
-    const subItemCount = items.reduce((total, item) => {
-        if (item.items) {
-            return total + 1 + calculatedHeight(item.items) / baseHeight;
-        }
-        return total + 1;
-    }, 0);
-
-    return parseInt((subItemCount * baseHeight).toString());
-};
-
 const submenuHeight = computed(() => {
-    return props.items ? calculatedHeight(props.items) + 'px' : '0px';
+    if (!props.items) return '0px';
+    
+    const baseHeight = 48;
+    const calculateHeight = (items: MenuItem[]): number => {
+        return items.reduce((total, item) => {
+            const itemHeight = 1;
+            const childHeight = item.items ? calculateHeight(item.items) / baseHeight : 0;
+            return total + itemHeight + childHeight;
+        }, 0);
+    };
+
+    const totalHeight = calculateHeight(props.items) * baseHeight;
+    return `${totalHeight}px`;
 });
 
 async function onclickHandle() {
@@ -217,46 +228,43 @@ async function onclickHandle() {
     }
 }
 
+const countVisibleItems = (items: SideMenuItem[]): number => {
+    return items.reduce((count, item) => {
+        if (!can(item.permissions as string | string[])) return count;
+        return count + 1 + (item.items ? countVisibleItems(item.items) : 0);
+    }, 0);
+};
+
 function calculatePopupPosition() {
-    if (menuItemRef.value) {
-        const rect = menuItemRef.value.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const popupWidth = 280; // max-w-[280px]
+    if (!menuItemRef.value || !props.items) return;
+    
+    const rect = menuItemRef.value.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const popupWidth = 280;
+    const itemHeight = 40;
+    const headerPadding = 80;
 
-        // Calculate estimated height based on nested items
-        const countAllItems = (items: SideMenuItem[]): number => {
-            return items.reduce((count, item) => {
-                if (can(item.permissions as string | string[])) {
-                    count += 1;
-                    if (item.items) {
-                        count += countAllItems(item.items);
-                    }
-                }
-                return count;
-            }, 0);
-        };
+    const totalItems = countVisibleItems(props.items);
+    const popupEstimatedHeight = totalItems * itemHeight + headerPadding;
 
-        const totalItems = props.items ? countAllItems(props.items) : 0;
-        const popupEstimatedHeight = totalItems * 40 + 80; // 40px per item + header + padding
+    let top = rect.top;
+    let left = rect.right + 8;
 
-        let top = rect.top;
-        let left = rect.right + 8; // 8px gap from sidebar
-
-        // Adjust if popup would overflow bottom of viewport
-        if (top + popupEstimatedHeight > viewportHeight) {
-            top = Math.max(10, viewportHeight - popupEstimatedHeight - 10);
-        }
-
-        // Adjust if popup would overflow right of viewport
-        if (left + popupWidth > window.innerWidth) {
-            left = rect.left - popupWidth - 8; // Show on left side instead
-        }
-
-        popupPosition.value = {
-            top: `${top}px`,
-            left: `${left}px`,
-        };
+    // Adjust vertical position if overflow
+    if (top + popupEstimatedHeight > viewportHeight) {
+        top = Math.max(10, viewportHeight - popupEstimatedHeight - 10);
     }
+
+    // Adjust horizontal position if overflow
+    if (left + popupWidth > viewportWidth) {
+        left = rect.left - popupWidth - 8;
+    }
+
+    popupPosition.value = {
+        top: `${top}px`,
+        left: `${left}px`,
+    };
 }
 </script>
 
