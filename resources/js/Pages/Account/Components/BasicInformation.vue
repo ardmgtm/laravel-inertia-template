@@ -153,8 +153,13 @@ function editSubmitAction(event: FormSubmitEvent) {
                         life: 3000
                     });
                 }
-                // Reload page to get updated user data
-                router.reload();
+                // Update auth store with new user data
+                const updatedUser = (page.props as any).auth?.user;
+                if (updatedUser) {
+                    authStore.setUser(updatedUser);
+                    currentProfilePicture.value = updatedUser.profile_picture;
+                    profilePicture.value = updatedUser.profile_picture;
+                }
                 editMode.value = false;
             },
             onError: (errors) => {
